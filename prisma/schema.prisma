@@ -1,0 +1,132 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum ComponentCategory {
+  CASE
+  CPU
+  MOTHERBOARD
+  GPU
+  RAM
+  SSD
+  HDD
+  PSU
+  COOLER
+  AIO
+  FANS
+}
+
+enum OrderStatus {
+  NOWE
+  W_TRAKCIE
+  WYCENIONE
+  ZAKONCZONE
+  ANULOWANE
+}
+
+model Component {
+  id                 String            @id @default(cuid())
+  category           ComponentCategory
+  name               String
+  nameUk             String?
+  nameEn             String?
+  namePl             String?
+  brand              String
+  model              String?
+  socket             String?
+  chipset            String?
+  wattage            Int?
+  capacity           String?
+  memoryType         String?
+  formFactor         String?
+  baseMarketPricePLN Float             @default(0)
+  markupPLN          Float             @default(0)
+  price              Float
+  sourceUrl          String?
+  imageUrl           String?
+  specs              Json              @default("{}")
+  popularityScore    Int               @default(0)
+  stock              Int               @default(10)
+  featured           Boolean           @default(false)
+  active             Boolean           @default(true)
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime          @updatedAt
+}
+
+model Review {
+  id        String   @id @default(cuid())
+  name      String
+  nameUk    String?
+  nameEn    String?
+  namePl    String?
+  avatarUrl String?
+  rating    Int      @default(5)
+  text      String
+  textUk    String?
+  textEn    String?
+  textPl    String?
+  active    Boolean  @default(true)
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+}
+
+model Order {
+  id         String      @id @default(cuid())
+  name       String
+  phone      String
+  email      String?
+  messenger  String?
+  services   String[]    @default([])
+  comment             String?
+  buildJson           Json?
+  selectedComponents  Json?
+  totalPrice          Float?
+  status     OrderStatus @default(NOWE)
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+}
+
+model ShowcaseBuild {
+  id        String   @id @default(cuid())
+  imageUrl  String?
+  title     String?
+  caption   String?
+  showText  Boolean  @default(true)
+  forSale   Boolean  @default(false)
+  pricePLN  Float?
+  sortOrder Int      @default(0)
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model SiteSettings {
+  id             String   @id @default("main")
+  phone          String   @default("+48 777 777 777")
+  email          String   @default("pk-help@gmail.com")
+  telegramUrl    String?
+  instagramUrl   String?
+  mapsEmbedUrl   String?
+  heroTitleRu    String?
+  heroTitleUk    String?
+  heroTitleEn    String?
+  heroTitlePl    String?
+  heroSubtitleRu String?
+  heroSubtitleUk String?
+  heroSubtitleEn String?
+  heroSubtitlePl String?
+  bannerImageUrl String?
+  updatedAt      DateTime @updatedAt
+}
+
+model AdminUser {
+  id           String   @id @default(cuid())
+  username     String   @unique
+  passwordHash String
+  createdAt    DateTime @default(now())
+}
