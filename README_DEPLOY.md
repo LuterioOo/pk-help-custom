@@ -1,103 +1,116 @@
-# Deploy to Vercel
+# Deploy PK-HELP Custom (Vercel + Neon)
 
-## 1. Repository
+Temporary preview: [https://pkcustompredfinal.vercel.app](https://pkcustompredfinal.vercel.app)  
+PC builder: [https://pkcustompredfinal.vercel.app/#builder](https://pkcustompredfinal.vercel.app/#builder)
 
-Push to GitHub. Do **not** commit `.env`, `.env.local`, or uploaded images in `public/uploads/`.
+Do **not** commit `.env`, `.env.local`, `node_modules`, or `.next`.
 
-## 2. Neon (once)
+---
 
-1. Neon project → branch **production** → **Pooled** connection string.
-2. Copy full URL with password → `?sslmode=require` if missing.
-3. Locally:
+## Local development
 
 ```bash
 copy .env.example .env.local
-# paste DATABASE_URL into .env.local
-# comment out DATABASE_URL in .env if it points to localhost
+# Edit .env.local: DATABASE_URL (Neon pooled), JWT_SECRET, ADMIN_*, optional Telegram
 
+npm install
 npm run db:setup
+npm run dev
 ```
 
-## 3. Import on Vercel
+Open [http://localhost:3000](http://localhost:3000) (set `NEXT_PUBLIC_SITE_URL=http://localhost:3000` in `.env.local`).
 
-1. [vercel.com](https://vercel.com) → **Add New** → Import Git repo.
-2. Framework: **Next.js** (auto-detected).
-3. Settings (or use `vercel.json`):
+Production-like build locally:
 
-| Setting | Value |
-|---------|--------|
-| Install Command | `npm install` |
-| Build Command | `prisma generate && next build` |
-| Output | Next.js default |
-| Node.js | 20.x |
+```bash
+npm run build
+npm run start
+```
 
-4. **Environment Variables** (Production + Preview):
+| Script | What it does |
+|--------|----------------|
+| `npm run db:push` | Apply Prisma schema to Postgres |
+| `npm run db:seed` | Seed settings, admin, reviews + PC components (idempotent) |
+| `npm run db:setup` | `db:push` + `db:seed` |
+| `npm run vercel-build` | Same as Vercel: generate → push → seed → `next build` |
 
-| Variable | Required | Example |
-|----------|----------|---------|
-| `DATABASE_URL` | Yes | Neon pooled URL |
-| `JWT_SECRET` | Yes | 32+ random chars |
-| `ADMIN_USERNAME` | Yes | admin |
+---
+
+## Vercel setup
+
+1. Import the GitHub repo on [vercel.com](https://vercel.com).
+2. Framework: **Next.js** (auto). `vercel.json` sets `buildCommand` to `npm run vercel-build`.
+3. **Storage → Blob** (for admin component/showcase uploads) — connects `BLOB_READ_WRITE_TOKEN`.
+4. **Environment variables** (Production + Preview):
+
+| Variable | Required | Value (preview) |
+|----------|----------|-----------------|
+| `DATABASE_URL` | Yes | Neon **pooled** URL with `?sslmode=require` |
+| `JWT_SECRET` | Yes | 32+ random characters |
+| `ADMIN_USERNAME` | Yes | e.g. `admin` |
 | `ADMIN_PASSWORD` | Yes | strong password |
-| `NEXT_PUBLIC_SITE_URL` | Yes | `https://pk-help.pl` |
+| `NEXT_PUBLIC_SITE_URL` | Yes | `https://pkcustompredfinal.vercel.app` |
 | `NEXT_PUBLIC_MAIN_DOMAIN` | Yes | `pk-help.pl` |
 | `NEXT_PUBLIC_POLISH_DOMAIN` | Yes | `pk-help-pl.pl` |
 | `TELEGRAM_BOT_TOKEN` | Recommended | from @BotFather |
-| `TELEGRAM_CHAT_ID` | Recommended | chat id |
-| `BLOB_READ_WRITE_TOKEN` | Yes (uploads) | from Vercel Blob store |
-| `NEXT_PUBLIC_TELEGRAM_URL` | Optional | `https://t.me/...` |
-| `NEXT_PUBLIC_INSTAGRAM_URL` | Optional | Instagram URL |
+| `TELEGRAM_CHAT_ID` | Recommended | group/channel id |
+| `BLOB_READ_WRITE_TOKEN` | Yes on Vercel | auto if Blob connected |
+| `NEXT_PUBLIC_TELEGRAM_URL` | Optional | public Telegram link |
+| `NEXT_PUBLIC_INSTAGRAM_URL` | Optional | Instagram link |
 | `NEXT_PUBLIC_GOOGLE_MAPS_EMBED_URL` | Optional | Maps embed URL |
 
-5. **Storage** → **Blob** → Create / Connect → `BLOB_READ_WRITE_TOKEN` is added automatically.
+5. Deploy. Each build runs `prisma db push` + idempotent seed so the PC builder has components.
 
-6. **Deploy**.
+### Admin
 
-## 4. Domains
+- URL: `/admin` (locale prefix may apply, e.g. `/pl/admin` on Polish domain).
+- Login uses `ADMIN_USERNAME` / `ADMIN_PASSWORD` from env (and DB user created on first seed).
+- `JWT_SECRET` must be set on Vercel (min 16 chars).
 
-**Project → Settings → Domains:**
+### Orders / Telegram
 
-- `pk-help.pl` (+ `www` if needed)
-- `pk-help-pl.pl` (+ `www` if needed)
+- Form posts to `POST /api/orders` → saved in Neon `Order` table.
+- If `TELEGRAM_BOT_TOKEN` + `TELEGRAM_CHAT_ID` are set, a Telegram message is sent (order is still saved if Telegram fails).
 
-Add DNS records at your registrar (Vercel shows exact values).
+### Database
+
+- **Postgres (Neon)** — not SQLite. Data persists across deploys.
+- Catalog: `prisma/data/components-pl.json` (50 PL-market parts, markup in `src/lib/pricing.ts`).
+
+---
+
+## Custom domains (later)
 
 | Domain | Locales |
 |--------|---------|
-| pk-help.pl | ru, uk, en |
-| pk-help-pl.pl | pl only |
+| `pk-help.pl` | ru, uk, en |
+| `pk-help-pl.pl` | pl only |
 
-## 5. Post-deploy checklist
+Set `NEXT_PUBLIC_SITE_URL` to the canonical HTTPS URL when switching domains.
 
-- [ ] https://pk-help.pl loads
-- [ ] https://pk-help-pl.pl — Polish only, no RU/UA/EN switcher
-- [ ] PC builder loads components
-- [ ] Order form → success → row in Neon `Order` table
-- [ ] Telegram notification (if tokens set)
-- [ ] `/admin` login works
-- [ ] Admin image upload (Blob connected)
+---
+
+## Post-deploy checklist
+
+- [ ] Home, `#builder`, `#advantages`, `#order` anchors work
+- [ ] PC builder loads all categories (CPU, GPU, RAM, …)
+- [ ] Order form → success toast → row in Neon `Order`
+- [ ] Telegram notification (if configured)
+- [ ] `/admin` login and component CRUD
+- [ ] Image upload in admin (Blob token present)
 - [ ] `/robots.txt`, `/sitemap.xml`
 
-## 6. Updates
-
-```bash
-git push
-```
-
-Vercel redeploys automatically.
+---
 
 ## Troubleshooting
 
 | Problem | Fix |
 |---------|-----|
-| `table Order does not exist` | Run `npm run db:setup` with production `DATABASE_URL` |
-| Form: Database unavailable | Check `DATABASE_URL` on Vercel |
-| Prisma used localhost | Use `npm run db:push` (loads `.env.local`); remove localhost from `.env` |
-| Admin 401 | Set `JWT_SECRET`, `ADMIN_*`, use HTTPS |
-| Upload fails | Connect Vercel Blob |
-| Empty PC builder | Run `npm run db:setup` on production DB |
-| Build EPERM (Windows) | Stop `npm run dev` before `prisma generate` |
+| Empty PC builder | Check `DATABASE_URL` on Vercel; redeploy (seed runs on build) |
+| `Database schema missing` | `DATABASE_URL` wrong or `db push` failed — check build logs |
+| Admin 401 | Set `JWT_SECRET`, `ADMIN_USERNAME`, `ADMIN_PASSWORD` on Vercel |
+| Upload fails in admin | Connect Vercel Blob; set `BLOB_READ_WRITE_TOKEN` |
+| Prisma uses localhost | Use `.env.local` for Neon; remove localhost `DATABASE_URL` from `.env` |
+| Build EPERM (Windows) | Stop `npm run dev` before `prisma generate` / `npm run build` |
 
-## Region
-
-`vercel.json` sets EU region `fra1` (Frankfurt).
+Region: `fra1` (Frankfurt) in `vercel.json`.
