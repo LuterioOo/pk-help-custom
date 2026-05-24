@@ -1,7 +1,10 @@
+/**
+ * Service markup on top of market (purchase) price in PLN.
+ * Typical range: 100–150 PLN depending on part cost.
+ */
 export function calculateMarkupPLN(baseMarketPricePLN: number): number {
-  if (baseMarketPricePLN <= 300) return 50;
-  if (baseMarketPricePLN <= 800) return 80;
-  if (baseMarketPricePLN <= 1500) return 120;
+  if (baseMarketPricePLN <= 400) return 100;
+  if (baseMarketPricePLN <= 1200) return 120;
   return 150;
 }
 

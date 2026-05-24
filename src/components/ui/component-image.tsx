@@ -1,17 +1,19 @@
 "use client";
 
 import Image from "next/image";
-import { Cpu } from "lucide-react";
+import type { ComponentCategory } from "@prisma/client";
+import { getCategoryVisual } from "@/lib/category-icons";
 import { cn } from "@/lib/utils";
 
 type Props = {
   src?: string | null;
   alt: string;
+  category?: ComponentCategory;
   className?: string;
   sizes?: string;
 };
 
-export function ComponentImage({ src, alt, className, sizes = "80px" }: Props) {
+export function ComponentImage({ src, alt, category, className, sizes = "80px" }: Props) {
   if (src) {
     return (
       <Image
@@ -25,15 +27,21 @@ export function ComponentImage({ src, alt, className, sizes = "80px" }: Props) {
     );
   }
 
+  const { Icon, label, gradient, iconClass } = getCategoryVisual(category);
+
   return (
     <div
       className={cn(
-        "absolute inset-0 flex flex-col items-center justify-center gap-1 bg-gradient-to-br from-white/5 to-white/[0.02]",
+        "absolute inset-0 flex flex-col items-center justify-center gap-1.5 bg-gradient-to-br",
+        gradient,
         className
       )}
+      aria-hidden
     >
-      <Cpu className="w-8 h-8 text-zinc-600" strokeWidth={1.25} />
-      <span className="text-[10px] text-zinc-600 uppercase tracking-wide">PC</span>
+      <Icon className={cn("w-8 h-8", iconClass)} strokeWidth={1.35} />
+      <span className={cn("text-[9px] font-semibold uppercase tracking-wider", iconClass)}>
+        {label}
+      </span>
     </div>
   );
 }

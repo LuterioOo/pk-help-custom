@@ -14,7 +14,9 @@ import {
   ComponentImageUpload,
   uploadPendingComponentImage,
 } from "@/components/admin/component-image-upload";
-import Image from "next/image";
+import type { ComponentCategory } from "@prisma/client";
+import { calculateMarkupPLN, resolveComponentPrice } from "@/lib/pricing";
+import { ComponentImage } from "@/components/ui/component-image";
 
 type Tab = "components" | "reviews" | "orders" | "showcase";
 
@@ -77,6 +79,7 @@ export default function AdminDashboard() {
   const [form, setForm] = useState(emptyComponent);
   const [newReview, setNewReview] = useState({ name: "", text: "", rating: 5 });
   const [pendingImageFile, setPendingImageFile] = useState<File | null>(null);
+  const [categoryFilter, setCategoryFilter] = useState<string>("all");
 
   const fetchAll = useCallback(async () => {
     setLoading(true);
@@ -235,12 +238,37 @@ export default function AdminDashboard() {
     { id: "reviews", icon: MessageSquare, label: t("reviews") },
   ];
 
+  const filteredComponents = useMemo(() => {
+    if (categoryFilter === "all") return components;
+    return components.filter((c) => c.category === categoryFilter);
+  }, [components, categoryFilter]);
+
   const predictedPrice = useMemo(() => {
-    if (form.price > 0) return form.price;
-    const base = form.baseMarketPricePLN;
-    const markup = form.markupPLN || (base <= 300 ? 50 : base <= 800 ? 80 : base <= 1500 ? 120 : 150);
-    return base + markup;
-  }, [form]);
+    return resolveComponentPrice(
+      form.baseMarketPricePLN,
+      form.markupPLN || null,
+      form.price || null
+    ).price;
+  }, [form.baseMarketPricePLN, form.markupPLN, form.price]);
+
+  const applyBasePrice = (base: number) => {
+    const markup = calculateMarkupPLN(base);
+    setForm({
+      ...form,
+      baseMarketPricePLN: base,
+      markupPLN: markup,
+      price: base + markup,
+    });
+  };
+
+  const applyAutoMarkup = () => {
+    const markup = calculateMarkupPLN(form.baseMarketPricePLN);
+    setForm({
+      ...form,
+      markupPLN: markup,
+      price: form.baseMarketPricePLN + markup,
+    });
+  };
 
   return (
     <div className="min-h-screen pt-28 pb-16 px-4 md:px-8">
@@ -354,11 +382,16 @@ export default function AdminDashboard() {
 
             {tab === "components" && (
               <div className="space-y-6">
-                <div className="glass rounded-2xl p-5 grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                <div className="glass rounded-2xl p-5 space-y-4">
+                  <h2 className="text-sm font-semibold text-yellow-300/90">
+                    {editingId ? t("edit") : t("add")} — {t("componentFields.category")}
+                  </h2>
+                  <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
                   <select
                     value={form.category}
                     onChange={(e) => setForm({ ...form, category: e.target.value })}
                     className="px-3 py-2 rounded-lg glass text-sm"
+                    aria-label={t("componentFields.category")}
                   >
                     {CATEGORIES.map((c) => (
                       <option key={c} value={c}>
@@ -388,25 +421,39 @@ export default function AdminDashboard() {
                     type="number"
                     placeholder={t("componentFields.basePrice")}
                     value={form.baseMarketPricePLN || ""}
-                    onChange={(e) =>
-                      setForm({ ...form, baseMarketPricePLN: Number(e.target.value) })
-                    }
+                    onChange={(e) => applyBasePrice(Number(e.target.value))}
                     className="px-3 py-2 rounded-lg glass text-sm"
                   />
                   <input
                     type="number"
                     placeholder={t("componentFields.markup")}
                     value={form.markupPLN || ""}
-                    onChange={(e) => setForm({ ...form, markupPLN: Number(e.target.value) })}
+                    onChange={(e) => {
+                      const markup = Number(e.target.value);
+                      setForm({
+                        ...form,
+                        markupPLN: markup,
+                        price: form.baseMarketPricePLN + markup,
+                      });
+                    }}
                     className="px-3 py-2 rounded-lg glass text-sm"
                   />
-                  <input
-                    type="number"
-                    placeholder={t("componentFields.finalPrice")}
-                    value={form.price || predictedPrice}
-                    onChange={(e) => setForm({ ...form, price: Number(e.target.value) })}
-                    className="px-3 py-2 rounded-lg glass text-sm"
-                  />
+                  <div className="flex flex-col gap-1">
+                    <input
+                      type="number"
+                      placeholder={t("componentFields.finalPrice")}
+                      value={form.price || predictedPrice}
+                      onChange={(e) => setForm({ ...form, price: Number(e.target.value) })}
+                      className="px-3 py-2 rounded-lg glass text-sm"
+                    />
+                    <button
+                      type="button"
+                      onClick={applyAutoMarkup}
+                      className="text-left text-xs text-zinc-500 hover:text-yellow-400 transition-colors"
+                    >
+                      {t("priceAutoHint")}
+                    </button>
+                  </div>
                   <input
                     placeholder={t("componentFields.socket")}
                     value={form.socket}
@@ -470,29 +517,41 @@ export default function AdminDashboard() {
                     )}
                   </div>
                 </div>
+                </div>
+                <div className="flex flex-wrap items-center gap-3">
+                  <label className="text-sm text-zinc-400">{t("filterCategory")}</label>
+                  <select
+                    value={categoryFilter}
+                    onChange={(e) => setCategoryFilter(e.target.value)}
+                    className="px-4 py-2 rounded-xl glass text-sm"
+                  >
+                    <option value="all">{t("allCategories")}</option>
+                    {CATEGORIES.map((c) => (
+                      <option key={c} value={c}>
+                        {c}
+                      </option>
+                    ))}
+                  </select>
+                  <span className="text-xs text-zinc-600">
+                    {filteredComponents.length} / {components.length}
+                  </span>
+                </div>
                 {components.length === 0 ? (
                   <p className="text-zinc-500">{t("noComponents")}</p>
                 ) : (
-                  components.map((c) => (
+                  filteredComponents.map((c) => (
                     <div
                       key={c.id}
                       className="glass rounded-xl p-4 flex flex-wrap justify-between items-center gap-3"
                     >
                       <div className="flex gap-3 items-start">
                         <div className="relative w-14 h-14 rounded-lg bg-white/5 overflow-hidden flex-shrink-0">
-                          {c.imageUrl ? (
-                            <Image
-                              src={c.imageUrl}
-                              alt={c.name}
-                              fill
-                              className="object-contain p-0.5"
-                              sizes="56px"
-                            />
-                          ) : (
-                            <div className="absolute inset-0 flex items-center justify-center text-[10px] text-zinc-600">
-                              —
-                            </div>
-                          )}
+                          <ComponentImage
+                            src={c.imageUrl}
+                            alt={c.name}
+                            category={c.category as ComponentCategory}
+                            sizes="56px"
+                          />
                         </div>
                       <div>
                         <span className="text-xs text-yellow-400">{c.category}</span>

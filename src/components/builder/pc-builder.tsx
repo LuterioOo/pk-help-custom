@@ -217,7 +217,12 @@ export function PcBuilder() {
                       >
                         <div className="flex gap-4">
                           <div className="relative w-20 h-20 rounded-lg flex-shrink-0 overflow-hidden">
-                            <ComponentImage src={c.imageUrl} alt={c.name} sizes="80px" />
+                            <ComponentImage
+                              src={c.imageUrl}
+                              alt={c.name}
+                              category={c.category}
+                              sizes="80px"
+                            />
                           </div>
                           <div className="flex-1 min-w-0">
                             <p className="text-xs text-yellow-400">{c.brand}</p>
