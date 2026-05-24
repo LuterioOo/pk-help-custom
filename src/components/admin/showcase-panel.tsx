@@ -1,8 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import Image from "next/image";
 import { useTranslations } from "next-intl";
+import { StoredImage } from "@/components/ui/stored-image";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { ImagePlus, Trash2, Pencil } from "lucide-react";
@@ -37,6 +37,7 @@ export function ShowcasePanel() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState(emptyForm);
   const [uploading, setUploading] = useState(false);
+  const [blobOk, setBlobOk] = useState<boolean | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const load = useCallback(async () => {
@@ -54,6 +55,13 @@ export function ShowcasePanel() {
   useEffect(() => {
     void load();
   }, [load]);
+
+  useEffect(() => {
+    fetch("/api/admin/storage")
+      .then((r) => r.json())
+      .then((d) => setBlobOk(Boolean(d.blob)))
+      .catch(() => setBlobOk(null));
+  }, []);
 
   const uploadFile = async (file: File, targetId?: string | null) => {
     setUploading(true);
@@ -145,12 +153,17 @@ export function ShowcasePanel() {
 
   return (
     <div className="space-y-6">
+      {blobOk === false ? (
+        <p className="text-sm text-amber-400/90 glass rounded-xl px-4 py-3 border border-amber-500/20">
+          {t("blobMissing")}
+        </p>
+      ) : null}
       <div className="glass rounded-2xl p-5 space-y-4 border border-yellow-500/10">
         <p className="text-sm text-yellow-400/90 font-medium">{t("formTitle")}</p>
         <div className="flex flex-wrap gap-4 items-start">
           <div className="relative w-40 h-28 rounded-xl bg-black/40 border border-yellow-500/20 overflow-hidden">
             {form.imageUrl ? (
-              <Image src={form.imageUrl} alt="" fill className="object-cover" sizes="160px" />
+              <StoredImage src={form.imageUrl} sizes="160px" />
             ) : (
               <div className="absolute inset-0 flex items-center justify-center text-xs text-zinc-600 px-2 text-center">
                 {t("noImage")}
@@ -174,6 +187,12 @@ export function ShowcasePanel() {
             </Button>
           </div>
         </div>
+        <input
+          placeholder={t("imageUrlManual")}
+          value={form.imageUrl}
+          onChange={(e) => setForm({ ...form, imageUrl: e.target.value.trim() })}
+          className="w-full px-3 py-2 rounded-lg glass text-sm font-mono text-xs"
+        />
         <div className="grid sm:grid-cols-2 gap-3">
           <input
             placeholder={t("title")}
@@ -237,7 +256,7 @@ export function ShowcasePanel() {
             <div key={item.id} className="glass rounded-xl overflow-hidden border border-yellow-500/10">
               <div className="relative aspect-video bg-black">
                 {item.imageUrl ? (
-                  <Image src={item.imageUrl} alt="" fill className="object-cover" sizes="400px" />
+                  <StoredImage src={item.imageUrl} sizes="400px" />
                 ) : null}
                 {item.showText && item.title ? (
                   <div className="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-black/90 to-transparent">

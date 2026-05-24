@@ -2,8 +2,13 @@ import { del, list, put } from "@vercel/blob";
 import fs from "fs/promises";
 import path from "path";
 
+function blobToken(): string | undefined {
+  const token = process.env.BLOB_READ_WRITE_TOKEN?.trim();
+  return token || undefined;
+}
+
 export function isBlobStorageEnabled(): boolean {
-  return Boolean(process.env.BLOB_READ_WRITE_TOKEN);
+  return Boolean(blobToken());
 }
 
 export async function saveImageFile(options: {
@@ -18,6 +23,8 @@ export async function saveImageFile(options: {
       access: "public",
       contentType: options.contentType,
       addRandomSuffix: false,
+      allowOverwrite: true,
+      token: blobToken(),
     });
     return blob.url;
   }
@@ -34,9 +41,13 @@ export async function removeImagesById(options: {
   localDir: string;
 }): Promise<void> {
   if (isBlobStorageEnabled()) {
-    const { blobs } = await list({ prefix: `${options.blobPrefix}/${options.id}` });
+    const token = blobToken();
+    const { blobs } = await list({
+      prefix: `${options.blobPrefix}/${options.id}`,
+      token,
+    });
     if (blobs.length > 0) {
-      await del(blobs.map((b) => b.url));
+      await del(blobs.map((b) => b.url), { token });
     }
     return;
   }
@@ -53,7 +64,7 @@ export async function removeImageByUrl(imageUrl: string | null | undefined): Pro
   if (!imageUrl || !isBlobStorageEnabled()) return;
   if (!imageUrl.includes("blob.vercel-storage.com")) return;
   try {
-    await del(imageUrl);
+    await del(imageUrl, { token: blobToken() });
   } catch {
     /* ignore missing blob */
   }

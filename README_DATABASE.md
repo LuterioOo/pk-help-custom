@@ -90,7 +90,7 @@ Reads `prisma/data/components-pl.json` (~65 popular parts, PL market prices).
 **Idempotent upsert** via `prisma/seed-utils.ts`:
 
 - Match key: `category` + `brand` + `name` + `model`  
-- Existing row → **update** prices/specs  
+- Existing row → **update** prices/specs (does **not** clear `imageUrl` — admin/Blob photos are preserved)  
 - New row → **create**  
 - No duplicate inserts on repeated runs  
 
@@ -177,8 +177,17 @@ Builder and admin use Next.js `Image` with remote patterns in `next.config.ts`.
 
 ---
 
+## Showcase images in DB
+
+`ShowcaseBuild.imageUrl` — local path, Blob HTTPS, or manual URL.
+
+`prisma/seed-showcase.ts` syncs files from `public/uploads/showcase/` but **does not overwrite** existing Blob URLs on redeploy.
+
+---
+
 ## Related
 
 - [README_ADMIN.md](./README_ADMIN.md) — CRUD in UI  
 - [README_DEPLOY.md](./README_DEPLOY.md) — Neon + Vercel  
+- [README_I18N.md](./README_I18N.md) — locales  
 - [FINAL_REPORT.md](./FINAL_REPORT.md) — handoff checklist

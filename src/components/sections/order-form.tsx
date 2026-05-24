@@ -113,7 +113,7 @@ export function OrderForm() {
     "w-full px-4 py-3 rounded-xl glass border border-white/10 bg-transparent text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-yellow-500/50 transition-all";
 
   return (
-    <section id="order" className="py-24 px-4 md:px-8">
+    <section id="order" className="section-pad px-4 md:px-8">
       <div className="max-w-2xl mx-auto">
         <ScrollReveal className="text-center mb-12">
           <h2 className="text-3xl md:text-4xl font-bold neon-text">{t("title")}</h2>

@@ -1,35 +1,20 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
 import { ChevronLeft, ChevronRight, Star } from "lucide-react";
 import { ScrollReveal } from "@/components/ui/scroll-reveal";
-import { Skeleton } from "@/components/ui/skeleton";
+import type { ReviewItem } from "@/lib/reviews-data";
 
-interface Review {
-  id: string;
-  name: string;
-  avatarUrl: string | null;
-  rating: number;
-  text: string;
-}
+type Props = {
+  initialReviews: ReviewItem[];
+};
 
-export function Reviews() {
+export function Reviews({ initialReviews }: Props) {
   const t = useTranslations("reviews");
-  const [reviews, setReviews] = useState<Review[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [reviews] = useState(initialReviews);
   const [index, setIndex] = useState(0);
-
-  useEffect(() => {
-    fetch("/api/reviews")
-      .then((r) => r.json())
-      .then((data) => setReviews(data.reviews ?? []))
-      .catch(() => setReviews([]))
-      .finally(() => setLoading(false));
-  }, []);
-
   const current = reviews[index];
 
   useEffect(() => {
@@ -41,69 +26,57 @@ export function Reviews() {
   }, [reviews.length]);
 
   return (
-    <section id="reviews" className="py-24 px-4 md:px-8">
+    <section id="reviews" className="section-pad px-4 md:px-8">
       <div className="max-w-4xl mx-auto">
-        <ScrollReveal className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-bold neon-text">{t("title")}</h2>
-          <p className="mt-4 text-zinc-400">{t("subtitle")}</p>
+        <ScrollReveal className="text-center mb-8 md:mb-12">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold neon-text">{t("title")}</h2>
+          <p className="mt-3 md:mt-4 text-sm md:text-base text-zinc-400">{t("subtitle")}</p>
         </ScrollReveal>
 
-        {loading ? (
-          <div className="glass rounded-2xl p-8">
-            <Skeleton className="h-24 w-24 rounded-full mx-auto mb-4" />
-            <Skeleton className="h-6 w-48 mx-auto mb-2" />
-            <Skeleton className="h-20 w-full" />
-          </div>
-        ) : reviews.length === 0 ? (
+        {reviews.length === 0 ? (
           <p className="text-center text-zinc-500">—</p>
         ) : (
           <div className="relative">
-            <AnimatePresence mode="wait">
-              {current && (
-                <motion.div
-                  key={current.id}
-                  initial={{ opacity: 0, x: 40 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -40 }}
-                  transition={{ duration: 0.5 }}
-                  className="glass rounded-2xl p-8 md:p-12 text-center neon-border"
-                >
-                  <div className="relative w-20 h-20 mx-auto mb-6 rounded-full overflow-hidden ring-2 ring-yellow-500/50">
-                    {current.avatarUrl?.trim() ? (
-                      <Image
-                        src={current.avatarUrl.trim()}
-                        alt={current.name}
-                        fill
-                        className="object-cover"
-                        sizes="80px"
-                      />
-                    ) : (
-                      <div className="w-full h-full bg-gradient-to-br from-yellow-500 to-amber-500 flex items-center justify-center text-2xl font-bold">
-                        {current.name[0]}
-                      </div>
-                    )}
+            <div
+              key={current?.id ?? index}
+              className="glass rounded-2xl p-6 md:p-12 text-center neon-border"
+            >
+              <div className="relative w-16 h-16 md:w-20 md:h-20 mx-auto mb-4 md:mb-6 rounded-full overflow-hidden ring-2 ring-yellow-500/50">
+                {current?.avatarUrl?.trim() ? (
+                  <Image
+                    src={current.avatarUrl.trim()}
+                    alt={current.name}
+                    fill
+                    className="object-cover"
+                    sizes="80px"
+                  />
+                ) : (
+                  <div className="w-full h-full bg-gradient-to-br from-yellow-500 to-amber-500 flex items-center justify-center text-xl md:text-2xl font-bold">
+                    {current?.name[0]}
                   </div>
-                  <div className="flex justify-center gap-1 mb-4">
-                    {Array.from({ length: 5 }).map((_, i) => (
-                      <Star
-                        key={i}
-                        className={`w-4 h-4 ${i < current.rating ? "fill-amber-400 text-amber-400" : "text-zinc-600"}`}
-                      />
-                    ))}
-                  </div>
-                  <h3 className="text-xl font-semibold">{current.name}</h3>
-                  <p className="mt-4 text-zinc-400 leading-relaxed max-w-2xl mx-auto">
-                    {current.text}
-                  </p>
-                </motion.div>
-              )}
-            </AnimatePresence>
+                )}
+              </div>
+              <div className="flex justify-center gap-1 mb-3 md:mb-4">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <Star
+                    key={i}
+                    className={`w-4 h-4 ${i < (current?.rating ?? 5) ? "fill-amber-400 text-amber-400" : "text-zinc-600"}`}
+                  />
+                ))}
+              </div>
+              <h3 className="text-lg md:text-xl font-semibold">{current?.name}</h3>
+              <p className="mt-3 md:mt-4 text-sm md:text-base text-zinc-400 leading-relaxed max-w-2xl mx-auto">
+                {current?.text}
+              </p>
+            </div>
 
             {reviews.length > 1 && (
-              <div className="flex justify-center gap-4 mt-8">
+              <div className="flex justify-center gap-3 md:gap-4 mt-6 md:mt-8">
                 <button
+                  type="button"
                   onClick={() => setIndex((i) => (i - 1 + reviews.length) % reviews.length)}
-                  className="p-2 rounded-lg glass hover:neon-border text-yellow-400"
+                  className="p-2.5 rounded-lg glass hover:neon-border text-yellow-400 touch-manipulation"
+                  aria-label="Previous review"
                 >
                   <ChevronLeft className="w-5 h-5" />
                 </button>
@@ -111,16 +84,20 @@ export function Reviews() {
                   {reviews.map((_, i) => (
                     <button
                       key={i}
+                      type="button"
                       onClick={() => setIndex(i)}
-                      className={`w-2 h-2 rounded-full transition-all ${
-                        i === index ? "bg-yellow-500 w-6" : "bg-zinc-600"
+                      className={`h-2 rounded-full transition-all touch-manipulation ${
+                        i === index ? "bg-yellow-500 w-6" : "bg-zinc-600 w-2"
                       }`}
+                      aria-label={`Review ${i + 1}`}
                     />
                   ))}
                 </div>
                 <button
+                  type="button"
                   onClick={() => setIndex((i) => (i + 1) % reviews.length)}
-                  className="p-2 rounded-lg glass hover:neon-border text-yellow-400"
+                  className="p-2.5 rounded-lg glass hover:neon-border text-yellow-400 touch-manipulation"
+                  aria-label="Next review"
                 >
                   <ChevronRight className="w-5 h-5" />
                 </button>

@@ -9,12 +9,13 @@
     "start": "next start",
     "lint": "next lint",
     "db:push": "node scripts/with-env.mjs npx prisma db push",
-    "db:seed": "node scripts/with-env.mjs npx tsx prisma/seed.ts && node scripts/with-env.mjs npx tsx prisma/seed-components.ts",
+    "db:seed": "node scripts/with-env.mjs npx tsx prisma/seed.ts && node scripts/with-env.mjs npx tsx prisma/seed-components.ts && node scripts/with-env.mjs npx tsx prisma/seed-showcase.ts",
+    "seed:showcase": "node scripts/with-env.mjs npx tsx prisma/seed-showcase.ts",
     "db:setup": "npm run db:push && npm run db:seed",
     "db:reset": "node scripts/with-env.mjs npx prisma db push --force-reset && npm run db:seed",
     "seed:components": "node scripts/with-env.mjs npx tsx prisma/seed-components.ts",
     "postinstall": "prisma generate",
-    "vercel-build": "prisma generate && prisma db push && tsx prisma/seed.ts && tsx prisma/seed-components.ts && next build"
+    "vercel-build": "prisma generate && prisma db push && tsx prisma/seed.ts && tsx prisma/seed-components.ts && tsx prisma/seed-showcase.ts && next build"
   },
   "keywords": [],
   "author": "",

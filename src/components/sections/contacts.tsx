@@ -15,7 +15,7 @@ export function Contacts() {
       : "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2443!2d21!3d52.2!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1";
 
   return (
-    <section id="contacts" className="py-24 px-4 md:px-8">
+    <section id="contacts" className="section-pad px-4 md:px-8">
       <div className="max-w-7xl mx-auto">
         <ScrollReveal className="text-center mb-12">
           <h2 className="text-3xl md:text-4xl font-bold neon-text">{t("title")}</h2>

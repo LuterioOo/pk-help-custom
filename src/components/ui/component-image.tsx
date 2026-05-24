@@ -1,8 +1,10 @@
 "use client";
 
+import { useState } from "react";
 import Image from "next/image";
 import type { ComponentCategory } from "@prisma/client";
 import { getCategoryVisual } from "@/lib/category-icons";
+import { resolveImageSrc, shouldUseUnoptimizedImage } from "@/lib/resolve-image-src";
 import { cn } from "@/lib/utils";
 
 type Props = {
@@ -13,20 +15,13 @@ type Props = {
   sizes?: string;
 };
 
-export function ComponentImage({ src, alt, category, className, sizes = "80px" }: Props) {
-  if (src) {
-    return (
-      <Image
-        src={src}
-        alt={alt}
-        fill
-        className={cn("object-contain p-1", className)}
-        sizes={sizes}
-        loading="lazy"
-      />
-    );
-  }
-
+function CategoryPlaceholder({
+  category,
+  className,
+}: {
+  category?: ComponentCategory;
+  className?: string;
+}) {
   const { Icon, label, gradient, iconClass } = getCategoryVisual(category);
 
   return (
@@ -43,5 +38,27 @@ export function ComponentImage({ src, alt, category, className, sizes = "80px" }
         {label}
       </span>
     </div>
+  );
+}
+
+export function ComponentImage({ src, alt, category, className, sizes = "80px" }: Props) {
+  const [broken, setBroken] = useState(false);
+  const resolved = resolveImageSrc(src);
+
+  if (!resolved || broken) {
+    return <CategoryPlaceholder category={category} className={className} />;
+  }
+
+  return (
+    <Image
+      src={resolved}
+      alt={alt}
+      fill
+      className={cn("object-contain p-1", className)}
+      sizes={sizes}
+      loading="lazy"
+      unoptimized={shouldUseUnoptimizedImage(resolved)}
+      onError={() => setBroken(true)}
+    />
   );
 }

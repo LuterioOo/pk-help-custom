@@ -6,9 +6,9 @@ const withNextIntl = createNextIntlPlugin("./src/i18n/request.ts");
 const nextConfig: NextConfig = {
   images: {
     remotePatterns: [
-      { protocol: "https", hostname: "**" },
-      { protocol: "http", hostname: "localhost" },
-      { protocol: "https", hostname: "*.public.blob.vercel-storage.com" },
+      { protocol: "http", hostname: "localhost", pathname: "/**" },
+      { protocol: "https", hostname: "**.public.blob.vercel-storage.com", pathname: "/**" },
+      { protocol: "https", hostname: "**.blob.vercel-storage.com", pathname: "/**" },
     ],
     formats: ["image/avif", "image/webp"],
   },

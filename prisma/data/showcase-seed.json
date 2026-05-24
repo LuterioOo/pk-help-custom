@@ -1,0 +1,52 @@
+[
+  {
+    "file": "cmpfzdgpr0000vizc8p6txths.png",
+    "title": "Custom build — RGB",
+    "caption": "PK-HELP Custom",
+    "sortOrder": 0,
+    "forSale": false,
+    "showText": false
+  },
+  {
+    "file": "cmpfzdn6m0001vizcufn82ma5.png",
+    "title": "Gaming PC",
+    "caption": null,
+    "sortOrder": 1,
+    "forSale": false,
+    "showText": false
+  },
+  {
+    "file": "cmpfzdsjh0002vizce264cvv4.png",
+    "title": "Workstation",
+    "caption": null,
+    "sortOrder": 2,
+    "forSale": false,
+    "showText": false
+  },
+  {
+    "file": "cmpfze0ia0003vizc9wzrq81v.png",
+    "title": "Compact build",
+    "caption": null,
+    "sortOrder": 3,
+    "forSale": false,
+    "showText": false
+  },
+  {
+    "file": "cmpfze5rq0004vizc5pvy3s6z.png",
+    "title": "Premium rig",
+    "caption": null,
+    "sortOrder": 4,
+    "forSale": false,
+    "showText": false
+  },
+  {
+    "file": "cmpfzt3xd0000vii0kydbm027.png",
+    "title": "Na sprzedaż",
+    "caption": "Gotowy PC",
+    "sortOrder": 0,
+    "forSale": true,
+    "showText": true,
+    "pricePLN": 4999,
+    "active": true
+  }
+]

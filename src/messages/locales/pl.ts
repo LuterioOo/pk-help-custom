@@ -201,7 +201,10 @@ const pl = {
       needImage: "Najpierw wgraj zdjęcie",
       saved: "Zapisano",
       noImage: "Brak zdjęcia",
-      hint: "Lokalnie: public/uploads/showcase/. Na Vercel: Vercel Blob. Bez sprzedaży = galeria #showcase.",
+      hint: "Lokalnie: public/uploads/showcase/. Na Vercel: Vercel Blob lub URL /uploads/showcase/plik.png z repo.",
+      blobMissing:
+        "Vercel Blob nie jest podłączony — wgrywanie plików na produkcji nie działa. Vercel → Storage → Blob → Connect. Tymczasowo użyj URL /uploads/showcase/… lub uruchom npm run seed:showcase.",
+      imageUrlManual: "URL zdjęcia (/uploads/showcase/… lub Blob HTTPS)",
       loading: "Ładowanie...",
       empty: "Brak zdjęć w galerii",
       hidden: "ukryte",

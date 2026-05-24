@@ -1,6 +1,5 @@
 "use client";
 
-import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
@@ -16,20 +15,16 @@ export function Logo({ className, href = "/", size = "md" }: LogoProps) {
   const h = heights[size];
 
   const content = (
-    <motion.div
-      className={cn("flex items-center group", className)}
-      whileHover={{ scale: 1.03 }}
-      transition={{ type: "spring", stiffness: 400, damping: 20 }}
-    >
+    <div className={cn("flex items-center group transition-transform hover:scale-[1.03]", className)}>
       <Image
         src="/logo.png"
         alt="PK HELP"
         width={Math.round(h * 3.2)}
         height={h}
         className="w-auto object-contain drop-shadow-[0_0_18px_rgba(255,215,0,0.35)]"
-        priority={size !== "sm"}
+        priority={size === "lg"}
       />
-    </motion.div>
+    </div>
   );
 
   if (href) {

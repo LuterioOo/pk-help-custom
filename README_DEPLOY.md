@@ -104,6 +104,33 @@ Next.js loads `.env.local` over `.env`. Prisma scripts also prefer `.env.local` 
 | pk-help.pl | ru | ru, uk, en |
 | pk-help-pl.pl | pl | pl only |
 
+### Polish locale on Vercel (step by step)
+
+**Option A — preview URL (`*.vercel.app`)**  
+All locales work without extra domains:
+
+- Russian (default): `https://your-project.vercel.app/`
+- Ukrainian: `https://your-project.vercel.app/uk`
+- English: `https://your-project.vercel.app/en`
+- **Polish: `https://your-project.vercel.app/pl`**
+
+**Option B — production Polish domain**
+
+1. Vercel → **Settings** → **Domains** → Add `pk-help-pl.pl` (or your PL domain)
+2. **Environment Variables** (Production):
+   - `NEXT_PUBLIC_POLISH_DOMAIN` = `pk-help-pl.pl`
+   - `NEXT_PUBLIC_MAIN_DOMAIN` = `pk-help.pl`
+3. Redeploy
+4. Open `https://pk-help-pl.pl/` — site loads in Polish only (no `/pl` prefix)
+
+**Option C — test PL on localhost**
+
+```env
+NEXT_PUBLIC_FORCE_LOCALE=pl
+```
+
+Restart `npm run dev` → only Polish UI.
+
 ---
 
 ## 6. Post-deploy checklist
@@ -145,7 +172,9 @@ npm run seed:components
 | Empty PC builder | Check `DATABASE_URL`; inspect build logs for seed errors |
 | `Database schema missing` | `db push` failed — verify connection string |
 | Admin 401 | Set `JWT_SECRET`, `ADMIN_USERNAME`, `ADMIN_PASSWORD` |
-| Upload error in admin | Connect Vercel Blob |
+| Upload error in admin | Connect Vercel Blob; verify `BLOB_READ_WRITE_TOKEN` in env; check `/api/admin/storage` (admin, logged in) |
+| Showcase images 404 after deploy | Blob URLs must stay in DB — seed no longer overwrites Blob URLs; use Blob upload or commit files to `public/uploads/showcase/` |
+| Images broken in UI but URL opens | Redeploy after `next.config.ts` image `remotePatterns`; Blob uses `unoptimized` as fallback |
 | Wrong locale on preview | Normal on `*.vercel.app`; domains control production locales |
 | Prisma connects to wrong DB | Remove stale `DATABASE_URL` from `.env`; use `.env.local` only |
 

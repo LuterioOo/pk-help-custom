@@ -19,7 +19,7 @@ export function Advantages() {
   const t = useTranslations("advantages");
 
   return (
-    <section id="advantages" className="py-24 px-4 md:px-8">
+    <section id="advantages" className="section-pad px-4 md:px-8">
       <div className="max-w-7xl mx-auto">
         <ScrollReveal className="text-center mb-16">
           <h2 className="text-3xl md:text-4xl font-bold neon-text">{t("title")}</h2>

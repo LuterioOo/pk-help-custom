@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
+export const revalidate = 60;
+
 const orderBy = [{ sortOrder: "asc" as const }, { createdAt: "desc" as const }];
 
 export async function GET() {

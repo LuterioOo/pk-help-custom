@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslations, useLocale } from "next-intl";
 import type { ComponentCategory } from "@prisma/client";
-import { motion, AnimatePresence } from "framer-motion";
 import { ComponentImage } from "@/components/ui/component-image";
 import {
   Search,
@@ -124,17 +123,17 @@ export function PcBuilder() {
   };
 
   return (
-    <section id="builder" className="py-24 px-4 md:px-8">
+    <section id="builder" className="section-pad px-4 md:px-8">
       <div className="max-w-7xl mx-auto">
         <ScrollReveal className="mb-10">
           <h2 className="text-3xl md:text-4xl font-bold neon-text">{t("title")}</h2>
           <p className="mt-3 text-zinc-400">{t("subtitle")}</p>
         </ScrollReveal>
 
-        <div className="grid lg:grid-cols-[240px_1fr_300px] gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-[220px_1fr_280px] xl:grid-cols-[240px_1fr_300px] gap-4 md:gap-6">
           {/* Categories */}
-          <ScrollReveal className="lg:sticky lg:top-28 lg:self-start">
-            <div className="glass rounded-2xl p-3 space-y-1 max-h-[70vh] overflow-y-auto scrollbar-hide">
+          <ScrollReveal className="lg:sticky lg:top-28 lg:self-start order-1">
+            <div className="glass rounded-2xl p-2 sm:p-3 flex lg:flex-col gap-1.5 overflow-x-auto lg:overflow-x-visible lg:overflow-y-auto scrollbar-hide lg:max-h-[70vh]">
               {CATEGORIES.map((cat) => {
                 const selected = selection[cat];
                 return (
@@ -142,7 +141,7 @@ export function PcBuilder() {
                     key={cat}
                     onClick={() => setActiveCategory(cat)}
                     className={cn(
-                      "w-full text-left px-3 py-2.5 rounded-xl text-sm transition-all flex items-center justify-between gap-2",
+                      "flex-shrink-0 lg:w-full text-left px-3 py-2.5 rounded-xl text-xs sm:text-sm transition-all flex items-center justify-between gap-2 whitespace-nowrap lg:whitespace-normal",
                       activeCategory === cat
                         ? "bg-yellow-500/30 text-white"
                         : "text-zinc-400 hover:text-white hover:bg-white/5"
@@ -157,7 +156,7 @@ export function PcBuilder() {
           </ScrollReveal>
 
           {/* Component list */}
-          <div className="space-y-4">
+          <div className="space-y-4 order-3 lg:order-2">
             <div className="flex flex-col sm:flex-row gap-3">
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
@@ -199,19 +198,16 @@ export function PcBuilder() {
             ) : filtered.length === 0 ? (
               <p className="text-center text-zinc-500 py-12">{t("noResults")}</p>
             ) : (
-              <div className="grid sm:grid-cols-2 gap-4">
-                <AnimatePresence mode="popLayout">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
                   {filtered.map((c) => {
                     const isSelected = selection[c.category]?.id === c.id;
                     return (
-                      <motion.button
+                      <button
                         key={c.id}
-                        layout
-                        initial={{ opacity: 0, scale: 0.95 }}
-                        animate={{ opacity: 1, scale: 1 }}
+                        type="button"
                         onClick={() => handleSelect(c)}
                         className={cn(
-                          "text-left p-4 rounded-2xl glass transition-all",
+                          "text-left p-3 md:p-4 rounded-2xl glass transition-all touch-manipulation",
                           isSelected && "neon-border ring-1 ring-yellow-500/50"
                         )}
                       >
@@ -241,16 +237,15 @@ export function PcBuilder() {
                         >
                           {isSelected ? t("selected") : t("select")}
                         </span>
-                      </motion.button>
+                      </button>
                     );
                   })}
-                </AnimatePresence>
               </div>
             )}
           </div>
 
           {/* Sidebar summary */}
-          <ScrollReveal delay={0.1} className="lg:sticky lg:top-28 lg:self-start">
+          <ScrollReveal delay={0.1} className="lg:sticky lg:top-28 lg:self-start order-2 lg:order-3">
             <div className="glass rounded-2xl p-5 space-y-4 neon-border">
               <div className="flex justify-between items-center">
                 <span className="text-zinc-400">{t("finalPrice")}</span>
@@ -291,31 +286,22 @@ export function PcBuilder() {
                   {t("preview")}
                   <ChevronDown className={cn("w-4 h-4 transition-transform", previewOpen && "rotate-180")} />
                 </Button>
-                <AnimatePresence>
-                  {previewOpen && (
-                    <motion.div
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: "auto", opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
-                      className="overflow-hidden"
-                    >
-                      <ul className="space-y-2 text-sm text-zinc-400 max-h-48 overflow-y-auto">
-                        {CATEGORIES.map((cat) => {
-                          const c = selection[cat];
-                          if (!c) return null;
-                          return (
-                            <li key={cat} className="flex justify-between gap-2">
-                              <span className="truncate">{c.name}</span>
-                              <span className="text-yellow-400 flex-shrink-0">
-                                {formatPrice(c.price, locale)}
-                              </span>
-                            </li>
-                          );
-                        })}
-                      </ul>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+                {previewOpen ? (
+                  <ul className="space-y-2 text-sm text-zinc-400 max-h-48 overflow-y-auto">
+                    {CATEGORIES.map((cat) => {
+                      const c = selection[cat];
+                      if (!c) return null;
+                      return (
+                        <li key={cat} className="flex justify-between gap-2">
+                          <span className="truncate">{c.name}</span>
+                          <span className="text-yellow-400 flex-shrink-0">
+                            {formatPrice(c.price, locale)}
+                          </span>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                ) : null}
                 <Button variant="secondary" size="sm" onClick={handleSave}>
                   {t("save")}
                 </Button>

@@ -59,7 +59,15 @@ export async function upsertSeedComponent(prisma: PrismaClient, row: SeedCompone
   });
 
   if (existing) {
-    await prisma.component.update({ where: { id: existing.id }, data });
+    const { imageUrl: _seedImage, ...rest } = data;
+    await prisma.component.update({
+      where: { id: existing.id },
+      data: {
+        ...rest,
+        // Keep admin/Blob uploads unless seed JSON explicitly sets imageUrl
+        ...(data.imageUrl ? { imageUrl: data.imageUrl } : {}),
+      },
+    });
     return "updated" as const;
   }
 

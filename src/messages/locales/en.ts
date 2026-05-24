@@ -195,7 +195,10 @@ const en = {
       needImage: "Upload a photo first",
       saved: "Saved",
       noImage: "No photo",
-      hint: "Local: public/uploads/showcase/. On Vercel: Vercel Blob. Disable text for image-only cards.",
+      hint: "Local: public/uploads/showcase/. On Vercel: Vercel Blob or URL /uploads/showcase/file.png from git.",
+      blobMissing:
+        "Vercel Blob is not connected — file uploads will not work in production. Vercel → Storage → Blob → Connect. Or use /uploads/showcase/… URLs or npm run seed:showcase.",
+      imageUrlManual: "Photo URL (/uploads/showcase/… or Blob HTTPS)",
       loading: "Loading...",
       empty: "No gallery photos yet",
       hidden: "hidden",

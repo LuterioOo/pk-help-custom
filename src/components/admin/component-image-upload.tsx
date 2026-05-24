@@ -1,8 +1,8 @@
 "use client";
 
 import { useRef, useState } from "react";
-import Image from "next/image";
 import { useTranslations } from "next-intl";
+import { StoredImage } from "@/components/ui/stored-image";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { ImagePlus, Trash2 } from "lucide-react";
@@ -80,7 +80,7 @@ export function ComponentImageUpload({
       <div className="flex flex-wrap items-start gap-4">
         <div className="relative w-28 h-28 rounded-xl bg-white/5 border border-white/10 overflow-hidden flex-shrink-0">
           {imageUrl ? (
-            <Image src={imageUrl} alt="" fill className="object-contain p-1" sizes="112px" />
+            <StoredImage src={imageUrl} objectFit="contain" sizes="112px" />
           ) : (
             <div className="absolute inset-0 flex items-center justify-center text-xs text-zinc-600 text-center px-2">
               {t("noImage")}

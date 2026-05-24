@@ -74,7 +74,12 @@ export async function POST(req: NextRequest) {
     if (isDatabaseError(e)) {
       return NextResponse.json({ error: "Database unavailable" }, { status: 503 });
     }
-    return NextResponse.json({ error: "Upload failed" }, { status: 500 });
+    const message = e instanceof Error ? e.message : "Upload failed";
+    const blobHint =
+      message.includes("blob") || message.includes("BLOB") || message.includes("token")
+        ? " Check Vercel Blob connection and BLOB_READ_WRITE_TOKEN."
+        : "";
+    return NextResponse.json({ error: `${message}${blobHint}` }, { status: 500 });
   }
 }
 
