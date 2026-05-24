@@ -1,6 +1,7 @@
 "use client";
 
-import { useTranslations, useLocale } from "next-intl";
+import { useTranslations } from "next-intl";
+import { useLocaleBase } from "@/hooks/use-locale-base";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ScrollReveal } from "@/components/ui/scroll-reveal";
@@ -8,8 +9,7 @@ import { PcIllustration } from "@/components/sections/pc-illustration";
 
 export function Hero() {
   const t = useTranslations("hero");
-  const locale = useLocale();
-  const base = locale === "ru" || locale === "pl" ? "" : `/${locale}`;
+  const base = useLocaleBase();
 
   return (
     <section

@@ -22,11 +22,12 @@ const productionDomains = [
   },
 ];
 
+// Preview: RU/UK/EN on / ; Polish-only subsite on /pl (no switcher)
 if (vercelHost && !productionDomains.some((d) => d.domain === vercelHost)) {
   productionDomains.unshift({
     domain: vercelHost,
     defaultLocale: (forcePl ? "pl" : "ru") as Locale,
-    locales: [...locales] as Locale[],
+    locales: [...mainLocales, "pl"] as Locale[],
   });
 }
 

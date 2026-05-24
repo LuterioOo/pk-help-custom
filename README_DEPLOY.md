@@ -104,32 +104,36 @@ Next.js loads `.env.local` over `.env`. Prisma scripts also prefer `.env.local` 
 | pk-help.pl | ru | ru, uk, en |
 | pk-help-pl.pl | pl | pl only |
 
-### Polish locale on Vercel (step by step)
+### Polish site (separate, no RU/UA/EN switcher)
 
-**Option A — preview URL (`*.vercel.app`)**  
-All locales work without extra domains:
+Two independent sites:
 
-- Russian (default): `https://your-project.vercel.app/`
-- Ukrainian: `https://your-project.vercel.app/uk`
-- English: `https://your-project.vercel.app/en`
-- **Polish: `https://your-project.vercel.app/pl`**
+| Site | Locales | Language switcher |
+|------|---------|-------------------|
+| `pk-help.pl` (main) | ru, uk, en | RU / UA / EN only |
+| `pk-help-pl.pl` (Polish) | pl only | **Hidden** |
 
-**Option B — production Polish domain**
+**Production — Polish domain**
 
-1. Vercel → **Settings** → **Domains** → Add `pk-help-pl.pl` (or your PL domain)
-2. **Environment Variables** (Production):
-   - `NEXT_PUBLIC_POLISH_DOMAIN` = `pk-help-pl.pl`
+1. Vercel → **Settings** → **Domains** → Add `pk-help-pl.pl`
+2. Environment variables:
    - `NEXT_PUBLIC_MAIN_DOMAIN` = `pk-help.pl`
-3. Redeploy
-4. Open `https://pk-help-pl.pl/` — site loads in Polish only (no `/pl` prefix)
+   - `NEXT_PUBLIC_POLISH_DOMAIN` = `pk-help-pl.pl`
+   - `NEXT_PUBLIC_POLISH_SITE_URL` = `https://pk-help-pl.pl` (optional, for redirects)
+3. Redeploy → open `https://pk-help-pl.pl/` — Polish only, no language switcher
 
-**Option C — test PL on localhost**
+**Vercel preview (`*.vercel.app`)**
+
+- Main (RU/UK/EN): `https://your-project.vercel.app/` — switcher: RU, UA, EN
+- Polish subsite: `https://your-project.vercel.app/pl` — **only Polish**, switcher hidden
+
+**Localhost — Polish-only dev**
 
 ```env
 NEXT_PUBLIC_FORCE_LOCALE=pl
 ```
 
-Restart `npm run dev` → only Polish UI.
+Restart `npm run dev` → Polish UI, no switcher.
 
 ---
 

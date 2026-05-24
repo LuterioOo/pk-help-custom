@@ -132,14 +132,18 @@ Builder and API pick the localized name based on active locale (see `src/lib/loc
 
 ## Preview vs production
 
-| Host | Locales |
-|------|---------|
-| `localhost` | ru, uk, en (or pl if forced) |
-| `*.vercel.app` | All (ru, uk, en, pl) — see `routing.ts` vercel host block |
-| `pk-help.pl` | ru, uk, en |
-| `pk-help-pl.pl` | pl |
+| Host | URL | Locales | Switcher |
+|------|-----|---------|----------|
+| `localhost` | `/` | ru, uk, en | RU / UA / EN |
+| `localhost` + `FORCE_LOCALE=pl` | `/` | pl | hidden |
+| `*.vercel.app` | `/` | ru, uk, en | RU / UA / EN |
+| `*.vercel.app` | `/pl` | pl | **hidden** |
+| `pk-help.pl` | `/` | ru, uk, en | RU / UA / EN |
+| `pk-help-pl.pl` | `/` | pl | **hidden** |
 
-This matches the product requirement: international audience on `.pl`, Polish customers on `-pl.pl`.
+`/pl` on the main production domain redirects to `NEXT_PUBLIC_POLISH_SITE_URL` or `pk-help-pl.pl`.
+
+Logic: `src/lib/locale-path.ts` + `src/middleware.ts`.
 
 ---
 

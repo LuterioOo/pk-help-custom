@@ -2,7 +2,9 @@
 
 import { ShowcaseImage } from "@/components/ui/showcase-image";
 import Link from "next/link";
-import { useLocale, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
+import { useLocaleBase } from "@/hooks/use-locale-base";
+import { useLocale } from "next-intl";
 import { ScrollReveal } from "@/components/ui/scroll-reveal";
 import { Button } from "@/components/ui/button";
 import { formatPrice } from "@/lib/utils";
@@ -15,7 +17,7 @@ type Props = {
 export function BuildsForSale({ initialItems }: Props) {
   const t = useTranslations("forSale");
   const locale = useLocale();
-  const base = locale === "ru" || locale === "pl" ? "" : `/${locale}`;
+  const base = useLocaleBase();
 
   if (initialItems.length === 0) return null;
 

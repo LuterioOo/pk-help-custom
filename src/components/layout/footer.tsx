@@ -1,6 +1,10 @@
 "use client";
 
-import { useTranslations, useLocale } from "next-intl";
+import { useTranslations } from "next-intl";
+import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
+import { useLocaleBase } from "@/hooks/use-locale-base";
+import { getLocalesForSite } from "@/lib/locale-path";
 import Link from "next/link";
 import { Logo } from "@/components/ui/logo";
 import { LanguageSwitcher } from "./language-switcher";
@@ -9,9 +13,14 @@ import { InstagramIcon } from "@/components/ui/icons";
 
 export function Footer() {
   const t = useTranslations();
-  const locale = useLocale();
-  const base = locale === "ru" ? "" : `/${locale}`;
+  const base = useLocaleBase();
+  const pathname = usePathname();
+  const [showLanguage, setShowLanguage] = useState(false);
   const year = new Date().getFullYear();
+
+  useEffect(() => {
+    setShowLanguage(getLocalesForSite(window.location.hostname, pathname).length > 1);
+  }, [pathname]);
 
   return (
     <footer className="relative z-10 border-t border-white/5 mt-24">
@@ -50,8 +59,12 @@ export function Footer() {
           </div>
 
           <div>
-            <h4 className="text-sm font-semibold text-zinc-300 mb-4">{t("common.language")}</h4>
-            <LanguageSwitcher className="mb-4" />
+            {showLanguage ? (
+              <>
+                <h4 className="text-sm font-semibold text-zinc-300 mb-4">{t("common.language")}</h4>
+                <LanguageSwitcher className="mb-4" />
+              </>
+            ) : null}
             <div className="flex gap-3">
               <a
                 href={process.env.NEXT_PUBLIC_TELEGRAM_URL ?? "#"}

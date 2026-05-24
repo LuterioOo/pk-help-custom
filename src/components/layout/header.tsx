@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { Menu, X } from "lucide-react";
-import { useTranslations, useLocale } from "next-intl";
+import { useTranslations } from "next-intl";
+import { useLocaleBase } from "@/hooks/use-locale-base";
 import Link from "next/link";
 import { Logo } from "@/components/ui/logo";
 import { Button } from "@/components/ui/button";
@@ -23,9 +24,8 @@ const hrefMap: Record<(typeof navIds)[number], string> = {
 
 export function Header() {
   const t = useTranslations("nav");
-  const locale = useLocale();
+  const base = useLocaleBase();
   const [open, setOpen] = useState(false);
-  const base = locale === "ru" || locale === "pl" ? "" : `/${locale}`;
 
   const links = navIds.map((id) => ({
     id,
