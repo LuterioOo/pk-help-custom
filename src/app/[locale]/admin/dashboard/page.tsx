@@ -80,6 +80,7 @@ export default function AdminDashboard() {
   const [newReview, setNewReview] = useState({ name: "", text: "", rating: 5 });
   const [pendingImageFile, setPendingImageFile] = useState<File | null>(null);
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
+  const [crmSyncingId, setCrmSyncingId] = useState<string | null>(null);
 
   const fetchAll = useCallback(async () => {
     setLoading(true);
@@ -136,6 +137,34 @@ export default function AdminDashboard() {
     if (!confirm(t("delete") + "?")) return;
     await fetch(`/api/admin/orders?id=${id}`, { method: "DELETE" });
     fetchAll();
+  };
+
+  const resyncCrm = async (id: string) => {
+    setCrmSyncingId(id);
+    try {
+      const res = await fetch("/api/admin/orders/crm-sync", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        alert(data.error ?? t("crm.syncError"));
+      }
+    } catch {
+      alert(t("crm.syncError"));
+    } finally {
+      setCrmSyncingId(null);
+      fetchAll();
+    }
+  };
+
+  const crmStatusLabel = (status: unknown) => {
+    const key = String(status ?? "PENDING");
+    if (key === "SYNCED") return t("crm.synced");
+    if (key === "FAILED") return t("crm.failed");
+    if (key === "SKIPPED") return t("crm.skipped");
+    return t("crm.pending");
   };
 
   const saveComponent = async () => {
@@ -358,6 +387,43 @@ export default function AdminDashboard() {
                           typeof o.totalPrice === "number" ? o.totalPrice : undefined
                         }
                       />
+                      <div className="rounded-xl border border-white/5 bg-white/[0.02] px-3 py-2 text-sm space-y-1">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className="text-zinc-500">{t("crm.label")}:</span>
+                          <span
+                            className={
+                              o.crmSyncStatus === "SYNCED"
+                                ? "text-emerald-400"
+                                : o.crmSyncStatus === "FAILED"
+                                  ? "text-red-400"
+                                  : o.crmSyncStatus === "SKIPPED"
+                                    ? "text-zinc-500"
+                                    : "text-amber-400"
+                            }
+                          >
+                            {crmStatusLabel(o.crmSyncStatus)}
+                          </span>
+                          {typeof o.crmDealUrl === "string" && o.crmDealUrl ? (
+                            <a
+                              href={o.crmDealUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-yellow-400 hover:underline text-xs"
+                            >
+                              {t("crm.openDeal")}
+                            </a>
+                          ) : null}
+                        </div>
+                        {typeof o.crmSyncError === "string" && o.crmSyncError ? (
+                          <p className="text-xs text-red-400/90 break-words">{o.crmSyncError}</p>
+                        ) : null}
+                        {o.crmSyncedAt ? (
+                          <p className="text-xs text-zinc-600">
+                            {t("crm.syncedAt")}:{" "}
+                            {new Date(String(o.crmSyncedAt)).toLocaleString("pl-PL")}
+                          </p>
+                        ) : null}
+                      </div>
                       <div className="flex flex-wrap gap-2 items-center">
                         <select
                           value={String(o.status)}
@@ -370,6 +436,14 @@ export default function AdminDashboard() {
                             </option>
                           ))}
                         </select>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          disabled={crmSyncingId === String(o.id)}
+                          onClick={() => resyncCrm(String(o.id))}
+                        >
+                          {crmSyncingId === String(o.id) ? t("crm.syncing") : t("crm.resync")}
+                        </Button>
                         <Button variant="ghost" size="sm" onClick={() => deleteOrder(String(o.id))}>
                           {t("delete")}
                         </Button>

@@ -5,6 +5,7 @@ import { assertDatabaseUrl, isDatabaseError, isSchemaMissingError } from "@/lib/
 import { prisma } from "@/lib/prisma";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { getSiteUrl } from "@/lib/site-url";
+import { scheduleOrderCrmSync } from "@/lib/crm";
 import { formatOrderMessage, sendTelegramMessage, type TelegramLocale } from "@/lib/telegram";
 import { isPolishHost } from "@/lib/site";
 import { selectedComponentSchema, selectionToSelectedComponents } from "@/lib/order-components";
@@ -115,6 +116,8 @@ export async function POST(req: NextRequest) {
     } catch (tgErr) {
       console.error("Telegram error (order saved)", tgErr);
     }
+
+    scheduleOrderCrmSync(order.id, source);
 
     return NextResponse.json({ success: true, id: order.id });
   } catch (e) {

@@ -29,6 +29,13 @@ enum OrderStatus {
   ANULOWANE
 }
 
+enum CrmSyncStatus {
+  PENDING
+  SYNCED
+  FAILED
+  SKIPPED
+}
+
 model Component {
   id                 String            @id @default(cuid())
   category           ComponentCategory
@@ -87,6 +94,12 @@ model Order {
   selectedComponents  Json?
   totalPrice          Float?
   status     OrderStatus @default(NOWE)
+  crmLeadId           String?
+  crmDealId           String?
+  crmDealUrl          String?
+  crmSyncStatus       CrmSyncStatus @default(PENDING)
+  crmSyncError        String?
+  crmSyncedAt         DateTime?
   createdAt  DateTime    @default(now())
   updatedAt  DateTime    @updatedAt
 }

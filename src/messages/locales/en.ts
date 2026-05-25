@@ -167,6 +167,18 @@ const en = {
       total: "Final price",
       date: "Date",
     },
+    crm: {
+      label: "CRM",
+      synced: "Synced",
+      failed: "Sync failed",
+      skipped: "CRM not configured",
+      pending: "Pending",
+      openDeal: "Open in Kommo",
+      resync: "Sync to CRM",
+      syncing: "Syncing…",
+      syncError: "CRM sync failed",
+      syncedAt: "Last synced",
+    },
     orderComponents: {
       title: "Selected components",
       category: "Category",

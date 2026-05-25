@@ -3,6 +3,7 @@ import { z } from "zod";
 import { OrderStatus } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { getAdminSession } from "@/lib/auth";
+import { scheduleCrmStatusNote } from "@/lib/crm";
 
 export async function GET(req: NextRequest) {
   const session = await getAdminSession();
@@ -26,10 +27,14 @@ export async function PATCH(req: NextRequest) {
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const data = patchSchema.parse(await req.json());
+  const previous = await prisma.order.findUnique({ where: { id: data.id } });
   const order = await prisma.order.update({
     where: { id: data.id },
     data: { status: data.status },
   });
+  if (data.status && previous?.status !== data.status) {
+    scheduleCrmStatusNote(order);
+  }
   return NextResponse.json({ order });
 }
 

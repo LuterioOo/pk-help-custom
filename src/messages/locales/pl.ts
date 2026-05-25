@@ -173,6 +173,18 @@ const pl = {
       total: "Cena końcowa",
       date: "Data",
     },
+    crm: {
+      label: "CRM",
+      synced: "Zsynchronizowano",
+      failed: "Błąd synchronizacji",
+      skipped: "CRM wyłączone",
+      pending: "Oczekuje",
+      openDeal: "Otwórz w Kommo",
+      resync: "Synchronizuj CRM",
+      syncing: "Synchronizacja…",
+      syncError: "Błąd synchronizacji CRM",
+      syncedAt: "Ostatnia synchronizacja",
+    },
     orderComponents: {
       title: "Wybrane komponenty",
       category: "Kategoria",
