@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -10,6 +11,7 @@ import {
   saveStoredContacts,
   saveTradeInCoupon,
 } from "@/lib/trade-in-storage";
+import { localeBasePath } from "@/lib/locale-path";
 import { cn } from "@/lib/utils";
 
 type ComponentRow = {
@@ -25,6 +27,7 @@ const TRADE_IN_CATEGORIES = ["GPU", "CPU", "RAM", "PSU"] as const;
 export function TradeInPage() {
   const t = useTranslations("tradeInPage");
   const locale = useLocale();
+  const router = useRouter();
   const [step, setStep] = useState<"contacts" | "hardware" | "coupon">("contacts");
   const [components, setComponents] = useState<ComponentRow[]>([]);
   const [selectedByCategory, setSelectedByCategory] = useState<Record<string, string>>({});
@@ -151,7 +154,7 @@ export function TradeInPage() {
   };
 
   return (
-    <section className="section-pad px-4 md:px-8 pt-28">
+    <section className="section-pad px-4 md:px-8 pt-32 md:pt-36">
       <div className="max-w-6xl mx-auto space-y-6">
         <div className="glass rounded-2xl p-6 md:p-8">
           <h1 className="text-3xl md:text-4xl font-bold neon-text">{t("contactTitle")}</h1>
@@ -319,7 +322,15 @@ export function TradeInPage() {
                   {t("estimatedCoupon", { amount: estimate.estimatedTotal })}
                 </p>
                 <p className="text-xs text-zinc-400">{t("couponCardNote")}</p>
-                <Button size="sm" onClick={() => document.getElementById("builder")?.scrollIntoView({ behavior: "smooth" })}>
+                <Button
+                  size="sm"
+                  onClick={() => {
+                    const host = typeof window !== "undefined" ? window.location.host : "";
+                    const pathname = typeof window !== "undefined" ? window.location.pathname : "";
+                    const base = localeBasePath(locale, host, pathname);
+                    router.push(`${base}/#builder`);
+                  }}
+                >
                   {t("toBuilderCta")}
                 </Button>
               </div>
