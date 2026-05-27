@@ -66,9 +66,9 @@ export function Header() {
           >
             {muted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
           </button>
-          <Link href={`${base}#builder`}>
-            <Button size="sm">{t("builder")}</Button>
-          </Link>
+          <Button asChild size="sm">
+            <Link href={`${base}#builder`}>{t("builder")}</Link>
+          </Button>
         </div>
 
         <button
@@ -102,9 +102,11 @@ export function Header() {
         </nav>
         <div className="p-3 pt-0 border-t border-white/10 flex flex-col gap-3">
           <LanguageSwitcher className="w-full justify-center" />
-          <Link href={`${base}#builder`} onClick={() => setOpen(false)}>
-            <Button className="w-full">{t("builder")}</Button>
-          </Link>
+          <Button asChild className="w-full">
+            <Link href={`${base}#builder`} onClick={() => setOpen(false)}>
+              {t("builder")}
+            </Link>
+          </Button>
         </div>
       </div>
     </header>

@@ -62,6 +62,47 @@ export function PcIllustration() {
           <line x1="160" y1="360" x2="240" y2="360" stroke="url(#pcGrad1)" strokeWidth="2" />
         </motion.g>
 
+        {/* Build tools accent (screwdriver + wrench) */}
+        <motion.g
+          animate={{ rotate: [-6, 2, -6] }}
+          transition={{ duration: 3.2, repeat: Infinity, ease: "easeInOut" }}
+          style={{ transformOrigin: "312px 262px" }}
+        >
+          {/* Screwdriver */}
+          <path
+            d="M292 300 L330 262"
+            stroke="rgba(255,215,0,0.9)"
+            strokeWidth="6"
+            strokeLinecap="round"
+          />
+          <path
+            d="M330 262 L340 252"
+            stroke="rgba(248,250,252,0.9)"
+            strokeWidth="4"
+            strokeLinecap="round"
+          />
+          <path
+            d="M286 306 L296 296"
+            stroke="rgba(129,140,248,0.9)"
+            strokeWidth="8"
+            strokeLinecap="round"
+          />
+
+          {/* Wrench */}
+          <path
+            d="M300 258 C296 252 296 244 302 238 C308 232 316 232 322 238 L314 246 L320 252 L328 244 C334 250 334 260 328 266 C322 272 312 272 306 266"
+            stroke="rgba(129,140,248,0.75)"
+            strokeWidth="3"
+            fill="rgba(99,102,241,0.18)"
+          />
+          <path
+            d="M306 266 L280 292"
+            stroke="rgba(129,140,248,0.75)"
+            strokeWidth="5"
+            strokeLinecap="round"
+          />
+        </motion.g>
+
         <motion.g
           animate={{ y: [0, -8, 0] }}
           transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}

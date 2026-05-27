@@ -29,21 +29,21 @@ export function Hero() {
             {t("subtitle")}
           </p>
           <div className="mt-8 sm:mt-10 flex flex-col sm:flex-row flex-wrap gap-3 sm:gap-4">
-            <Link href={`${base}#builder`} className="w-full sm:w-auto">
-              <Button size="lg" className="w-full sm:w-auto">
+            <Button asChild size="lg" className="w-full sm:w-auto">
+              <Link href={`${base}#builder`} className="w-full sm:w-auto">
                 {t("ctaBuild")}
-              </Button>
-            </Link>
-            <Link href={`${base}#order`} className="w-full sm:w-auto">
-              <Button size="lg" variant="outline" className="w-full sm:w-auto">
+              </Link>
+            </Button>
+            <Button asChild size="lg" variant="outline" className="w-full sm:w-auto">
+              <Link href={`${base}#order`} className="w-full sm:w-auto">
                 {t("ctaContact")}
-              </Button>
-            </Link>
-            <Link href={`${base}/trade-in`} className="w-full sm:w-auto">
-              <Button size="lg" variant="secondary" className="w-full sm:w-auto">
+              </Link>
+            </Button>
+            <Button asChild size="lg" variant="secondary" className="w-full sm:w-auto">
+              <Link href={`${base}/trade-in`} className="w-full sm:w-auto">
                 {t("ctaTradeIn")}
-              </Button>
-            </Link>
+              </Link>
+            </Button>
           </div>
         </ScrollReveal>
 

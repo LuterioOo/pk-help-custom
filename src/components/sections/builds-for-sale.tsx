@@ -55,11 +55,9 @@ export function BuildsForSale({ initialItems }: Props) {
                   {item.showText && item.caption ? (
                     <p className="text-sm text-zinc-400 line-clamp-2">{item.caption}</p>
                   ) : null}
-                  <Link href={`${base}#order`}>
-                    <Button size="sm" className="w-full">
-                      {t("cta")}
-                    </Button>
-                  </Link>
+                  <Button asChild size="sm" className="w-full">
+                    <Link href={`${base}#order`}>{t("cta")}</Link>
+                  </Button>
                 </div>
               </article>
             </ScrollReveal>

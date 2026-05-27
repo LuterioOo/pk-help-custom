@@ -18,9 +18,11 @@ export default function NotFound() {
         <p className="text-8xl font-bold neon-text opacity-50">404</p>
         <h1 className="mt-4 text-2xl font-semibold">{t("notFound")}</h1>
         <p className="mt-2 text-zinc-500">{t("notFoundDesc")}</p>
-        <Link href="/" className="inline-block mt-8">
-          <Button>{t("goHome")}</Button>
-        </Link>
+        <Button asChild className="mt-8">
+          <Link href="/" className="inline-block">
+            {t("goHome")}
+          </Link>
+        </Button>
       </motion.div>
     </div>
   );

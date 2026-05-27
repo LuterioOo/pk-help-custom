@@ -26,14 +26,12 @@ export function TradeInGuide() {
               </div>
 
               <div className="flex flex-wrap gap-3">
-                <Link href={`${base}/trade-in`}>
-                  <Button size="lg">{t("ctaTradeIn")}</Button>
-                </Link>
-                <Link href={`${base}#builder`}>
-                  <Button size="lg" variant="outline">
-                    {t("ctaBuilder")}
-                  </Button>
-                </Link>
+                <Button asChild size="lg">
+                  <Link href={`${base}/trade-in`}>{t("ctaTradeIn")}</Link>
+                </Button>
+                <Button asChild size="lg" variant="outline">
+                  <Link href={`${base}#builder`}>{t("ctaBuilder")}</Link>
+                </Button>
               </div>
             </div>
           </div>

@@ -18,7 +18,24 @@ export function useUiSound() {
 
   useEffect(() => {
     if (unlocked) return;
-    const unlock = () => setUnlocked(true);
+    const unlock = () => {
+      setUnlocked(true);
+      // #region agent log
+      fetch("http://127.0.0.1:7579/ingest/80e40a67-2b62-4a2b-8b6b-2495e3b7393b", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "ec767e" },
+        body: JSON.stringify({
+          sessionId: "ec767e",
+          runId: "pre-fix",
+          hypothesisId: "D",
+          location: "src/hooks/use-ui-sound.ts:unlock",
+          message: "UI sound unlocked by user gesture",
+          data: {},
+          timestamp: Date.now(),
+        }),
+      }).catch(() => {});
+      // #endregion agent log
+    };
     window.addEventListener("pointerdown", unlock, { once: true });
     window.addEventListener("keydown", unlock, { once: true });
     return () => {
@@ -41,6 +58,22 @@ export function useUiSound() {
 
   const playTone = useCallback(
     (type: "click" | "switch") => {
+      // #region agent log
+      fetch("http://127.0.0.1:7579/ingest/80e40a67-2b62-4a2b-8b6b-2495e3b7393b", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "ec767e" },
+        body: JSON.stringify({
+          sessionId: "ec767e",
+          runId: "pre-fix",
+          hypothesisId: "D",
+          location: "src/hooks/use-ui-sound.ts:playTone",
+          message: "playTone called",
+          data: { type, muted, unlocked },
+          timestamp: Date.now(),
+        }),
+      }).catch(() => {});
+      // #endregion agent log
+
       if (muted || !unlocked) return;
       try {
         const AudioContextImpl = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
