@@ -17,13 +17,13 @@ export function Contacts() {
   return (
     <section id="contacts" className="section-pad px-4 md:px-8">
       <div className="max-w-7xl mx-auto">
-        <ScrollReveal className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-bold neon-text">{t("title")}</h2>
+        <ScrollReveal className="text-center mb-5 md:mb-6">
+          <h2 className="text-xl sm:text-2xl md:text-3xl font-bold neon-text">{t("title")}</h2>
         </ScrollReveal>
 
-        <div className="grid lg:grid-cols-2 gap-8">
+        <div className="grid lg:grid-cols-2 gap-4 md:gap-5">
           <ScrollReveal>
-            <div className="glass rounded-2xl p-8 space-y-6 h-full">
+            <div className="glass rounded-2xl p-5 sm:p-6 space-y-4 h-full">
               <a
                 href="tel:+48777777777"
                 className="flex items-center gap-4 p-4 rounded-xl hover:bg-white/5 transition-colors group"

@@ -13,8 +13,9 @@ import { Button } from "@/components/ui/button";
 import { ScrollReveal } from "@/components/ui/scroll-reveal";
 import { cn } from "@/lib/utils";
 
+import { saveStoredContacts, loadStoredContacts } from "@/lib/trade-in-storage";
+
 const serviceKeys = ["build", "consult", "upgrade", "repair", "custom"] as const;
-const CONTACTS_STORAGE_KEY = "pkhelp-contacts";
 
 const schema = z.object({
   name: z.string().min(2),
@@ -95,24 +96,8 @@ export function OrderForm() {
     setTradeInCoupon(tradeInEstimate.couponPLN);
   }, [tradeInEstimate, setTradeInCoupon]);
 
-  const loadStoredContacts = () => {
-    try {
-      const raw = localStorage.getItem(CONTACTS_STORAGE_KEY);
-      if (!raw) return null;
-      const parsed = JSON.parse(raw) as { phone?: string; messenger?: string };
-      if (!parsed?.phone) return null;
-      return { phone: String(parsed.phone), messenger: String(parsed.messenger ?? "") };
-    } catch {
-      return null;
-    }
-  };
-
   const storeContacts = (phone: string, messenger?: string) => {
-    try {
-      localStorage.setItem(CONTACTS_STORAGE_KEY, JSON.stringify({ phone, messenger: messenger ?? "" }));
-    } catch {
-      /* ignore */
-    }
+    saveStoredContacts({ phone, messenger });
   };
 
   const createTradeInRequest = async (contacts: { phone: string; messenger?: string }) => {

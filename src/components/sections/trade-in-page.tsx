@@ -6,6 +6,11 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { useUiSound } from "@/hooks/use-ui-sound";
 import { calculateTradeInEstimate } from "@/lib/trade-in";
+import {
+  CONTACTS_STORAGE_KEY,
+  saveStoredContacts,
+  saveTradeInCoupon,
+} from "@/lib/trade-in-storage";
 import { cn } from "@/lib/utils";
 
 type ComponentRow = {
@@ -16,7 +21,6 @@ type ComponentRow = {
   price?: number;
 };
 
-const CONTACTS_STORAGE_KEY = "pkhelp-contacts";
 const TRADE_IN_CATEGORIES = ["GPU", "CPU", "RAM", "PSU", "MOTHERBOARD", "SSD", "HDD", "CASE", "COOLER", "AIO", "FANS"];
 
 export function TradeInPage() {
@@ -28,6 +32,7 @@ export function TradeInPage() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [contactOpen, setContactOpen] = useState(false);
+  const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [messenger, setMessenger] = useState("");
   const [search, setSearch] = useState("");
@@ -78,19 +83,7 @@ export function TradeInPage() {
     });
   }, [components, search]);
 
-  const loadStoredContacts = () => {
-    try {
-      const raw = localStorage.getItem(CONTACTS_STORAGE_KEY);
-      if (!raw) return null;
-      const parsed = JSON.parse(raw) as { phone?: string; messenger?: string };
-      if (!parsed.phone) return null;
-      return { phone: String(parsed.phone), messenger: String(parsed.messenger ?? "") };
-    } catch {
-      return null;
-    }
-  };
-
-  const createRequest = async (contacts: { phone: string; messenger?: string }) => {
+  const createRequest = async (contacts: { phone: string; messenger?: string; name?: string }) => {
     if (!selectedComponents.length) return;
     setSubmitting(true);
     try {
@@ -128,8 +121,14 @@ export function TradeInPage() {
       });
       const data = (await res.json()) as { success?: boolean; error?: string };
       if (!res.ok || !data.success) throw new Error(data.error ?? "error");
-      localStorage.setItem(CONTACTS_STORAGE_KEY, JSON.stringify(contacts));
-      toast.success(t("created"));
+      saveStoredContacts(contacts);
+      saveTradeInCoupon({
+        amount: estimate.estimatedTotal,
+        phone: contacts.phone,
+        name: contacts.name,
+        appliedAt: new Date().toISOString(),
+      });
+      toast.success(t("couponIssued", { amount: estimate.estimatedTotal }));
       setContactOpen(false);
     } catch {
       toast.error(t("createError"));
@@ -231,10 +230,21 @@ export function TradeInPage() {
               disabled={selectedComponents.length === 0 || submitting}
               isLoading={submitting}
               onClick={() => {
-                const stored = loadStoredContacts();
-                if (stored?.phone) {
-                  void createRequest(stored);
-                  return;
+                try {
+                  const raw = localStorage.getItem(CONTACTS_STORAGE_KEY);
+                  const stored = raw
+                    ? (JSON.parse(raw) as { phone?: string; messenger?: string; name?: string })
+                    : null;
+                  if (stored?.phone && String(stored.phone).trim().length >= 8) {
+                    void createRequest({
+                      phone: String(stored.phone).trim(),
+                      messenger: stored.messenger?.trim() || undefined,
+                      name: stored.name?.trim() || undefined,
+                    });
+                    return;
+                  }
+                } catch {
+                  /* open form */
                 }
                 setContactOpen(true);
               }}
@@ -244,6 +254,12 @@ export function TradeInPage() {
 
             {contactOpen ? (
               <div className="space-y-2 pt-1">
+                <input
+                  className="w-full px-3 py-2 rounded-xl glass text-sm"
+                  placeholder={t("namePlaceholder")}
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                />
                 <input
                   className="w-full px-3 py-2 rounded-xl glass text-sm"
                   placeholder={t("phonePlaceholder")}
@@ -264,7 +280,11 @@ export function TradeInPage() {
                       toast.error(t("needPhone"));
                       return;
                     }
-                    void createRequest({ phone: phone.trim(), messenger: messenger.trim() || undefined });
+                    void createRequest({
+                      phone: phone.trim(),
+                      messenger: messenger.trim() || undefined,
+                      name: name.trim() || undefined,
+                    });
                   }}
                 >
                   {t("submitContacts")}

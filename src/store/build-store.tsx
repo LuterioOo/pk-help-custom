@@ -16,8 +16,15 @@ import {
   type ComponentSpec,
   type CompatibilityIssue,
 } from "@/lib/compatibility";
+import { loadTradeInCoupon } from "@/lib/trade-in-storage";
 
 const STORAGE_KEY = "pkhelp-build";
+
+function readCouponFromStorage() {
+  const saved = loadTradeInCoupon();
+  if (!saved) return { amount: 0, use: false };
+  return { amount: Math.round(saved.amount), use: true };
+}
 
 interface BuildContextValue {
   selection: BuildSelection;
@@ -39,8 +46,15 @@ const BuildContext = createContext<BuildContextValue | null>(null);
 
 export function BuildProvider({ children }: { children: React.ReactNode }) {
   const [selection, setSelection] = useState<BuildSelection>({});
-  const [tradeInCoupon, setTradeInCouponState] = useState(0);
-  const [useTradeInCoupon, setUseTradeInCoupon] = useState(false);
+  const initialCoupon = readCouponFromStorage();
+  const [tradeInCoupon, setTradeInCouponState] = useState(initialCoupon.amount);
+  const [useTradeInCoupon, setUseTradeInCoupon] = useState(initialCoupon.use);
+
+  const syncCouponFromStorage = useCallback(() => {
+    const { amount, use } = readCouponFromStorage();
+    setTradeInCouponState(amount);
+    setUseTradeInCoupon(use);
+  }, []);
 
   useEffect(() => {
     try {
@@ -49,7 +63,15 @@ export function BuildProvider({ children }: { children: React.ReactNode }) {
     } catch {
       /* ignore */
     }
-  }, []);
+    syncCouponFromStorage();
+    const onCouponUpdate = () => syncCouponFromStorage();
+    window.addEventListener("pkhelp-trade-in-updated", onCouponUpdate);
+    window.addEventListener("storage", onCouponUpdate);
+    return () => {
+      window.removeEventListener("pkhelp-trade-in-updated", onCouponUpdate);
+      window.removeEventListener("storage", onCouponUpdate);
+    };
+  }, [syncCouponFromStorage]);
 
   const selectComponent = useCallback(
     (category: ComponentCategory, component: ComponentSpec | null) => {

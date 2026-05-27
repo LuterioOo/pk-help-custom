@@ -28,9 +28,9 @@ export function Reviews({ initialReviews }: Props) {
   return (
     <section id="reviews" className="section-pad px-4 md:px-8">
       <div className="max-w-4xl mx-auto">
-        <ScrollReveal className="text-center mb-8 md:mb-12">
-          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold neon-text">{t("title")}</h2>
-          <p className="mt-3 md:mt-4 text-sm md:text-base text-zinc-400">{t("subtitle")}</p>
+        <ScrollReveal className="text-center mb-5 md:mb-6">
+          <h2 className="text-xl sm:text-2xl md:text-3xl font-bold neon-text">{t("title")}</h2>
+          <p className="mt-2 text-xs sm:text-sm text-zinc-400">{t("subtitle")}</p>
         </ScrollReveal>
 
         {reviews.length === 0 ? (

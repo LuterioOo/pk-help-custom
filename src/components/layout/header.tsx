@@ -1,10 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { Menu, Volume2, VolumeX, X } from "lucide-react";
+import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useLocaleBase } from "@/hooks/use-locale-base";
 import Link from "next/link";
+import { Menu, Volume2, VolumeX, X } from "lucide-react";
 import { Logo } from "@/components/ui/logo";
 import { Button } from "@/components/ui/button";
 import { LanguageSwitcher } from "./language-switcher";
@@ -14,7 +15,7 @@ import { useUiSound } from "@/hooks/use-ui-sound";
 const navIds = ["home", "tradeIn", "showcase", "shop", "builder", "advantages", "reviews", "contact", "order"] as const;
 const hrefMap: Record<(typeof navIds)[number], string> = {
   home: "#hero",
-  tradeIn: "/trade-in",
+  tradeIn: "#trade-in",
   showcase: "#showcase",
   shop: "#shop",
   builder: "#builder",
@@ -27,14 +28,28 @@ const hrefMap: Record<(typeof navIds)[number], string> = {
 export function Header() {
   const t = useTranslations("nav");
   const base = useLocaleBase();
+  const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const { muted, toggleMute, playTone } = useUiSound();
 
-  const links = navIds.map((id) => ({
-    id,
-    label: t(id),
-    href: hrefMap[id].startsWith("/") ? `${base}${hrefMap[id]}` : `${base}${hrefMap[id]}`,
-  }));
+  const isHome = pathname === `${base}` || pathname === `${base}/` || pathname === "/";
+
+  const links = navIds.map((id) => {
+    const rawHref = hrefMap[id];
+    let href = rawHref;
+    if (rawHref.startsWith("#")) {
+      if (!isHome) {
+        href = (base || "/") + rawHref;
+      }
+    } else {
+      href = `${base}${rawHref}`;
+    }
+    return {
+      id,
+      label: t(id),
+      href,
+    };
+  });
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 px-3 sm:px-4 md:px-8 py-3 sm:py-4">
@@ -46,6 +61,8 @@ export function Header() {
             <Link
               key={link.id}
               href={link.href}
+              onMouseEnter={() => playTone("hover")}
+              onClick={() => playTone("click")}
               className="px-3 xl:px-4 py-2 text-sm text-zinc-400 hover:text-white transition-colors rounded-lg hover:bg-white/5"
             >
               {link.label}
@@ -61,13 +78,17 @@ export function Header() {
               toggleMute();
               playTone("click");
             }}
-            className="p-2 rounded-lg glass text-zinc-300"
+            className="p-2 rounded-lg glass text-zinc-300 cursor-pointer"
             aria-label={muted ? "Unmute UI sounds" : "Mute UI sounds"}
           >
             {muted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
           </button>
-          <Button asChild size="sm">
-            <Link href={`${base}#builder`}>{t("builder")}</Link>
+          <Button
+            asChild
+            size="sm"
+            onClick={() => playTone("click")}
+          >
+            <Link href={isHome ? `${base}#builder` : `${base || "/"}/#builder`}>{t("builder")}</Link>
           </Button>
         </div>
 
@@ -93,7 +114,10 @@ export function Header() {
             <Link
               key={link.id}
               href={link.href}
-              onClick={() => setOpen(false)}
+              onClick={() => {
+                setOpen(false);
+                playTone("click");
+              }}
               className="px-4 py-3 text-sm text-zinc-300 hover:text-white rounded-lg hover:bg-white/5 touch-manipulation"
             >
               {link.label}
@@ -102,8 +126,15 @@ export function Header() {
         </nav>
         <div className="p-3 pt-0 border-t border-white/10 flex flex-col gap-3">
           <LanguageSwitcher className="w-full justify-center" />
-          <Button asChild className="w-full">
-            <Link href={`${base}#builder`} onClick={() => setOpen(false)}>
+          <Button
+            asChild
+            className="w-full"
+            onClick={() => {
+              setOpen(false);
+              playTone("click");
+            }}
+          >
+            <Link href={isHome ? `${base}#builder` : `${base || "/"}/#builder`}>
               {t("builder")}
             </Link>
           </Button>

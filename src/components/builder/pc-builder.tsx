@@ -21,6 +21,7 @@ import { formatBuilderIssue } from "@/lib/format-builder-issue";
 import { formatPrice, cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { useUiSound } from "@/hooks/use-ui-sound";
+import { useTradeInReady } from "@/hooks/use-trade-in-ready";
 
 const CATEGORIES: ComponentCategory[] = [
   "CASE", "CPU", "MOTHERBOARD", "GPU", "RAM", "SSD", "HDD", "PSU", "COOLER", "AIO", "FANS",
@@ -42,8 +43,10 @@ interface ApiComponent {
 
 export function PcBuilder() {
   const t = useTranslations("builder");
+  const tHero = useTranslations("hero");
   const locale = useLocale();
   const { selection, issues, total, selectComponent, clearBuild, saveToStorage } = useBuild();
+  const { ready: buildReady } = useTradeInReady();
   const [activeCategory, setActiveCategory] = useState<ComponentCategory>("CPU");
   const [components, setComponents] = useState<ApiComponent[]>([]);
   const [loading, setLoading] = useState(true);
@@ -311,9 +314,15 @@ export function PcBuilder() {
                 <Button variant="secondary" size="sm" onClick={handleSave}>
                   {t("save")}
                 </Button>
-                <Button size="sm" onClick={scrollToOrder}>
-                  {t("send")}
-                </Button>
+                {buildReady ? (
+                  <Button size="sm" onClick={scrollToOrder}>
+                    {t("send")}
+                  </Button>
+                ) : (
+                  <Button size="sm" disabled className="opacity-60 cursor-not-allowed">
+                    {tHero("ctaBuildLocked")}
+                  </Button>
+                )}
                 <Button variant="ghost" size="sm" onClick={clearBuild}>
                   <X className="w-4 h-4" />
                   {t("clear")}

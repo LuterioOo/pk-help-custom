@@ -42,33 +42,142 @@ export function useUiSound() {
   }, []);
 
   const playTone = useCallback(
-    (type: "click" | "hover" | "select" | "switch") => {
+    (type: "click" | "hover" | "select" | "switch" | "notification" | "bell") => {
+      // #region agent log
+      fetch("http://127.0.0.1:7579/ingest/80e40a67-2b62-4a2b-8b6b-2495e3b7393b", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "ec767e" },
+        body: JSON.stringify({
+          sessionId: "ec767e",
+          runId: "pre-fix",
+          hypothesisId: "D",
+          location: "src/hooks/use-ui-sound.ts:playTone",
+          message: "playTone called",
+          data: { type, muted, unlocked },
+          timestamp: Date.now(),
+        }),
+      }).catch(() => {});
+      // #endregion agent log
+
       if (muted || !unlocked) return;
       try {
         const AudioContextImpl = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
         const ctx = new AudioContextImpl();
         const now = ctx.currentTime;
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.type = type === "hover" ? "sine" : type === "click" ? "triangle" : type === "select" ? "square" : "sawtooth";
+        const destination = ctx.destination;
 
-        const startFreq =
-          type === "hover" ? 920 : type === "click" ? 540 : type === "select" ? 460 : 320;
-        const endFreq =
-          type === "hover" ? 820 : type === "click" ? 420 : type === "select" ? 380 : 260;
+        if (type === "hover") {
+          // Subtle, quiet high-frequency tick
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = "sine";
+          osc.frequency.setValueAtTime(1600, now);
+          osc.frequency.exponentialRampToValueAtTime(1100, now + 0.02);
+          gain.gain.setValueAtTime(0.0001, now);
+          gain.gain.linearRampToValueAtTime(0.015, now + 0.003);
+          gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.025);
+          osc.connect(gain);
+          gain.connect(destination);
+          osc.start(now);
+          osc.stop(now + 0.03);
+          setTimeout(() => void ctx.close().catch(() => {}), 100);
+        } else if (type === "click") {
+          // Short, solid triangle click
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = "triangle";
+          osc.frequency.setValueAtTime(580, now);
+          osc.frequency.exponentialRampToValueAtTime(140, now + 0.06);
+          gain.gain.setValueAtTime(0.0001, now);
+          gain.gain.linearRampToValueAtTime(0.12, now + 0.005);
+          gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.07);
+          osc.connect(gain);
+          gain.connect(destination);
+          osc.start(now);
+          osc.stop(now + 0.08);
+          setTimeout(() => void ctx.close().catch(() => {}), 150);
+        } else if (type === "select") {
+          // Satisfying physical ratchet: 3 rapid ticks spaced in time
+          const times = [0, 0.025, 0.05];
+          const freqs = [820, 700, 580];
+          times.forEach((delay, idx) => {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = "sine";
+            osc.frequency.setValueAtTime(freqs[idx], now + delay);
+            gain.gain.setValueAtTime(0.0001, now + delay);
+            gain.gain.linearRampToValueAtTime(0.05, now + delay + 0.002);
+            gain.gain.exponentialRampToValueAtTime(0.0001, now + delay + 0.015);
+            osc.connect(gain);
+            gain.connect(destination);
+            osc.start(now + delay);
+            osc.stop(now + delay + 0.02);
+          });
+          setTimeout(() => void ctx.close().catch(() => {}), 200);
+        } else if (type === "switch") {
+          // Quick sliding transition tone
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = "triangle";
+          osc.frequency.setValueAtTime(360, now);
+          osc.frequency.exponentialRampToValueAtTime(220, now + 0.12);
+          gain.gain.setValueAtTime(0.0001, now);
+          gain.gain.linearRampToValueAtTime(0.08, now + 0.01);
+          gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.13);
+          osc.connect(gain);
+          gain.connect(destination);
+          osc.start(now);
+          osc.stop(now + 0.14);
+          setTimeout(() => void ctx.close().catch(() => {}), 250);
+        } else if (type === "notification") {
+          // Futuristic two-tone rising chime
+          const osc1 = ctx.createOscillator();
+          const osc2 = ctx.createOscillator();
+          const gain1 = ctx.createGain();
+          const gain2 = ctx.createGain();
 
-        osc.frequency.setValueAtTime(startFreq, now);
-        osc.frequency.exponentialRampToValueAtTime(endFreq, now + (type === "hover" ? 0.045 : 0.08));
-        gain.gain.setValueAtTime(0.0001, now);
-        const peak = type === "hover" ? 0.08 : type === "select" ? 0.16 : 0.18;
-        const dur = type === "hover" ? 0.06 : type === "select" ? 0.09 : 0.11;
-        gain.gain.exponentialRampToValueAtTime(peak, now + 0.008);
-        gain.gain.exponentialRampToValueAtTime(0.0001, now + dur);
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-        osc.start(now);
-        osc.stop(now + (type === "hover" ? 0.065 : 0.12));
-        setTimeout(() => void ctx.close().catch(() => {}), 180);
+          osc1.type = "sine";
+          osc1.frequency.setValueAtTime(523.25, now); // C5
+          gain1.gain.setValueAtTime(0.0001, now);
+          gain1.gain.linearRampToValueAtTime(0.1, now + 0.01);
+          gain1.gain.exponentialRampToValueAtTime(0.0001, now + 0.15);
+          osc1.connect(gain1);
+          gain1.connect(destination);
+
+          osc2.type = "sine";
+          osc2.frequency.setValueAtTime(783.99, now + 0.08); // G5
+          gain2.gain.setValueAtTime(0.0001, now + 0.08);
+          gain2.gain.linearRampToValueAtTime(0.1, now + 0.09);
+          gain2.gain.exponentialRampToValueAtTime(0.0001, now + 0.3);
+          osc2.connect(gain2);
+          gain2.connect(destination);
+
+          osc1.start(now);
+          osc1.stop(now + 0.18);
+          osc2.start(now + 0.08);
+          osc2.stop(now + 0.32);
+
+          setTimeout(() => void ctx.close().catch(() => {}), 450);
+        } else if (type === "bell") {
+          // Rich, resonant metallic CRM bell
+          const partials = [880, 1200, 1540, 1980];
+          const weights = [0.22, 0.11, 0.06, 0.03];
+
+          partials.forEach((freq, idx) => {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = "sine";
+            osc.frequency.setValueAtTime(freq, now);
+            gain.gain.setValueAtTime(0.0001, now);
+            gain.gain.linearRampToValueAtTime(weights[idx], now + 0.005);
+            gain.gain.exponentialRampToValueAtTime(0.0001, now + 1.5);
+            osc.connect(gain);
+            gain.connect(destination);
+            osc.start(now);
+            osc.stop(now + 1.6);
+          });
+          setTimeout(() => void ctx.close().catch(() => {}), 1700);
+        }
       } catch {
         /* ignore */
       }

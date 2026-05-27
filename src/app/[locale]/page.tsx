@@ -1,6 +1,7 @@
 import dynamic from "next/dynamic";
 import { Hero } from "@/components/sections/hero";
-import { TradeInGuide } from "@/components/sections/trade-in-guide";
+import { TradeInPreview } from "@/components/sections/trade-in-preview";
+import { HomeCtaStrip } from "@/components/sections/home-cta-strip";
 import { ShowcaseGallery } from "@/components/sections/showcase-gallery";
 import { BuildsForSale } from "@/components/sections/builds-for-sale";
 import { Advantages } from "@/components/sections/advantages";
@@ -15,22 +16,22 @@ import { SectionSkeleton } from "@/components/ui/section-skeleton";
 
 const PcBuilder = dynamic(
   () => import("@/components/builder/pc-builder").then((m) => ({ default: m.PcBuilder })),
-  { loading: () => <SectionSkeleton className="min-h-[480px]" /> }
+  { loading: () => <SectionSkeleton className="min-h-[360px]" /> }
 );
 
 const OrderForm = dynamic(
   () => import("@/components/sections/order-form").then((m) => ({ default: m.OrderForm })),
-  { loading: () => <SectionSkeleton className="min-h-[320px]" /> }
+  { loading: () => <SectionSkeleton className="min-h-[280px]" /> }
 );
 
 const Reviews = dynamic(
   () => import("@/components/sections/reviews").then((m) => ({ default: m.Reviews })),
-  { loading: () => <SectionSkeleton className="min-h-[280px]" /> }
+  { loading: () => <SectionSkeleton className="min-h-[240px]" /> }
 );
 
 const Contacts = dynamic(
   () => import("@/components/sections/contacts").then((m) => ({ default: m.Contacts })),
-  { loading: () => <SectionSkeleton className="min-h-[200px]" /> }
+  { loading: () => <SectionSkeleton className="min-h-[180px]" /> }
 );
 
 export const revalidate = 60;
@@ -77,12 +78,15 @@ export default async function HomePage({ params }: Props) {
 
   return (
     <>
-      <Hero />
-      <TradeInGuide />
+      <div className="home-fold">
+        <Hero />
+        <Advantages compact />
+        <HomeCtaStrip />
+        <BuildsForSale initialItems={showcase.forSale} featured />
+        <TradeInPreview />
+      </div>
       <ShowcaseGallery initialItems={showcase.items} />
-      <BuildsForSale initialItems={showcase.forSale} />
       <PcBuilder />
-      <Advantages />
       <Reviews initialReviews={reviews} />
       <OrderForm />
       <Contacts />

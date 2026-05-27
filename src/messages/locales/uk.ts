@@ -22,6 +22,8 @@ const uk = {
     title: "Зберемо ПК під будь-які задачі",
     subtitle: "Ігри, стрімінг, робота, монтаж, дизайн",
     ctaBuild: "Зібрати ПК",
+    ctaBuildLocked: "Купон ще не застосовано",
+    ctaBuildLockedHint: "Спочатку оцініть залізо в Trade-In, вкажіть контакти та отримайте попередній купон.",
     ctaContact: "Зв’язатися",
     ctaTradeIn: "Оцінка Trade-In",
     ctaTradeInPage: "Trade-In",
@@ -38,6 +40,8 @@ const uk = {
     workshopTitle: "Преміальна збірка",
     tradeInLabel: "TRADE‑IN",
     tradeInTitle: "Попередній купон",
+    liveRequestsTitle: "Заявки зараз",
+    liveRequestsDesc: "активних: {count}",
   },
   order: {
     ...ru.order,
