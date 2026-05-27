@@ -19,7 +19,7 @@ export function Hero() {
   const { ready: buildReady } = useTradeInReady();
 
   return (
-    <section id="hero" className="relative pt-[4.25rem] sm:pt-[4.75rem] pb-2 sm:pb-3 px-4 md:px-8">
+    <section id="hero" className="relative pt-[5.1rem] sm:pt-[5.4rem] pb-2 sm:pb-3 px-4 md:px-8">
       <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_78%_28%,rgba(99,102,241,0.10),transparent_42%),radial-gradient(circle_at_15%_12%,rgba(255,215,0,0.10),transparent_34%)]" />
       <div className="max-w-7xl mx-auto w-full relative z-10">
         <div className="grid lg:grid-cols-[1fr_minmax(240px,40%)] gap-4 lg:gap-6 items-center">

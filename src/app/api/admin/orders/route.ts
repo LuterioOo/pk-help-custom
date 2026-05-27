@@ -20,6 +20,9 @@ export async function GET(req: NextRequest) {
 const patchSchema = z.object({
   id: z.string(),
   status: z.nativeEnum(OrderStatus).optional(),
+  taskStatus: z.string().max(40).optional(),
+  priority: z.enum(["low", "medium", "high"]).optional(),
+  docsSent: z.boolean().optional(),
 });
 
 export async function PATCH(req: NextRequest) {
@@ -28,9 +31,22 @@ export async function PATCH(req: NextRequest) {
 
   const data = patchSchema.parse(await req.json());
   const previous = await prisma.order.findUnique({ where: { id: data.id } });
+  const previousMeta =
+    previous?.tradeInEstimate && typeof previous.tradeInEstimate === "object"
+      ? (previous.tradeInEstimate as Record<string, unknown>)
+      : {};
   const order = await prisma.order.update({
     where: { id: data.id },
-    data: { status: data.status },
+    data: {
+      status: data.status,
+      tradeInEstimate: {
+        ...previousMeta,
+        taskStatus: data.taskStatus ?? previousMeta.taskStatus ?? "new",
+        priority: data.priority ?? previousMeta.priority ?? "medium",
+        docsSent:
+          typeof data.docsSent === "boolean" ? data.docsSent : Boolean(previousMeta.docsSent),
+      },
+    },
   });
   if (data.status && previous?.status !== data.status) {
     scheduleCrmStatusNote(order);

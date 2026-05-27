@@ -18,43 +18,52 @@ async function kommoRequest<T>(
   path: string,
   init: RequestInit
 ): Promise<{ ok: true; data: T } | { ok: false; error: string; status?: number }> {
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), CRM_TIMEOUT_MS);
+  let lastError = "request failed";
+  for (let attempt = 0; attempt < 2; attempt += 1) {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), CRM_TIMEOUT_MS);
+    try {
+      const res = await fetch(`${endpoints.apiBase}${path}`, {
+        ...init,
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
+          Accept: "application/json",
+          ...(init.headers ?? {}),
+        },
+        signal: controller.signal,
+      });
 
-  try {
-    const res = await fetch(`${endpoints.apiBase}${path}`, {
-      ...init,
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-        "Content-Type": "application/json",
-        Accept: "application/json",
-        ...(init.headers ?? {}),
-      },
-      signal: controller.signal,
-    });
-
-    const text = await res.text();
-    let data: unknown = null;
-    if (text) {
-      try {
-        data = JSON.parse(text) as unknown;
-      } catch {
-        data = text;
+      const text = await res.text();
+      let data: unknown = null;
+      if (text) {
+        try {
+          data = JSON.parse(text) as unknown;
+        } catch {
+          data = text;
+        }
       }
-    }
 
-    if (!res.ok) {
-      const detail = formatKommoError(data, text, res.status);
-      return { ok: false, error: detail, status: res.status };
-    }
+      if (!res.ok) {
+        const detail = formatKommoError(data, text, res.status);
+        return { ok: false, error: detail, status: res.status };
+      }
 
-    return { ok: true, data: data as T };
-  } catch (err) {
-    const msg = err instanceof Error ? err.message : String(err);
-    return { ok: false, error: msg };
-  } finally {
-    clearTimeout(timeout);
+      return { ok: true, data: data as T };
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      lastError = msg;
+      const isAbort =
+        (err instanceof DOMException && err.name === "AbortError") ||
+        /aborted|abort/i.test(msg);
+      if (!isAbort || attempt === 1) {
+        return { ok: false, error: msg };
+      }
+    } finally {
+      clearTimeout(timeout);
+    }
   }
+  return { ok: false, error: lastError };
 }
 
 function formatKommoError(data: unknown, text: string, status: number): string {

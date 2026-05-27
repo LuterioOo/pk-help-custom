@@ -81,15 +81,36 @@ export function formatOrderCrmNote(
   if (tradeInEstimate) {
     const installmentsRequested = Boolean(tradeInEstimate.installmentsRequested);
     const couponAppliedToBuild = Boolean(tradeInEstimate.couponAppliedToBuild);
+    const couponAmount =
+      typeof tradeInEstimate.estimatedTotal === "number"
+        ? tradeInEstimate.estimatedTotal
+        : null;
     const sourceType =
       typeof tradeInEstimate.sourceType === "string" ? tradeInEstimate.sourceType : "";
     lines.push(
+      `Trade-In: ${sourceType === "trade_in" ? "да" : "нет"}`,
       `Рассрочка: ${installmentsRequested ? "да" : "нет"}`,
       `Купон применён к сборке: ${couponAppliedToBuild ? "да" : "нет"}`
     );
+    if (couponAmount && couponAmount > 0) {
+      lines.push(`Купон: ${couponAmount} PLN`);
+    }
     if (sourceType) {
       lines.push(`Источник заявки: ${sourceType}`);
     }
+  }
+
+  const tradeInParts = extractTradeInParts(tradeInEstimate);
+  if (tradeInParts.length > 0) {
+    lines.push("", "СТАРОЕ ЖЕЛЕЗО КЛИЕНТА:");
+    for (const part of tradeInParts) {
+      lines.push(`• ${part.category}: ${part.name}`);
+    }
+  }
+
+  lines.push("", "Что нужно сделать админу:");
+  for (const task of deriveAdminTasks(order.services, tradeInEstimate)) {
+    lines.push(`• ${task}`);
   }
 
   if (order.comment?.trim()) {
@@ -105,4 +126,47 @@ export function formatOrderCrmNote(
   }
 
   return lines.join("\n");
+}
+
+function extractTradeInParts(tradeInEstimate: Record<string, unknown> | null): Array<{ category: string; name: string }> {
+  if (!tradeInEstimate) return [];
+  const raw = Array.isArray(tradeInEstimate.items)
+    ? tradeInEstimate.items
+    : Array.isArray(tradeInEstimate.selectedParts)
+      ? tradeInEstimate.selectedParts
+      : [];
+  return raw
+    .map((item) => {
+      const row = item as Record<string, unknown>;
+      return {
+        category: String(row.category ?? "").toUpperCase(),
+        name: String(row.name ?? ""),
+      };
+    })
+    .filter((part) => ["GPU", "CPU", "RAM", "PSU"].includes(part.category) && part.name);
+}
+
+function deriveAdminTasks(
+  services: string[],
+  tradeInEstimate: Record<string, unknown> | null
+): string[] {
+  const lower = services.map((s) => s.toLowerCase());
+  const isTradeIn =
+    lower.some((s) => s.includes("trade")) ||
+    String(tradeInEstimate?.sourceType ?? "") === "trade_in";
+  const installmentsRequested = Boolean(tradeInEstimate?.installmentsRequested);
+  if (isTradeIn) {
+    return [
+      "Проверить старое железо",
+      "Подтвердить coupon",
+      "Ожидаем клиента в сервисе",
+      ...(installmentsRequested ? ["Отправить документы на рассрочку"] : []),
+    ];
+  }
+  return [
+    "Связаться с клиентом",
+    "Уточнить сборку",
+    "Подтвердить наличие",
+    ...(installmentsRequested ? ["Отправить документы на рассрочку"] : []),
+  ];
 }

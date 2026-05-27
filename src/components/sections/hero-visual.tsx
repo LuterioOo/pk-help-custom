@@ -55,18 +55,18 @@ export function HeroVisual({ className }: Props) {
       </div>
 
       {/* Floating “service” label - WORKSHOP */}
-      <div className="absolute right-2 top-2 sm:right-4 sm:top-4 z-20 animate-float">
-        <div className="rounded-xl glass-strong border border-yellow-500/30 px-2.5 py-1.5 shadow-[0_0_16px_rgba(255,215,0,0.1)]">
+      <div className="absolute right-2 top-2 sm:right-4 sm:top-4 z-20 animate-float max-w-[42%]">
+        <div className="rounded-xl glass-strong border border-yellow-500/30 px-2 py-1.5 shadow-[0_0_16px_rgba(255,215,0,0.1)]">
           <div className="text-[9px] tracking-wider font-semibold uppercase text-yellow-400">{t("workshopLabel")}</div>
-          <div className="text-[11px] font-bold text-zinc-100">{t("workshopTitle")}</div>
+          <div className="text-[11px] font-bold text-zinc-100 leading-tight break-words">{t("workshopTitle")}</div>
         </div>
       </div>
 
       {/* Floating “service” label - TRADE-IN */}
-      <div className="absolute left-2 top-1/2 -translate-y-1/2 z-20 animate-float [animation-delay:350ms]">
-        <div className="rounded-xl glass-strong border border-white/10 px-2.5 py-1.5 shadow-[0_0_16px_rgba(99,102,241,0.08)]">
+      <div className="absolute left-2 top-1/2 -translate-y-1/2 z-20 animate-float [animation-delay:350ms] max-w-[42%]">
+        <div className="rounded-xl glass-strong border border-white/10 px-2 py-1.5 shadow-[0_0_16px_rgba(99,102,241,0.08)]">
           <div className="text-[9px] tracking-wider font-semibold uppercase text-zinc-400">{t("tradeInLabel")}</div>
-          <div className="text-[11px] font-bold text-zinc-100">{t("tradeInTitle")}</div>
+          <div className="text-[11px] font-bold text-zinc-100 leading-tight break-words">{t("tradeInTitle")}</div>
         </div>
       </div>
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations, useLocale } from "next-intl";
 import { adminUrl } from "@/lib/admin-path";
@@ -97,6 +97,8 @@ export default function AdminDashboard() {
   const [audioUnlocked, setAudioUnlocked] = useState(false);
   const [lastOrderId, setLastOrderId] = useState<string | null>(null);
   const [newOrderIds, setNewOrderIds] = useState<Record<string, number>>({});
+  const pollAbortRef = useRef<AbortController | null>(null);
+  const inFlightPollRef = useRef(false);
 
   useEffect(() => {
     try {
@@ -153,10 +155,10 @@ export default function AdminDashboard() {
     }
   }, [soundEnabled, audioUnlocked]);
 
-  const fetchOrders = useCallback(async () => {
+  const fetchOrders = useCallback(async (signal?: AbortSignal) => {
     const ordersUrl =
       statusFilter === "all" ? "/api/admin/orders" : `/api/admin/orders?status=${statusFilter}`;
-    const o = await fetch(ordersUrl);
+    const o = await fetch(ordersUrl, { cache: "no-store", signal });
     if (o.status === 401) {
       setAuthError(true);
       return null;
@@ -197,7 +199,19 @@ export default function AdminDashboard() {
     if (tab !== "orders") return;
     let stopped = false;
     const tick = async () => {
-      const next = await fetchOrders();
+      if (inFlightPollRef.current) return;
+      inFlightPollRef.current = true;
+      pollAbortRef.current?.abort();
+      const controller = new AbortController();
+      pollAbortRef.current = controller;
+      let next: Array<Record<string, unknown>> | null = null;
+      try {
+        next = await fetchOrders(controller.signal);
+      } catch {
+        next = null;
+      } finally {
+        inFlightPollRef.current = false;
+      }
       if (!next || stopped) return;
       const newestId = next[0] ? String(next[0].id) : null;
 
@@ -231,6 +245,7 @@ export default function AdminDashboard() {
     const id = window.setInterval(() => void tick(), 5000);
     return () => {
       stopped = true;
+      pollAbortRef.current?.abort();
       window.clearInterval(id);
     };
   }, [tab, fetchOrders, lastOrderId, playBell, t]);
@@ -300,6 +315,46 @@ export default function AdminDashboard() {
     if (key === "FAILED") return t("crm.failed");
     if (key === "SKIPPED") return t("crm.skipped");
     return t("crm.pending");
+  };
+
+  const deriveAdminTasks = (services: unknown, meta: Record<string, unknown> | null) => {
+    const serviceList = Array.isArray(services) ? services.map((s) => String(s).toLowerCase()) : [];
+    const isTradeIn =
+      serviceList.some((s) => s.includes("trade")) ||
+      String(meta?.sourceType ?? "") === "trade_in";
+    const installmentsRequested = Boolean(meta?.installmentsRequested);
+    if (isTradeIn) {
+      return [
+        "Проверить старое железо",
+        "Подтвердить coupon",
+        "Ожидаем клиента в сервисе",
+        ...(installmentsRequested ? ["Отправить документы на рассрочку"] : []),
+      ];
+    }
+    return [
+      "Связаться с клиентом",
+      "Уточнить сборку",
+      "Подтвердить наличие",
+      ...(installmentsRequested ? ["Отправить документы на рассрочку"] : []),
+    ];
+  };
+
+  const extractTradeInParts = (meta: Record<string, unknown> | null) => {
+    if (!meta) return [];
+    const source = Array.isArray(meta.items)
+      ? meta.items
+      : Array.isArray(meta.selectedParts)
+        ? meta.selectedParts
+        : [];
+    return source
+      .map((row) => {
+        const part = row as Record<string, unknown>;
+        return {
+          category: String(part.category ?? "").toUpperCase(),
+          name: String(part.name ?? ""),
+        };
+      })
+      .filter((part) => ["GPU", "CPU", "RAM", "PSU"].includes(part.category) && part.name);
   };
 
   const saveComponent = async () => {
@@ -535,6 +590,18 @@ export default function AdminDashboard() {
                       const installmentsRequested = Boolean(estimateMeta?.installmentsRequested);
                       const couponAppliedToBuild = Boolean(estimateMeta?.couponAppliedToBuild);
                       const sourceType = String(estimateMeta?.sourceType ?? "").trim();
+                      const couponAmount =
+                        typeof estimateMeta?.estimatedTotal === "number"
+                          ? Number(estimateMeta.estimatedTotal)
+                          : typeof o.tradeInDiscountPLN === "number"
+                            ? Number(o.tradeInDiscountPLN)
+                            : 0;
+                      const isTradeIn =
+                        Array.isArray(o.services) &&
+                        (o.services as string[]).some((s) => /trade/i.test(s)) ||
+                        sourceType === "trade_in";
+                      const tradeInParts = extractTradeInParts(estimateMeta);
+                      const taskItems = deriveAdminTasks(o.services, estimateMeta);
                       return (
                         <motion.div
                           key={id}
@@ -569,6 +636,43 @@ export default function AdminDashboard() {
                             <span>{t("orderFields.installments")}: {installmentsRequested ? t("yes") : t("no")}</span>
                             <span>{t("orderFields.couponApplied")}: {couponAppliedToBuild ? t("yes") : t("no")}</span>
                             {sourceType ? <span>{t("orderFields.sourceType")}: {sourceType}</span> : null}
+                          </div>
+                          <div className="flex flex-wrap gap-2">
+                            <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${isTradeIn ? "bg-yellow-500/20 text-yellow-300 border border-yellow-500/40" : "bg-zinc-700/40 text-zinc-300 border border-zinc-600/40"}`}>
+                              Trade-In: {isTradeIn ? t("yes") : t("no")}
+                            </span>
+                            <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${installmentsRequested ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/40" : "bg-zinc-700/40 text-zinc-300 border border-zinc-600/40"}`}>
+                              {t("orderFields.installments")}: {installmentsRequested ? t("yes") : t("no")}
+                            </span>
+                            <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${couponAppliedToBuild ? "bg-orange-500/20 text-orange-300 border border-orange-500/40" : "bg-zinc-700/40 text-zinc-300 border border-zinc-600/40"}`}>
+                              {t("orderFields.couponApplied")}: {couponAppliedToBuild ? t("yes") : t("no")}
+                            </span>
+                            <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-yellow-500/10 text-yellow-200 border border-yellow-500/30">
+                              Coupon: {couponAmount > 0 ? `${couponAmount} PLN` : "0 PLN"}
+                            </span>
+                          </div>
+                          {tradeInParts.length > 0 ? (
+                            <div className="rounded-xl border border-yellow-500/25 bg-yellow-500/5 px-3 py-2 text-sm">
+                              <p className="text-yellow-300 font-semibold mb-1">СТАРОЕ ЖЕЛЕЗО КЛИЕНТА</p>
+                              <div className="grid sm:grid-cols-2 gap-1 text-zinc-300">
+                                {tradeInParts.map((part) => (
+                                  <span key={`${id}-${part.category}`}>{part.category}: {part.name}</span>
+                                ))}
+                              </div>
+                            </div>
+                          ) : null}
+                          <div className="rounded-xl border border-white/10 bg-white/[0.02] px-3 py-2 text-sm">
+                            <p className="text-zinc-300 font-medium mb-1">Что нужно сделать админу</p>
+                            <ul className="space-y-1 text-zinc-400">
+                              {taskItems.map((task) => (
+                                <li key={`${id}-${task}`}>- {task}</li>
+                              ))}
+                            </ul>
+                            {installmentsRequested ? (
+                              <p className="mt-2 text-xs text-zinc-500">
+                                Контакты для документов: {String(o.phone)} {o.messenger ? `• ${String(o.messenger)}` : ""} {o.email ? `• ${String(o.email)}` : ""}
+                              </p>
+                            ) : null}
                           </div>
                           {Array.isArray(o.services) && (o.services as string[]).length > 0 ? (
                             <p className="text-sm text-zinc-500">
@@ -623,7 +727,7 @@ export default function AdminDashboard() {
                             ) : null}
                           </div>
                           <div className="flex flex-wrap gap-2 items-center">
-                            {Array.isArray(o.services) && (o.services as string[]).some((s) => /trade/i.test(s)) ? (
+                            {isTradeIn ? (
                               <div className="flex flex-wrap gap-1">
                                 {TRADE_IN_WORKFLOW.map((step) => (
                                   <Button

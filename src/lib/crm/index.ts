@@ -20,6 +20,8 @@ export type SyncOrderCrmResult =
   | { ok: true; skipped: true }
   | { ok: false; error: string };
 
+const inFlightSyncByOrderId = new Map<string, Promise<SyncOrderCrmResult>>();
+
 async function markCrmSkipped(orderId: string): Promise<void> {
   await prisma.order.update({
     where: { id: orderId },
@@ -67,52 +69,62 @@ export async function syncOrderToCrm(
   orderId: string,
   options: SyncOrderCrmOptions = {}
 ): Promise<SyncOrderCrmResult> {
-  const config = getCrmConfig();
-  if (!config) {
-    await markCrmSkipped(orderId).catch((e) =>
-      console.error("CRM skip update failed", e)
-    );
-    return { ok: true, skipped: true };
-  }
-
-  const order = await prisma.order.findUnique({ where: { id: orderId } });
-  if (!order) {
-    return { ok: false, error: "Order not found" };
-  }
-
-  if (order.crmLeadId && order.crmSyncStatus === CrmSyncStatus.SYNCED && !options.force) {
-    return {
-      ok: true,
-      leadId: order.crmLeadId,
-      dealUrl: order.crmDealUrl ?? "",
-    };
-  }
-
-  try {
-    const useExisting =
-      order.crmLeadId &&
-      (options.force || order.crmSyncStatus === CrmSyncStatus.SYNCED);
-
-    const result = useExisting
-      ? await resyncKommoLead(config, order, order.crmLeadId!, { source: options.source })
-      : await createKommoLead(config, order, { source: options.source });
-
-    if (!result.ok) {
-      await markCrmFailed(orderId, result.error);
-      console.error("CRM sync failed for order", orderId, result.error);
-      return { ok: false, error: result.error };
+  const existing = inFlightSyncByOrderId.get(orderId);
+  if (existing) return existing;
+  const job: Promise<SyncOrderCrmResult> = (async (): Promise<SyncOrderCrmResult> => {
+    const config = getCrmConfig();
+    if (!config) {
+      await markCrmSkipped(orderId).catch((e) =>
+        console.error("CRM skip update failed", e)
+      );
+      return { ok: true, skipped: true };
     }
 
-    const leadId = String(result.result.leadId);
-    await markCrmSynced(orderId, leadId, result.result.dealUrl);
-    return { ok: true, leadId, dealUrl: result.result.dealUrl };
-  } catch (err) {
-    const message = err instanceof Error ? err.message : String(err);
-    await markCrmFailed(orderId, message).catch((e) =>
-      console.error("CRM failed status update error", e)
-    );
-    console.error("CRM sync error for order", orderId, err);
-    return { ok: false, error: message };
+    const order = await prisma.order.findUnique({ where: { id: orderId } });
+    if (!order) {
+      return { ok: false, error: "Order not found" };
+    }
+
+    if (order.crmLeadId && order.crmSyncStatus === CrmSyncStatus.SYNCED && !options.force) {
+      return {
+        ok: true,
+        leadId: order.crmLeadId,
+        dealUrl: order.crmDealUrl ?? "",
+      };
+    }
+
+    try {
+      const useExisting =
+        order.crmLeadId &&
+        (options.force || order.crmSyncStatus === CrmSyncStatus.SYNCED);
+
+      const result = useExisting
+        ? await resyncKommoLead(config, order, order.crmLeadId!, { source: options.source })
+        : await createKommoLead(config, order, { source: options.source });
+
+      if (!result.ok) {
+        await markCrmFailed(orderId, result.error);
+        console.error("CRM sync failed for order", orderId, result.error);
+        return { ok: false, error: result.error };
+      }
+
+      const leadId = String(result.result.leadId);
+      await markCrmSynced(orderId, leadId, result.result.dealUrl);
+      return { ok: true, leadId, dealUrl: result.result.dealUrl };
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      await markCrmFailed(orderId, message).catch((e) =>
+        console.error("CRM failed status update error", e)
+      );
+      console.error("CRM sync error for order", orderId, err);
+      return { ok: false, error: message };
+    }
+  })();
+  inFlightSyncByOrderId.set(orderId, job);
+  try {
+    return await job;
+  } finally {
+    inFlightSyncByOrderId.delete(orderId);
   }
 }
 

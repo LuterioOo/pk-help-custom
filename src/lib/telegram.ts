@@ -150,6 +150,9 @@ export function formatOrderMessage(
     lines.push(`🧭 <b>Source:</b> ${escapeHtml(sourceType)}`);
   }
   lines.push(
+    `🔁 <b>Trade-In:</b> ${sourceType === "trade_in" ? (isPl ? "tak" : "да") : (isPl ? "nie" : "нет")}`
+  );
+  lines.push(
     `💳 <b>${isPl ? "Raty" : "Рассрочка"}:</b> ${
       installmentsRequested ? (isPl ? "tak" : "да") : (isPl ? "nie" : "нет")
     }`
@@ -176,9 +179,64 @@ export function formatOrderMessage(
     }
   }
 
+  const tradeInParts = extractTradeInParts(estimateMeta);
+  if (tradeInParts.length > 0) {
+    lines.push(`\n🧩 <b>СТАРОЕ ЖЕЛЕЗО КЛИЕНТА:</b>`);
+    for (const part of tradeInParts) {
+      lines.push(`• <b>${escapeHtml(part.category)}:</b> ${escapeHtml(part.name)}`);
+    }
+  }
+
+  lines.push(`\n✅ <b>Что нужно сделать админу:</b>`);
+  for (const task of deriveAdminTasks(order.services ?? [], estimateMeta)) {
+    lines.push(`• ${escapeHtml(task)}`);
+  }
+
   return lines.join("\n");
 }
 
 function escapeHtml(s: string) {
   return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
+function extractTradeInParts(
+  estimateMeta: Record<string, unknown> | null
+): Array<{ category: string; name: string }> {
+  if (!estimateMeta) return [];
+  const raw = Array.isArray(estimateMeta.items)
+    ? estimateMeta.items
+    : Array.isArray(estimateMeta.selectedParts)
+      ? estimateMeta.selectedParts
+      : [];
+  return raw
+    .map((row) => {
+      const item = row as Record<string, unknown>;
+      return {
+        category: String(item.category ?? "").toUpperCase(),
+        name: String(item.name ?? ""),
+      };
+    })
+    .filter((part) => ["GPU", "CPU", "RAM", "PSU"].includes(part.category) && part.name);
+}
+
+function deriveAdminTasks(services: string[], estimateMeta: Record<string, unknown> | null): string[] {
+  const lower = services.map((s) => s.toLowerCase());
+  const isTradeIn =
+    lower.some((s) => s.includes("trade")) ||
+    String(estimateMeta?.sourceType ?? "") === "trade_in";
+  const installmentsRequested = Boolean(estimateMeta?.installmentsRequested);
+  if (isTradeIn) {
+    return [
+      "Проверить старое железо",
+      "Подтвердить coupon",
+      "Ожидаем клиента в сервисе",
+      ...(installmentsRequested ? ["Отправить документы на рассрочку"] : []),
+    ];
+  }
+  return [
+    "Связаться с клиентом",
+    "Уточнить сборку",
+    "Подтвердить наличие",
+    ...(installmentsRequested ? ["Отправить документы на рассрочку"] : []),
+  ];
 }

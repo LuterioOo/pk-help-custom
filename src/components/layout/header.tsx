@@ -54,16 +54,15 @@ export function Header() {
   return (
     <header className="fixed top-0 left-0 right-0 z-50 px-3 sm:px-4 md:px-8 py-3 sm:py-4">
       <div className="max-w-7xl mx-auto flex items-center justify-between glass-strong rounded-xl sm:rounded-2xl px-3 sm:px-4 md:px-6 py-2.5 sm:py-3">
-        <Logo href={base || "/"} size="sm" />
+        <Logo href={base || "/"} size="md" />
 
         <nav className="hidden lg:flex items-center gap-0.5">
           {links.map((link) => (
             <Link
               key={link.id}
               href={link.href}
-              onMouseEnter={() => playTone("hover")}
               onClick={() => playTone("click")}
-              className="px-3 xl:px-4 py-2 text-sm text-zinc-400 hover:text-white transition-colors rounded-lg hover:bg-white/5"
+              className="px-3 xl:px-4 py-2 text-sm text-zinc-400 hover:text-white transition-colors rounded-lg hover:bg-white/5 border border-transparent hover:border-yellow-500/25"
             >
               {link.label}
             </Link>

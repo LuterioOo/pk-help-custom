@@ -16,8 +16,8 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 
 const variants: Record<Variant, string> = {
   primary:
-    "bg-gradient-to-r from-yellow-400 to-amber-500 text-black font-semibold neon-border hover:from-yellow-300 hover:to-amber-400 active:scale-[0.98]",
-  secondary: "glass text-zinc-100 hover:bg-white/10 active:scale-[0.98]",
+    "bg-gradient-to-r from-yellow-300 to-amber-500 text-black font-semibold neon-border hover:from-yellow-200 hover:to-amber-400 hover:shadow-[0_8px_24px_rgba(255,215,0,0.28)] active:scale-[0.98]",
+  secondary: "glass text-zinc-200 border border-white/10 hover:bg-white/8 hover:border-white/20 active:scale-[0.98]",
   ghost: "text-zinc-300 hover:text-white hover:bg-white/5 active:scale-[0.98]",
   outline:
     "border border-white/15 text-zinc-200 hover:border-yellow-500/50 hover:bg-yellow-500/10 active:scale-[0.98]",
@@ -43,7 +43,6 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       playTone("click");
       onClick?.(e);
     };
-    const wrappedOnHover = () => playTone("hover");
 
     if (asChild) {
       if (!isValidElement(children)) return null;
@@ -61,12 +60,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       return cloneElement(child, {
         className: cn(baseClassName, existing.className),
         onClick: mergedOnClick,
-        onPointerEnter: typeof (existing as { onPointerEnter?: unknown }).onPointerEnter === "function"
-          ? (e: unknown) => {
-              wrappedOnHover();
-              ((existing as { onPointerEnter: (ev: unknown) => void }).onPointerEnter)(e);
-            }
-          : wrappedOnHover,
+        onPointerEnter: (existing as { onPointerEnter?: unknown }).onPointerEnter,
         "aria-disabled": disabled || isLoading ? true : undefined,
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } as any);
@@ -78,7 +72,6 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         className={baseClassName}
         disabled={disabled || isLoading}
         onClick={wrappedOnClick}
-        onPointerEnter={wrappedOnHover}
         {...props}
       >
         {isLoading ? (
