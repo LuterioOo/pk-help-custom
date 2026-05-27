@@ -10,6 +10,7 @@ import {
   loadStoredContacts,
   saveStoredContacts,
   saveTradeInCoupon,
+  saveTradeInLead,
 } from "@/lib/trade-in-storage";
 import { localeBasePath } from "@/lib/locale-path";
 import { cn } from "@/lib/utils";
@@ -135,7 +136,7 @@ export function TradeInPage() {
           source: typeof window !== "undefined" ? window.location.href : undefined,
         }),
       });
-      const data = (await res.json()) as { success?: boolean; error?: string };
+      const data = (await res.json()) as { success?: boolean; error?: string; id?: string };
       if (!res.ok || !data.success) throw new Error(data.error ?? "error");
       saveStoredContacts(contacts);
       saveTradeInCoupon({
@@ -144,6 +145,9 @@ export function TradeInPage() {
         name: contacts.name,
         appliedAt: new Date().toISOString(),
       });
+      if (data.id) {
+        saveTradeInLead({ orderId: data.id, createdAt: new Date().toISOString() });
+      }
       toast.success(t("couponIssued", { amount: estimate.estimatedTotal }));
       setStep("coupon");
     } catch {

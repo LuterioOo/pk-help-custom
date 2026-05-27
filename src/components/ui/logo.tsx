@@ -11,7 +11,7 @@ interface LogoProps {
 }
 
 export function Logo({ className, href = "/", size = "md" }: LogoProps) {
-  const heights = { sm: 36, md: 44, lg: 56 } as const;
+  const heights = { sm: 44, md: 56, lg: 64 } as const;
   const h = heights[size];
 
   const content = (

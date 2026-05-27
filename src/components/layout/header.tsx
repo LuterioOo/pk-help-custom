@@ -54,22 +54,22 @@ export function Header() {
   return (
     <header className="fixed top-0 left-0 right-0 z-50 px-3 sm:px-4 md:px-8 py-3 sm:py-4">
       <div className="max-w-7xl mx-auto flex items-center justify-between glass-strong rounded-xl sm:rounded-2xl px-3 sm:px-4 md:px-6 py-2.5 sm:py-3">
-        <Logo href={base || "/"} size="md" />
+        <Logo href={base || "/"} size="lg" />
 
-        <nav className="hidden lg:flex items-center gap-0.5">
+        <nav className="hidden xl:flex items-center gap-0.5">
           {links.map((link) => (
             <Link
               key={link.id}
               href={link.href}
               onClick={() => playTone("click")}
-              className="px-3 xl:px-4 py-2 text-sm text-zinc-400 hover:text-white transition-colors rounded-lg hover:bg-white/5 border border-transparent hover:border-yellow-500/25"
+              className="px-3 xl:px-4 py-2 text-[13px] whitespace-nowrap text-zinc-400 hover:text-white transition-colors rounded-lg hover:bg-white/5 border border-transparent hover:border-yellow-500/25"
             >
               {link.label}
             </Link>
           ))}
         </nav>
 
-        <div className="hidden md:flex items-center gap-2 lg:gap-3">
+        <div className="hidden xl:flex items-center gap-2 lg:gap-3">
           <LanguageSwitcher />
           <button
             type="button"
@@ -93,7 +93,7 @@ export function Header() {
 
         <button
           type="button"
-          className="lg:hidden p-2.5 text-zinc-300 touch-manipulation -mr-1"
+          className="xl:hidden p-2.5 text-zinc-300 touch-manipulation -mr-1"
           onClick={() => setOpen(!open)}
           aria-expanded={open}
           aria-label="Menu"
@@ -104,7 +104,7 @@ export function Header() {
 
       <div
         className={cn(
-          "lg:hidden mt-2 mx-3 sm:mx-4 glass-strong rounded-2xl overflow-hidden transition-all duration-200 origin-top",
+          "xl:hidden mt-2 mx-3 sm:mx-4 glass-strong rounded-2xl overflow-hidden transition-all duration-200 origin-top",
           open ? "opacity-100 max-h-[85vh] visible" : "opacity-0 max-h-0 invisible pointer-events-none"
         )}
       >

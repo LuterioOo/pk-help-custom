@@ -13,7 +13,12 @@ import { Button } from "@/components/ui/button";
 import { ScrollReveal } from "@/components/ui/scroll-reveal";
 import { cn } from "@/lib/utils";
 
-import { saveStoredContacts, loadStoredContacts } from "@/lib/trade-in-storage";
+import {
+  saveStoredContacts,
+  loadStoredContacts,
+  loadTradeInLead,
+  clearTradeInLead,
+} from "@/lib/trade-in-storage";
 
 const serviceKeys = ["build", "consult", "upgrade", "repair", "custom"] as const;
 
@@ -161,10 +166,12 @@ export function OrderForm() {
     if (data.website) return;
     try {
       storeContacts(data.phone, data.messenger);
+      const pendingTradeInLead = loadTradeInLead();
       const res = await fetch("/api/orders", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          existingOrderId: pendingTradeInLead?.orderId,
           name: data.name,
           phone: data.phone,
           email: data.email || undefined,
@@ -186,7 +193,7 @@ export function OrderForm() {
               : undefined,
           installmentsRequested,
           couponAppliedToBuild: useTradeInCoupon,
-          sourceType: "builder",
+          sourceType: pendingTradeInLead?.orderId ? "trade_in" : "builder",
           locale,
           source:
             typeof window !== "undefined"
@@ -219,6 +226,9 @@ export function OrderForm() {
         throw new Error(json.message ?? json.error ?? "error");
       }
       toast.success(t("success"));
+      if (pendingTradeInLead?.orderId) {
+        clearTradeInLead();
+      }
       reset({ attachBuild: true, services: [] });
     } catch (err) {
       console.error("Order submit failed:", err);

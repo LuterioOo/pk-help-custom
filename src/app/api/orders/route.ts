@@ -5,7 +5,7 @@ import { assertDatabaseUrl, isDatabaseError, isSchemaMissingError } from "@/lib/
 import { prisma } from "@/lib/prisma";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { getSiteUrl } from "@/lib/site-url";
-import { scheduleOrderCrmSync } from "@/lib/crm";
+import { scheduleOrderCrmSync, syncOrderToCrm } from "@/lib/crm";
 import { formatOrderMessage, sendTelegramMessage, type TelegramLocale } from "@/lib/telegram";
 import { isPolishHost } from "@/lib/site";
 import { selectedComponentSchema, selectionToSelectedComponents } from "@/lib/order-components";
@@ -35,6 +35,7 @@ const schema = z.object({
   status: z.nativeEnum(OrderStatus).optional(),
   locale: z.enum(["pl", "ru", "uk", "en"]).optional(),
   source: z.string().max(500).optional(),
+  existingOrderId: z.string().max(64).optional(),
 });
 
 function parseSelectedComponents(
@@ -101,22 +102,77 @@ export async function POST(req: NextRequest) {
           }
         : data.tradeInEstimate;
 
-    const order = await prisma.order.create({
-      data: {
-        name: data.name,
-        phone: data.phone,
-        email,
-        messenger,
-        services: data.services ?? [],
-        comment: data.comment,
-        buildJson: (data.buildJson as Prisma.InputJsonValue) ?? undefined,
-        selectedComponents: (selectedComponents as Prisma.InputJsonValue) ?? undefined,
-        totalPrice,
-        tradeInDiscountPLN,
-        tradeInEstimate: (normalizedTradeInEstimate as Prisma.InputJsonValue) ?? undefined,
-        status: data.status ?? undefined,
-      },
-    });
+    const existingOrderId = data.existingOrderId?.trim();
+    const existingOrder = existingOrderId
+      ? await prisma.order.findUnique({ where: { id: existingOrderId } })
+      : null;
+
+    const prevEstimate =
+      existingOrder?.tradeInEstimate && typeof existingOrder.tradeInEstimate === "object"
+        ? (existingOrder.tradeInEstimate as Record<string, unknown>)
+        : null;
+    const nextEstimate =
+      normalizedTradeInEstimate && typeof normalizedTradeInEstimate === "object"
+        ? (normalizedTradeInEstimate as Record<string, unknown>)
+        : null;
+    const mergedEstimate =
+      prevEstimate || nextEstimate
+        ? {
+            ...(prevEstimate ?? {}),
+            ...(nextEstimate ?? {}),
+            sourceType:
+              String(prevEstimate?.sourceType ?? "").trim() ||
+              String(nextEstimate?.sourceType ?? "").trim() ||
+              data.sourceType?.trim() ||
+              (data.status === "estimated_waiting_service" ? "trade_in" : "website"),
+          }
+        : undefined;
+
+    const services = Array.from(
+      new Set([...(existingOrder?.services ?? []), ...(data.services ?? [])].filter(Boolean))
+    );
+
+    const order = existingOrder
+      ? await prisma.order.update({
+          where: { id: existingOrder.id },
+          data: {
+            name: data.name,
+            phone: data.phone,
+            email,
+            messenger,
+            services,
+            comment: data.comment ?? existingOrder.comment,
+            buildJson:
+              (data.buildJson as Prisma.InputJsonValue) ??
+              (existingOrder.buildJson as Prisma.InputJsonValue) ??
+              undefined,
+            selectedComponents:
+              (selectedComponents as Prisma.InputJsonValue) ??
+              (existingOrder.selectedComponents as Prisma.InputJsonValue) ??
+              undefined,
+            totalPrice: totalPrice ?? existingOrder.totalPrice ?? undefined,
+            tradeInDiscountPLN:
+              tradeInDiscountPLN ?? existingOrder.tradeInDiscountPLN ?? undefined,
+            tradeInEstimate: (mergedEstimate as Prisma.InputJsonValue) ?? undefined,
+            status: data.status ?? existingOrder.status,
+          },
+        })
+      : await prisma.order.create({
+          data: {
+            name: data.name,
+            phone: data.phone,
+            email,
+            messenger,
+            services: data.services ?? [],
+            comment: data.comment,
+            buildJson: (data.buildJson as Prisma.InputJsonValue) ?? undefined,
+            selectedComponents: (selectedComponents as Prisma.InputJsonValue) ?? undefined,
+            totalPrice,
+            tradeInDiscountPLN,
+            tradeInEstimate: (normalizedTradeInEstimate as Prisma.InputJsonValue) ?? undefined,
+            status: data.status ?? undefined,
+          },
+        });
 
     try {
       const message = formatOrderMessage(
@@ -150,9 +206,13 @@ export async function POST(req: NextRequest) {
       console.error("Telegram error (order saved)", tgErr);
     }
 
-    scheduleOrderCrmSync(order.id, source);
+    if (existingOrder) {
+      void syncOrderToCrm(order.id, { source, force: true });
+    } else {
+      scheduleOrderCrmSync(order.id, source);
+    }
 
-    return NextResponse.json({ success: true, id: order.id });
+    return NextResponse.json({ success: true, id: order.id, updated: Boolean(existingOrder) });
   } catch (e) {
     if (e instanceof z.ZodError) {
       return NextResponse.json(
