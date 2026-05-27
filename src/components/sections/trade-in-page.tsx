@@ -100,7 +100,7 @@ export function TradeInPage() {
             .map((item) => ({
               category: item.category ?? "OTHER",
               name: item.name,
-              price: item.usedMarketPrice ?? 0,
+              price: item.usedMarketPriceMin ?? 0,
               markup: 0,
               finalPrice: item.tradeInPrice ?? 0,
             })),

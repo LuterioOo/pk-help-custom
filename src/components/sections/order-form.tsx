@@ -80,6 +80,8 @@ export function OrderForm() {
     return {
       items: estimate.items,
       couponPLN: Math.round(couponPLN),
+      sumMin: estimate.sumMin,
+      sumMax: estimate.sumMax,
       discountedTotal: Math.max(0, Math.round(total - couponPLN)),
       hasManualItems: estimate.hasManualItems,
     };
@@ -301,11 +303,9 @@ export function OrderForm() {
                   <p className="text-xs text-zinc-500">{t("tradeIn.preliminaryBadge")}</p>
                 </div>
                 <p className="text-xs text-zinc-400">
-                  {t("tradeIn.estimated", { amount: tradeInEstimate.couponPLN })}
+                  {t("tradeIn.range", { min: tradeInEstimate.sumMin, max: tradeInEstimate.sumMax })}
                 </p>
-                <p className="text-sm text-zinc-200">
-                  {t("tradeIn.coupon", { amount: tradeInEstimate.couponPLN })}
-                </p>
+                <p className="text-sm text-zinc-200">{t("tradeIn.coupon", { amount: tradeInEstimate.couponPLN })}</p>
                 <p className="text-xs text-zinc-500">
                   {t("tradeIn.afterDiscount", { amount: totalAfterTradeIn })}
                 </p>

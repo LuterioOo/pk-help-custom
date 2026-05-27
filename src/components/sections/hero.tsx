@@ -39,6 +39,11 @@ export function Hero() {
                 {t("ctaContact")}
               </Button>
             </Link>
+            <Link href={`${base}/trade-in`} className="w-full sm:w-auto">
+              <Button size="lg" variant="secondary" className="w-full sm:w-auto">
+                {t("ctaTradeIn")}
+              </Button>
+            </Link>
           </div>
         </ScrollReveal>
 

@@ -30,6 +30,7 @@ const pl = {
     subtitle: "Gry, streaming, praca, montaż, design i konfiguracje na zamówienie",
     ctaBuild: "Złóż komputer",
     ctaContact: "Skontaktuj się",
+    ctaTradeIn: "Wycena Trade-In",
     badge: "Premium Custom Builds",
   },
   builder: {
@@ -115,11 +116,12 @@ const pl = {
       preliminaryBadge: "wstępnie",
       estimated: "Szacowana wartość kuponu: {amount} PLN",
       range: "Szacowana suma Trade-In: {min}–{max} PLN",
-      coupon: "Wstępny kupon: -{amount} PLN",
+      coupon: "Otrzymałeś/-aś kupon o wartości około: {amount} PLN",
       afterDiscount: "Kwota po Trade-In: {amount} PLN",
       useCoupon: "Użyj kuponu Trade-In do tej konfiguracji",
       installmentFromDiscounted: "Rata orientacyjna (12 mies.): {amount} PLN/mies.",
-      disclaimer: "To wstępna wycena. Ostateczna cena po diagnostyce w serwisie.",
+      disclaimer:
+        "To wstępna wycena. Ostateczna cena zostanie potwierdzona w serwisie po diagnostyce i ocenie stanu oddanego sprzętu.",
       createRequest: "Utwórz zgłoszenie Trade-In",
       phonePlaceholder: "Telefon (wymagany)",
       messengerPlaceholder: "Telegram/@username (opcjonalnie)",
@@ -158,6 +160,15 @@ const pl = {
     createError: "Nie udało się utworzyć zgłoszenia.",
     autoName: "Trade-In (wycena wstępna)",
     serviceLabel: "Trade-In",
+  },
+  tradeInGuide: {
+    title: "Trade-In — jak to działa",
+    step1: "1) Na stronie Trade-In wybierz części i otrzymaj wstępny kupon.",
+    step2: "2) Złóż komputer w konfiguratorze. W formularzu zobaczysz ± wycenę i możesz użyć kuponu Trade‑In.",
+    step3:
+      "3) Ostateczna wartość jest potwierdzana w serwisie po diagnostyce i ocenie stanu oddanego sprzętu.",
+    ctaTradeIn: "Trade-In",
+    ctaBuilder: "Złóż PC",
   },
   contacts: {
     title: "Kontakt",

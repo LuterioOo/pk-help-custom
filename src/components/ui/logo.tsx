@@ -15,15 +15,23 @@ export function Logo({ className, href = "/", size = "md" }: LogoProps) {
   const h = heights[size];
 
   const content = (
-    <div className={cn("flex items-center group transition-transform hover:scale-[1.03]", className)}>
-      <Image
-        src="/logo.png"
-        alt="PK HELP"
-        width={Math.round(h * 3.2)}
-        height={h}
-        className="w-auto object-contain drop-shadow-[0_0_22px_rgba(255,215,0,0.42)]"
-        priority={size === "lg"}
-      />
+    <div
+      className={cn(
+        "inline-flex items-center group transition-transform hover:scale-[1.03]",
+        className
+      )}
+    >
+      <div className="relative rounded-full border border-yellow-400/40 bg-gradient-to-r from-yellow-500/15 via-amber-500/10 to-yellow-300/5 px-2.5 py-1.5 sm:px-3 sm:py-1.5 shadow-[0_0_24px_rgba(255,215,0,0.45)]">
+        <div className="pointer-events-none absolute inset-0 rounded-full bg-gradient-to-r from-white/10 to-transparent opacity-40 mix-blend-screen" />
+        <Image
+          src="/logo.png"
+          alt="PK HELP"
+          width={Math.round(h * 3.2)}
+          height={h}
+          className="relative w-auto object-contain drop-shadow-[0_0_18px_rgba(255,215,0,0.55)]"
+          priority={size === "lg"}
+        />
+      </div>
     </div>
   );
 

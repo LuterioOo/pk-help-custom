@@ -31,6 +31,7 @@ const ru = {
       "\u0418\u0433\u0440\u044B, \u0441\u0442\u0440\u0438\u043C\u0438\u043D\u0433, \u0440\u0430\u0431\u043E\u0442\u0430, \u043C\u043E\u043D\u0442\u0430\u0436, \u0434\u0438\u0437\u0430\u0439\u043D \u0438 \u0438\u043D\u0434\u0438\u0432\u0438\u0434\u0443\u0430\u043B\u044C\u043D\u044B\u0435 \u043A\u0430\u0441\u0442\u043E\u043C\u043D\u044B\u0435 \u0441\u0431\u043E\u0440\u043A\u0438",
     ctaBuild: "\u0421\u043E\u0431\u0440\u0430\u0442\u044C \u041F\u041A",
     ctaContact: "\u0421\u0432\u044F\u0437\u0430\u0442\u044C\u0441\u044F",
+    ctaTradeIn: "\u041E\u0446\u0435\u043D\u043A\u0430 Trade-In",
     badge: "Premium Custom Builds",
   },
   builder: {
@@ -122,11 +123,12 @@ const ru = {
       preliminaryBadge: "предварительно",
       estimated: "Ориентировочная сумма купона: {amount} PLN",
       range: "Оценка Trade-In: {min}–{max} PLN",
-      coupon: "Предварительный купон: -{amount} PLN",
+      coupon: "Вы получили купон на сумму примерно: {amount} PLN",
       afterDiscount: "Сумма после Trade-In: {amount} PLN",
       useCoupon: "Использовать купон Trade-In для этой сборки",
       installmentFromDiscounted: "Рассрочка (12 мес., предварительно): {amount} PLN/мес",
-      disclaimer: "Сумма предварительная. Финальная цена подтверждается только после диагностики в сервисе.",
+      disclaimer:
+        "Сумма предварительная. Финальная стоимость будет подтверждена в сервисе после диагностики и проверки состояния железа.",
       createRequest: "Создать заявку Trade-In",
       phonePlaceholder: "Телефон (обязательно)",
       messengerPlaceholder: "Telegram/@username (необязательно)",
@@ -158,6 +160,15 @@ const ru = {
     createError: "Не удалось создать Trade-In заявку.",
     autoName: "Trade-In (предварительная оценка)",
     serviceLabel: "Trade-In",
+  },
+  tradeInGuide: {
+    title: "Trade-In — как это работает",
+    step1: "1) На странице Trade-In выберите комплектующие и получите предварительный купон.",
+    step2: "2) Соберите ПК в конструкторе. В заявке вы увидите ± оценку и сможете применить Trade-In купон.",
+    step3:
+      "3) Финальная стоимость подтверждается в сервисе после диагностики и проверки состояния железа.",
+    ctaTradeIn: "Trade-In",
+    ctaBuilder: "Собрать ПК",
   },
   contacts: {
     title: "\u041A\u043E\u043D\u0442\u0430\u043A\u0442\u044B",

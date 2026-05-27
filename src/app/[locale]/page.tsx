@@ -1,5 +1,6 @@
 import dynamic from "next/dynamic";
 import { Hero } from "@/components/sections/hero";
+import { TradeInGuide } from "@/components/sections/trade-in-guide";
 import { ShowcaseGallery } from "@/components/sections/showcase-gallery";
 import { BuildsForSale } from "@/components/sections/builds-for-sale";
 import { Advantages } from "@/components/sections/advantages";
@@ -77,6 +78,7 @@ export default async function HomePage({ params }: Props) {
   return (
     <>
       <Hero />
+      <TradeInGuide />
       <ShowcaseGallery initialItems={showcase.items} />
       <BuildsForSale initialItems={showcase.forSale} />
       <PcBuilder />

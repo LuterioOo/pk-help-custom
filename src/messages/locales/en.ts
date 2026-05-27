@@ -29,6 +29,7 @@ const en = {
     subtitle: "Gaming, streaming, work, editing, design and fully custom builds",
     ctaBuild: "Build PC",
     ctaContact: "Contact us",
+    ctaTradeIn: "Trade-In estimate",
     badge: "Premium Custom Builds",
   },
   builder: {
@@ -123,11 +124,12 @@ const en = {
       preliminaryBadge: "preliminary",
       estimated: "Estimated coupon value: {amount} PLN",
       range: "Estimated Trade-In total: {min}–{max} PLN",
-      coupon: "Preliminary coupon: -{amount} PLN",
+      coupon: "You received a preliminary coupon for about: {amount} PLN",
       afterDiscount: "Amount after Trade-In: {amount} PLN",
       useCoupon: "Use Trade-In coupon for this build",
       installmentFromDiscounted: "Installment estimate (12 months): {amount} PLN/month",
-      disclaimer: "Preliminary estimate. Final price is confirmed only after service diagnostics.",
+      disclaimer:
+        "Preliminary amount. Final price will be confirmed by the service after diagnostics and a check of the hardware condition.",
       createRequest: "Create Trade-In request",
       phonePlaceholder: "Phone (required)",
       messengerPlaceholder: "Telegram/@username (optional)",
@@ -159,6 +161,15 @@ const en = {
     createError: "Failed to create Trade-In request.",
     autoName: "Trade-In (preliminary estimate)",
     serviceLabel: "Trade-In",
+  },
+  tradeInGuide: {
+    title: "Trade-In — how it works",
+    step1: "1) On the Trade-In page, select your components and get a preliminary coupon.",
+    step2: "2) Build your PC in the configurator. In the request form you will see the ± estimate and can apply the Trade‑In coupon.",
+    step3:
+      "3) Final value is confirmed in the service after diagnostics and a hardware condition check.",
+    ctaTradeIn: "Trade-In",
+    ctaBuilder: "Build PC",
   },
   contacts: { title: "Contact", phone: "Phone", email: "Email", telegram: "Telegram", instagram: "Instagram", map: "On map" },
   footer: { rights: "All rights reserved", tagline: "Premium custom PC builds" },
