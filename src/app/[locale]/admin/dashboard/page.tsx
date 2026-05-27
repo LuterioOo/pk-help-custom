@@ -528,6 +528,13 @@ export default function AdminDashboard() {
                     {visibleOrders.map((o) => {
                       const id = String(o.id);
                       const isNew = Boolean(newOrderIds[id]);
+                      const estimateMeta =
+                        o.tradeInEstimate && typeof o.tradeInEstimate === "object"
+                          ? (o.tradeInEstimate as Record<string, unknown>)
+                          : null;
+                      const installmentsRequested = Boolean(estimateMeta?.installmentsRequested);
+                      const couponAppliedToBuild = Boolean(estimateMeta?.couponAppliedToBuild);
+                      const sourceType = String(estimateMeta?.sourceType ?? "").trim();
                       return (
                         <motion.div
                           key={id}
@@ -559,6 +566,9 @@ export default function AdminDashboard() {
                                 Trade-In: -{String(o.tradeInDiscountPLN)} PLN
                               </span>
                             ) : null}
+                            <span>{t("orderFields.installments")}: {installmentsRequested ? t("yes") : t("no")}</span>
+                            <span>{t("orderFields.couponApplied")}: {couponAppliedToBuild ? t("yes") : t("no")}</span>
+                            {sourceType ? <span>{t("orderFields.sourceType")}: {sourceType}</span> : null}
                           </div>
                           {Array.isArray(o.services) && (o.services as string[]).length > 0 ? (
                             <p className="text-sm text-zinc-500">

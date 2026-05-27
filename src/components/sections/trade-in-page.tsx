@@ -4,10 +4,9 @@ import { useEffect, useMemo, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { useUiSound } from "@/hooks/use-ui-sound";
 import { calculateTradeInEstimate } from "@/lib/trade-in";
 import {
-  CONTACTS_STORAGE_KEY,
+  loadStoredContacts,
   saveStoredContacts,
   saveTradeInCoupon,
 } from "@/lib/trade-in-storage";
@@ -21,20 +20,20 @@ type ComponentRow = {
   price?: number;
 };
 
-const TRADE_IN_CATEGORIES = ["GPU", "CPU", "RAM", "PSU", "MOTHERBOARD", "SSD", "HDD", "CASE", "COOLER", "AIO", "FANS"];
+const TRADE_IN_CATEGORIES = ["GPU", "CPU", "RAM", "PSU"] as const;
 
 export function TradeInPage() {
   const t = useTranslations("tradeInPage");
   const locale = useLocale();
-  const { playTone } = useUiSound();
+  const [step, setStep] = useState<"contacts" | "hardware" | "coupon">("contacts");
   const [components, setComponents] = useState<ComponentRow[]>([]);
   const [selectedByCategory, setSelectedByCategory] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
-  const [contactOpen, setContactOpen] = useState(false);
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [messenger, setMessenger] = useState("");
+  const [installmentsRequested, setInstallmentsRequested] = useState(false);
   const [search, setSearch] = useState("");
 
   useEffect(() => {
@@ -43,7 +42,9 @@ export function TradeInPage() {
       try {
         const res = await fetch("/api/components");
         const data = (await res.json()) as { components?: ComponentRow[] };
-        const list = (data.components ?? []).filter((item) => TRADE_IN_CATEGORIES.includes(item.category));
+        const list = (data.components ?? []).filter((item) =>
+          TRADE_IN_CATEGORIES.includes(item.category as (typeof TRADE_IN_CATEGORIES)[number])
+        );
         setComponents(list);
       } catch {
         setComponents([]);
@@ -83,6 +84,14 @@ export function TradeInPage() {
     });
   }, [components, search]);
 
+  useEffect(() => {
+    const stored = loadStoredContacts();
+    if (!stored) return;
+    if (stored.name) setName(stored.name);
+    setPhone(stored.phone);
+    if (stored.messenger) setMessenger(stored.messenger);
+  }, []);
+
   const createRequest = async (contacts: { phone: string; messenger?: string; name?: string }) => {
     if (!selectedComponents.length) return;
     setSubmitting(true);
@@ -91,7 +100,7 @@ export function TradeInPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          name: t("autoName"),
+          name: contacts.name || t("autoName"),
           phone: contacts.phone,
           messenger: contacts.messenger,
           services: [t("serviceLabel")],
@@ -112,8 +121,12 @@ export function TradeInPage() {
             estimatedTotal: estimate.estimatedTotal,
             hasManualItems: estimate.hasManualItems,
             items: estimate.items,
-            source: "trade-in-page",
+            sourceType: "trade_in",
+            selectedParts: estimate.items.map((item) => ({ category: item.category, name: item.name })),
           },
+          installmentsRequested,
+          couponAppliedToBuild: true,
+          sourceType: "trade_in",
           status: "estimated_waiting_service",
           locale,
           source: typeof window !== "undefined" ? window.location.href : undefined,
@@ -129,7 +142,7 @@ export function TradeInPage() {
         appliedAt: new Date().toISOString(),
       });
       toast.success(t("couponIssued", { amount: estimate.estimatedTotal }));
-      setContactOpen(false);
+      setStep("coupon");
     } catch {
       toast.error(t("createError"));
     } finally {
@@ -141,12 +154,67 @@ export function TradeInPage() {
     <section className="section-pad px-4 md:px-8 pt-28">
       <div className="max-w-6xl mx-auto space-y-6">
         <div className="glass rounded-2xl p-6 md:p-8">
-          <h1 className="text-3xl md:text-4xl font-bold neon-text">{t("title")}</h1>
-          <p className="text-zinc-400 mt-3">{t("subtitle")}</p>
+          <h1 className="text-3xl md:text-4xl font-bold neon-text">{t("contactTitle")}</h1>
+          <p className="text-zinc-400 mt-3">{t("contactSubtitle")}</p>
         </div>
 
         <div className="grid lg:grid-cols-[1fr_360px] gap-6">
           <div className="glass rounded-2xl p-4 md:p-5 space-y-4">
+            {step === "contacts" ? (
+              <div className="space-y-3">
+                <p className="text-xs uppercase tracking-[0.16em] text-zinc-500">{t("contactStep")}</p>
+                <input
+                  className="w-full px-3 py-2 rounded-xl glass text-sm"
+                  placeholder={t("namePlaceholder")}
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                />
+                <input
+                  className="w-full px-3 py-2 rounded-xl glass text-sm"
+                  placeholder={t("phonePlaceholder")}
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                />
+                <input
+                  className="w-full px-3 py-2 rounded-xl glass text-sm"
+                  placeholder={t("messengerPlaceholder")}
+                  value={messenger}
+                  onChange={(e) => setMessenger(e.target.value)}
+                />
+                <label className="flex items-center gap-2 text-sm text-zinc-300">
+                  <input
+                    type="checkbox"
+                    checked={installmentsRequested}
+                    onChange={(e) => setInstallmentsRequested(e.target.checked)}
+                  />
+                  <span>{t("installmentToggle")}</span>
+                </label>
+                <Button
+                  onClick={() => {
+                    if (!name.trim()) {
+                      toast.error(t("needName"));
+                      return;
+                    }
+                    if (phone.trim().length < 8) {
+                      toast.error(t("needPhoneAndName"));
+                      return;
+                    }
+                    saveStoredContacts({
+                      name: name.trim(),
+                      phone: phone.trim(),
+                      messenger: messenger.trim() || undefined,
+                    });
+                    setStep("hardware");
+                  }}
+                >
+                  {t("continueToHardware")}
+                </Button>
+              </div>
+            ) : null}
+
+            {step !== "contacts" ? (
+              <>
+                <p className="text-xs uppercase tracking-[0.16em] text-zinc-500">{t("hardwareStep")}</p>
             <div className="flex flex-col sm:flex-row gap-3">
               <input
                 value={search}
@@ -194,7 +262,6 @@ export function TradeInPage() {
                 ) : (
                   <select
                     value={selectedByCategory[group.category] ?? ""}
-                    onMouseDown={() => playTone("select")}
                     onChange={(e) =>
                       setSelectedByCategory((prev) => ({
                         ...prev,
@@ -216,6 +283,8 @@ export function TradeInPage() {
                 )}
               </div>
             ))}
+              </>
+            ) : null}
           </div>
 
           <aside className="glass rounded-2xl p-5 space-y-3 h-fit lg:sticky lg:top-28">
@@ -225,69 +294,33 @@ export function TradeInPage() {
             </p>
             {estimate.hasManualItems ? <p className="text-xs text-amber-300">{t("manualRequired")}</p> : null}
             <p className="text-xs text-zinc-500">{t("preliminaryHint")}</p>
-
             <Button
-              disabled={selectedComponents.length === 0 || submitting}
+              disabled={step !== "hardware" || selectedComponents.length === 0 || submitting}
               isLoading={submitting}
               onClick={() => {
-                try {
-                  const raw = localStorage.getItem(CONTACTS_STORAGE_KEY);
-                  const stored = raw
-                    ? (JSON.parse(raw) as { phone?: string; messenger?: string; name?: string })
-                    : null;
-                  if (stored?.phone && String(stored.phone).trim().length >= 8) {
-                    void createRequest({
-                      phone: String(stored.phone).trim(),
-                      messenger: stored.messenger?.trim() || undefined,
-                      name: stored.name?.trim() || undefined,
-                    });
-                    return;
-                  }
-                } catch {
-                  /* open form */
+                if (!name.trim() || phone.trim().length < 8) {
+                  toast.error(t("needPhoneAndName"));
+                  return;
                 }
-                setContactOpen(true);
+                void createRequest({
+                  phone: phone.trim(),
+                  messenger: messenger.trim() || undefined,
+                  name: name.trim(),
+                });
               }}
             >
-              {t("createCoupon")}
+              {t("proceedToCoupon")}
             </Button>
 
-            {contactOpen ? (
-              <div className="space-y-2 pt-1">
-                <input
-                  className="w-full px-3 py-2 rounded-xl glass text-sm"
-                  placeholder={t("namePlaceholder")}
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                />
-                <input
-                  className="w-full px-3 py-2 rounded-xl glass text-sm"
-                  placeholder={t("phonePlaceholder")}
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                />
-                <input
-                  className="w-full px-3 py-2 rounded-xl glass text-sm"
-                  placeholder={t("messengerPlaceholder")}
-                  value={messenger}
-                  onChange={(e) => setMessenger(e.target.value)}
-                />
-                <Button
-                  size="sm"
-                  isLoading={submitting}
-                  onClick={() => {
-                    if (phone.trim().length < 8) {
-                      toast.error(t("needPhone"));
-                      return;
-                    }
-                    void createRequest({
-                      phone: phone.trim(),
-                      messenger: messenger.trim() || undefined,
-                      name: name.trim() || undefined,
-                    });
-                  }}
-                >
-                  {t("submitContacts")}
+            {step === "coupon" ? (
+              <div className="rounded-xl border border-yellow-500/25 bg-yellow-500/10 p-3 space-y-2">
+                <p className="text-sm font-semibold text-yellow-300">{t("couponCardTitle")}</p>
+                <p className="text-base font-bold text-emerald-300">
+                  {t("estimatedCoupon", { amount: estimate.estimatedTotal })}
+                </p>
+                <p className="text-xs text-zinc-400">{t("couponCardNote")}</p>
+                <Button size="sm" onClick={() => document.getElementById("builder")?.scrollIntoView({ behavior: "smooth" })}>
+                  {t("toBuilderCta")}
                 </Button>
               </div>
             ) : null}

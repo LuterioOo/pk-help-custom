@@ -47,6 +47,7 @@ export function OrderForm() {
   const [tradeInPhone, setTradeInPhone] = useState("");
   const [tradeInMessenger, setTradeInMessenger] = useState("");
   const [tradeInSubmitting, setTradeInSubmitting] = useState(false);
+  const [installmentsRequested, setInstallmentsRequested] = useState(false);
 
   const {
     register,
@@ -123,7 +124,14 @@ export function OrderForm() {
             couponPLN: tradeInEstimate.couponPLN,
             items: tradeInEstimate.items,
             preliminary: true,
+            selectedParts: tradeInEstimate.items.map((item) => ({
+              category: item.category,
+              name: item.name,
+            })),
           },
+          installmentsRequested,
+          couponAppliedToBuild: useTradeInCoupon,
+          sourceType: "trade_in",
           status: "estimated_waiting_service",
           locale,
           source: typeof window !== "undefined" ? window.location.href : undefined,
@@ -167,6 +175,18 @@ export function OrderForm() {
           selectedComponents:
             data.attachBuild && hasBuild ? selectionToSelectedComponents(selection) : undefined,
           totalPrice: data.attachBuild && hasBuild ? (useTradeInCoupon ? totalAfterTradeIn : total) : undefined,
+          tradeInDiscountPLN: data.attachBuild && hasBuild && useTradeInCoupon ? Math.max(0, total - totalAfterTradeIn) : undefined,
+          tradeInEstimate:
+            data.attachBuild && hasBuild
+              ? {
+                  sourceType: "builder",
+                  installmentsRequested,
+                  couponAppliedToBuild: useTradeInCoupon,
+                }
+              : undefined,
+          installmentsRequested,
+          couponAppliedToBuild: useTradeInCoupon,
+          sourceType: "builder",
           locale,
           source:
             typeof window !== "undefined"
@@ -280,6 +300,18 @@ export function OrderForm() {
                 </span>
               </label>
             )}
+            <label className="flex items-start gap-3 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={installmentsRequested}
+                onChange={(e) => setInstallmentsRequested(e.target.checked)}
+                className="mt-1 w-4 h-4 rounded accent-yellow-500"
+              />
+              <span className="text-sm text-zinc-300">
+                {t("installments.requested")}
+                <span className="block text-xs text-zinc-500 mt-0.5">{t("installments.note")}</span>
+              </span>
+            </label>
 
             {hasBuild && tradeInEstimate && (
               <div className="rounded-2xl border border-yellow-500/20 bg-yellow-500/5 p-4 space-y-2">

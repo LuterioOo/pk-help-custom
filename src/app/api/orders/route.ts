@@ -29,6 +29,9 @@ const schema = z.object({
   totalPrice: z.coerce.number().optional(),
   tradeInDiscountPLN: z.coerce.number().nonnegative().optional(),
   tradeInEstimate: z.record(z.string(), z.unknown()).optional(),
+  installmentsRequested: z.boolean().optional(),
+  couponAppliedToBuild: z.boolean().optional(),
+  sourceType: z.string().max(40).optional(),
   status: z.nativeEnum(OrderStatus).optional(),
   locale: z.enum(["pl", "ru", "uk", "en"]).optional(),
   source: z.string().max(500).optional(),
@@ -85,6 +88,19 @@ export async function POST(req: NextRequest) {
         ? Math.max(0, data.tradeInDiscountPLN)
         : undefined;
 
+    const normalizedTradeInEstimate =
+      data.tradeInEstimate && typeof data.tradeInEstimate === "object"
+        ? {
+            ...data.tradeInEstimate,
+            installmentsRequested: Boolean(data.installmentsRequested),
+            couponAppliedToBuild: Boolean(data.couponAppliedToBuild),
+            sourceType:
+              data.sourceType?.trim() ||
+              (data.status === "estimated_waiting_service" ? "trade_in" : "website"),
+            locale,
+          }
+        : data.tradeInEstimate;
+
     const order = await prisma.order.create({
       data: {
         name: data.name,
@@ -97,7 +113,7 @@ export async function POST(req: NextRequest) {
         selectedComponents: (selectedComponents as Prisma.InputJsonValue) ?? undefined,
         totalPrice,
         tradeInDiscountPLN,
-        tradeInEstimate: (data.tradeInEstimate as Prisma.InputJsonValue) ?? undefined,
+        tradeInEstimate: (normalizedTradeInEstimate as Prisma.InputJsonValue) ?? undefined,
         status: data.status ?? undefined,
       },
     });
@@ -115,7 +131,12 @@ export async function POST(req: NextRequest) {
           selectedComponents,
           totalPrice,
           tradeInDiscountPLN,
-          tradeInEstimate: data.tradeInEstimate,
+          tradeInEstimate: normalizedTradeInEstimate,
+          installmentsRequested: data.installmentsRequested,
+          couponAppliedToBuild: data.couponAppliedToBuild,
+          sourceType:
+            data.sourceType?.trim() ||
+            (data.status === "estimated_waiting_service" ? "trade_in" : "website"),
           source,
           createdAt: order.createdAt,
         },

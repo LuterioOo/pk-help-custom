@@ -78,6 +78,19 @@ export function formatOrderCrmNote(
   if (tradeInEstimate && typeof tradeInEstimate.estimatedTotal === "number") {
     lines.push("", `Trade-In (предв.): ${tradeInEstimate.estimatedTotal} PLN`);
   }
+  if (tradeInEstimate) {
+    const installmentsRequested = Boolean(tradeInEstimate.installmentsRequested);
+    const couponAppliedToBuild = Boolean(tradeInEstimate.couponAppliedToBuild);
+    const sourceType =
+      typeof tradeInEstimate.sourceType === "string" ? tradeInEstimate.sourceType : "";
+    lines.push(
+      `Рассрочка: ${installmentsRequested ? "да" : "нет"}`,
+      `Купон применён к сборке: ${couponAppliedToBuild ? "да" : "нет"}`
+    );
+    if (sourceType) {
+      lines.push(`Источник заявки: ${sourceType}`);
+    }
+  }
 
   if (order.comment?.trim()) {
     lines.push("", "Комментарий клиента:", order.comment.trim());

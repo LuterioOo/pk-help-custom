@@ -59,6 +59,9 @@ export function formatOrderMessage(
     totalPrice?: number | null;
     tradeInDiscountPLN?: number | null;
     tradeInEstimate?: unknown;
+    installmentsRequested?: boolean;
+    couponAppliedToBuild?: boolean;
+    sourceType?: string;
     buildJson?: unknown;
     selectedComponents?: unknown;
     source?: string | null;
@@ -132,6 +135,30 @@ export function formatOrderMessage(
       } PLN`
     );
   }
+
+  const estimateMeta =
+    order.tradeInEstimate && typeof order.tradeInEstimate === "object"
+      ? (order.tradeInEstimate as Record<string, unknown>)
+      : null;
+  const installmentsRequested =
+    Boolean(order.installmentsRequested) || Boolean(estimateMeta?.installmentsRequested);
+  const couponAppliedToBuild =
+    Boolean(order.couponAppliedToBuild) || Boolean(estimateMeta?.couponAppliedToBuild);
+  const sourceType = String(order.sourceType ?? estimateMeta?.sourceType ?? "").trim();
+
+  if (sourceType) {
+    lines.push(`🧭 <b>Source:</b> ${escapeHtml(sourceType)}`);
+  }
+  lines.push(
+    `💳 <b>${isPl ? "Raty" : "Рассрочка"}:</b> ${
+      installmentsRequested ? (isPl ? "tak" : "да") : (isPl ? "nie" : "нет")
+    }`
+  );
+  lines.push(
+    `🎫 <b>${isPl ? "Kupon zastosowany" : "Купон применён"}:</b> ${
+      couponAppliedToBuild ? (isPl ? "tak" : "да") : (isPl ? "nie" : "нет")
+    }`
+  );
 
   if (order.comment) {
     lines.push(
