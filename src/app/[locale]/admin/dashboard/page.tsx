@@ -20,7 +20,16 @@ import { ComponentImage } from "@/components/ui/component-image";
 
 type Tab = "components" | "reviews" | "orders" | "showcase";
 
-const ORDER_STATUSES = ["NOWE", "W_TRAKCIE", "WYCENIONE", "ZAKONCZONE", "ANULOWANE"] as const;
+const ORDER_STATUSES = ["NOWE", "W_TRAKCIE", "WYCENIONE", "estimated_waiting_service", "ZAKONCZONE", "ANULOWANE"] as const;
+const TRADE_IN_WORKFLOW = [
+  { id: "new", status: "NOWE" },
+  { id: "estimated_waiting_service", status: "estimated_waiting_service" },
+  { id: "in_service_check", status: "W_TRAKCIE" },
+  { id: "final_price_confirmed", status: "WYCENIONE" },
+  { id: "accepted", status: "ZAKONCZONE" },
+  { id: "rejected", status: "ANULOWANE" },
+  { id: "used_as_coupon", status: "WYCENIONE" },
+] as const;
 const CATEGORIES = [
   "CPU", "GPU", "MOTHERBOARD", "RAM", "PSU", "SSD", "HDD", "CASE", "COOLER", "AIO", "FANS",
 ];
@@ -75,33 +84,95 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [authError, setAuthError] = useState(false);
   const [statusFilter, setStatusFilter] = useState("all");
+  const [tradeInOnly, setTradeInOnly] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState(emptyComponent);
   const [newReview, setNewReview] = useState({ name: "", text: "", rating: 5 });
   const [pendingImageFile, setPendingImageFile] = useState<File | null>(null);
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
   const [crmSyncingId, setCrmSyncingId] = useState<string | null>(null);
+  const [soundEnabled, setSoundEnabled] = useState(true);
+  const [audioUnlocked, setAudioUnlocked] = useState(false);
+  const [lastOrderId, setLastOrderId] = useState<string | null>(null);
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem("pkhelp-admin-sound");
+      if (raw === "0") setSoundEnabled(false);
+    } catch {
+      /* ignore */
+    }
+  }, []);
+
+  useEffect(() => {
+    if (audioUnlocked) return;
+    const unlock = () => setAudioUnlocked(true);
+    window.addEventListener("pointerdown", unlock, { once: true });
+    window.addEventListener("keydown", unlock, { once: true });
+    return () => {
+      window.removeEventListener("pointerdown", unlock);
+      window.removeEventListener("keydown", unlock);
+    };
+  }, [audioUnlocked]);
+
+  const playBell = useCallback(() => {
+    if (!soundEnabled || !audioUnlocked) return;
+    try {
+      const AudioContextImpl = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+      const ctx = new AudioContextImpl();
+      const gain = ctx.createGain();
+      gain.gain.value = 1;
+      gain.connect(ctx.destination);
+
+      const now = ctx.currentTime;
+      const o1 = ctx.createOscillator();
+      const o2 = ctx.createOscillator();
+      o1.type = "sine";
+      o2.type = "triangle";
+      o1.frequency.setValueAtTime(1200, now);
+      o2.frequency.setValueAtTime(860, now);
+
+      const env = ctx.createGain();
+      env.gain.setValueAtTime(0.0001, now);
+      env.gain.exponentialRampToValueAtTime(1.0, now + 0.01);
+      env.gain.exponentialRampToValueAtTime(0.0001, now + 1.1);
+      o1.connect(env);
+      o2.connect(env);
+      env.connect(gain);
+
+      o1.start(now);
+      o2.start(now);
+      o1.stop(now + 1.15);
+      o2.stop(now + 1.15);
+      setTimeout(() => void ctx.close().catch(() => {}), 1300);
+    } catch {
+      /* ignore */
+    }
+  }, [soundEnabled, audioUnlocked]);
+
+  const fetchOrders = useCallback(async () => {
+    const ordersUrl =
+      statusFilter === "all" ? "/api/admin/orders" : `/api/admin/orders?status=${statusFilter}`;
+    const o = await fetch(ordersUrl);
+    if (o.status === 401) {
+      setAuthError(true);
+      return null;
+    }
+    const od = (await o.json()) as { orders?: Array<Record<string, unknown>> };
+    return od.orders ?? [];
+  }, [statusFilter]);
 
   const fetchAll = useCallback(async () => {
     setLoading(true);
     try {
-      const ordersUrl =
-        statusFilter === "all"
-          ? "/api/admin/orders"
-          : `/api/admin/orders?status=${statusFilter}`;
       const [o, c, r] = await Promise.all([
-        fetch(ordersUrl),
+        fetchOrders(),
         fetch("/api/admin/components"),
         fetch("/api/admin/reviews"),
       ]);
-      if (o.status === 401) {
-        setAuthError(true);
-        return;
-      }
-      const od = await o.json();
+      if (o) setOrders(o);
       const cd = await c.json();
       const rd = await r.json();
-      setOrders(od.orders ?? []);
       setComponents(cd.components ?? []);
       setReviews(rd.reviews ?? []);
     } catch {
@@ -109,11 +180,36 @@ export default function AdminDashboard() {
     } finally {
       setLoading(false);
     }
-  }, [statusFilter]);
+  }, [fetchOrders]);
 
   useEffect(() => {
     fetchAll();
   }, [fetchAll]);
+
+  useEffect(() => {
+    setLastOrderId(null);
+  }, [statusFilter]);
+
+  useEffect(() => {
+    if (tab !== "orders") return;
+    let stopped = false;
+    const tick = async () => {
+      const next = await fetchOrders();
+      if (!next || stopped) return;
+      const newestId = next[0] ? String(next[0].id) : null;
+      if (newestId && lastOrderId && newestId !== lastOrderId) {
+        playBell();
+      }
+      if (newestId) setLastOrderId(newestId);
+      setOrders(next);
+    };
+    void tick();
+    const id = window.setInterval(() => void tick(), 5000);
+    return () => {
+      stopped = true;
+      window.clearInterval(id);
+    };
+  }, [tab, fetchOrders, lastOrderId, playBell]);
 
   useEffect(() => {
     if (authError) router.replace(adminUrl(locale));
@@ -271,6 +367,13 @@ export default function AdminDashboard() {
     if (categoryFilter === "all") return components;
     return components.filter((c) => c.category === categoryFilter);
   }, [components, categoryFilter]);
+  const visibleOrders = useMemo(() => {
+    if (!tradeInOnly) return orders;
+    return orders.filter((o) => {
+      const services = Array.isArray(o.services) ? (o.services as unknown[]) : [];
+      return services.some((s) => String(s).toLowerCase().includes("trade"));
+    });
+  }, [orders, tradeInOnly]);
 
   const predictedPrice = useMemo(() => {
     return resolveComponentPrice(
@@ -337,22 +440,52 @@ export default function AdminDashboard() {
           <>
             {tab === "orders" && (
               <div className="space-y-4">
-                <select
-                  value={statusFilter}
-                  onChange={(e) => setStatusFilter(e.target.value)}
-                  className="px-4 py-2 rounded-xl glass text-sm"
-                >
-                  <option value="all">{t("filterAll")}</option>
-                  {ORDER_STATUSES.map((s) => (
-                    <option key={s} value={s}>
-                      {t(`status.${s}`)}
-                    </option>
-                  ))}
-                </select>
-                {orders.length === 0 ? (
+                <div className="flex flex-wrap items-center gap-3">
+                  <select
+                    value={statusFilter}
+                    onChange={(e) => setStatusFilter(e.target.value)}
+                    className="px-4 py-2 rounded-xl glass text-sm"
+                  >
+                    <option value="all">{t("filterAll")}</option>
+                    {ORDER_STATUSES.map((s) => (
+                      <option key={s} value={s}>
+                        {t(`status.${s}`)}
+                      </option>
+                    ))}
+                  </select>
+
+                  <label className="flex items-center gap-2 text-sm text-zinc-400 px-2">
+                    <input
+                      type="checkbox"
+                      checked={tradeInOnly}
+                      onChange={(e) => setTradeInOnly(e.target.checked)}
+                    />
+                    <span>{t("tradeInOnly")}</span>
+                  </label>
+                  <label className="flex items-center gap-2 text-sm text-zinc-400 px-2">
+                    <input
+                      type="checkbox"
+                      checked={soundEnabled}
+                      onChange={(e) => {
+                        const next = e.target.checked;
+                        setSoundEnabled(next);
+                        try {
+                          localStorage.setItem("pkhelp-admin-sound", next ? "1" : "0");
+                        } catch {
+                          /* ignore */
+                        }
+                      }}
+                    />
+                    <span>{t("live.sound")}</span>
+                    <span className="text-xs text-zinc-600">
+                      {soundEnabled ? t("live.enabled") : t("live.disabled")}
+                    </span>
+                  </label>
+                </div>
+                {visibleOrders.length === 0 ? (
                   <p className="text-zinc-500">{t("noOrders")}</p>
                 ) : (
-                  orders.map((o) => (
+                  visibleOrders.map((o) => (
                     <div key={String(o.id)} className="glass rounded-2xl p-5 space-y-3">
                       <div className="flex flex-wrap justify-between gap-2">
                         <span className="font-medium">{String(o.name)}</span>
@@ -369,6 +502,11 @@ export default function AdminDashboard() {
                         {o.totalPrice ? (
                           <span className="text-yellow-400">
                             {t("orderFields.total")}: {String(o.totalPrice)} PLN
+                          </span>
+                        ) : null}
+                        {typeof o.tradeInDiscountPLN === "number" && o.tradeInDiscountPLN > 0 ? (
+                          <span className="text-emerald-400">
+                            Trade-In: -{String(o.tradeInDiscountPLN)} PLN
                           </span>
                         ) : null}
                       </div>
@@ -425,6 +563,20 @@ export default function AdminDashboard() {
                         ) : null}
                       </div>
                       <div className="flex flex-wrap gap-2 items-center">
+                        {Array.isArray(o.services) && (o.services as string[]).some((s) => /trade/i.test(s)) ? (
+                          <div className="flex flex-wrap gap-1">
+                            {TRADE_IN_WORKFLOW.map((step) => (
+                              <Button
+                                key={step.id}
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => updateOrderStatus(String(o.id), step.status)}
+                              >
+                                {t(`tradeInStatus.${step.id}`)}
+                              </Button>
+                            ))}
+                          </div>
+                        ) : null}
                         <select
                           value={String(o.status)}
                           onChange={(e) => updateOrderStatus(String(o.id), e.target.value)}

@@ -57,6 +57,8 @@ export function formatOrderMessage(
     services?: string[];
     comment?: string | null;
     totalPrice?: number | null;
+    tradeInDiscountPLN?: number | null;
+    tradeInEstimate?: unknown;
     buildJson?: unknown;
     selectedComponents?: unknown;
     source?: string | null;
@@ -111,6 +113,23 @@ export function formatOrderMessage(
   if (order.totalPrice) {
     lines.push(
       `💵 <b>${isPl ? "Cena końcowa" : "Сумма сборки"}:</b> ${order.totalPrice} PLN`
+    );
+  }
+
+  if (order.tradeInDiscountPLN && order.tradeInDiscountPLN > 0) {
+    lines.push(
+      `🏷 <b>${isPl ? "Trade-In (wstępnie)" : "Trade-In (предв.)"}:</b> -${order.tradeInDiscountPLN} PLN`
+    );
+  }
+  if (
+    order.tradeInEstimate &&
+    typeof order.tradeInEstimate === "object" &&
+    typeof (order.tradeInEstimate as Record<string, unknown>).estimatedTotal === "number"
+  ) {
+    lines.push(
+      `🎟 <b>${isPl ? "Купон Trade-In (предв.)" : "Купон Trade-In (предв.)"}:</b> ${
+        (order.tradeInEstimate as Record<string, unknown>).estimatedTotal
+      } PLN`
     );
   }
 

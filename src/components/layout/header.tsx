@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Menu, X } from "lucide-react";
+import { Menu, Volume2, VolumeX, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useLocaleBase } from "@/hooks/use-locale-base";
 import Link from "next/link";
@@ -9,10 +9,12 @@ import { Logo } from "@/components/ui/logo";
 import { Button } from "@/components/ui/button";
 import { LanguageSwitcher } from "./language-switcher";
 import { cn } from "@/lib/utils";
+import { useUiSound } from "@/hooks/use-ui-sound";
 
-const navIds = ["home", "showcase", "shop", "builder", "advantages", "reviews", "contact", "order"] as const;
+const navIds = ["home", "tradeIn", "showcase", "shop", "builder", "advantages", "reviews", "contact", "order"] as const;
 const hrefMap: Record<(typeof navIds)[number], string> = {
   home: "#hero",
+  tradeIn: "/trade-in",
   showcase: "#showcase",
   shop: "#shop",
   builder: "#builder",
@@ -26,11 +28,12 @@ export function Header() {
   const t = useTranslations("nav");
   const base = useLocaleBase();
   const [open, setOpen] = useState(false);
+  const { muted, toggleMute, playTone } = useUiSound();
 
   const links = navIds.map((id) => ({
     id,
     label: t(id),
-    href: `${base}${hrefMap[id]}`,
+    href: hrefMap[id].startsWith("/") ? `${base}${hrefMap[id]}` : `${base}${hrefMap[id]}`,
   }));
 
   return (
@@ -52,6 +55,17 @@ export function Header() {
 
         <div className="hidden md:flex items-center gap-2 lg:gap-3">
           <LanguageSwitcher />
+          <button
+            type="button"
+            onClick={() => {
+              toggleMute();
+              playTone("click");
+            }}
+            className="p-2 rounded-lg glass text-zinc-300"
+            aria-label={muted ? "Unmute UI sounds" : "Mute UI sounds"}
+          >
+            {muted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+          </button>
           <Link href={`${base}#builder`}>
             <Button size="sm">{t("builder")}</Button>
           </Link>

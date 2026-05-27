@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { Prisma } from "@prisma/client";
+import { OrderStatus, Prisma } from "@prisma/client";
 import { assertDatabaseUrl, isDatabaseError, isSchemaMissingError } from "@/lib/db-config";
 import { prisma } from "@/lib/prisma";
 import { checkRateLimit } from "@/lib/rate-limit";
@@ -27,6 +27,9 @@ const schema = z.object({
   buildJson: z.record(z.string(), z.unknown()).optional(),
   selectedComponents: z.array(selectedComponentSchema).optional(),
   totalPrice: z.coerce.number().optional(),
+  tradeInDiscountPLN: z.coerce.number().nonnegative().optional(),
+  tradeInEstimate: z.record(z.string(), z.unknown()).optional(),
+  status: z.nativeEnum(OrderStatus).optional(),
   locale: z.enum(["pl", "ru", "uk", "en"]).optional(),
   source: z.string().max(500).optional(),
 });
@@ -77,6 +80,10 @@ export async function POST(req: NextRequest) {
       data.totalPrice != null && Number.isFinite(data.totalPrice)
         ? data.totalPrice
         : undefined;
+    const tradeInDiscountPLN =
+      data.tradeInDiscountPLN != null && Number.isFinite(data.tradeInDiscountPLN)
+        ? Math.max(0, data.tradeInDiscountPLN)
+        : undefined;
 
     const order = await prisma.order.create({
       data: {
@@ -89,6 +96,9 @@ export async function POST(req: NextRequest) {
         buildJson: (data.buildJson as Prisma.InputJsonValue) ?? undefined,
         selectedComponents: (selectedComponents as Prisma.InputJsonValue) ?? undefined,
         totalPrice,
+        tradeInDiscountPLN,
+        tradeInEstimate: (data.tradeInEstimate as Prisma.InputJsonValue) ?? undefined,
+        status: data.status ?? undefined,
       },
     });
 
@@ -104,6 +114,8 @@ export async function POST(req: NextRequest) {
           buildJson: data.buildJson,
           selectedComponents,
           totalPrice,
+          tradeInDiscountPLN,
+          tradeInEstimate: data.tradeInEstimate,
           source,
           createdAt: order.createdAt,
         },

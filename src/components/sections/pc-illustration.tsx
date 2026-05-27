@@ -69,6 +69,22 @@ export function PcIllustration() {
           <circle cx="320" cy="120" r="20" stroke="#818cf8" strokeWidth="1" fill="rgba(99,102,241,0.2)" />
           <path d="M312 120 L328 120 M320 112 L320 128" stroke="#a5b4fc" strokeWidth="1.5" />
         </motion.g>
+
+        <motion.g
+          animate={{ rotate: [-8, -2, -8] }}
+          transition={{ duration: 2.8, repeat: Infinity, ease: "easeInOut" }}
+          style={{ transformOrigin: "88px 296px" }}
+        >
+          <rect x="64" y="286" width="52" height="10" rx="5" fill="rgba(129,140,248,0.55)" />
+          <rect x="112" y="289" width="26" height="4" rx="2" fill="#FFD700" />
+          <rect x="138" y="288" width="10" height="6" rx="2" fill="#f8fafc" />
+        </motion.g>
+
+        <g>
+          <rect x="286" y="286" width="40" height="24" rx="4" stroke="rgba(255,215,0,0.8)" fill="rgba(255,215,0,0.08)" />
+          <circle cx="304" cy="298" r="4" fill="rgba(129,140,248,0.7)" />
+          <rect x="280" y="322" width="50" height="8" rx="4" fill="rgba(129,140,248,0.35)" />
+        </g>
       </svg>
     </motion.div>
   );

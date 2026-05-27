@@ -21,7 +21,7 @@ export function Logo({ className, href = "/", size = "md" }: LogoProps) {
         alt="PK HELP"
         width={Math.round(h * 3.2)}
         height={h}
-        className="w-auto object-contain drop-shadow-[0_0_18px_rgba(255,215,0,0.35)]"
+        className="w-auto object-contain drop-shadow-[0_0_22px_rgba(255,215,0,0.42)]"
         priority={size === "lg"}
       />
     </div>

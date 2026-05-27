@@ -25,6 +25,7 @@ enum OrderStatus {
   NOWE
   W_TRAKCIE
   WYCENIONE
+  estimated_waiting_service
   ZAKONCZONE
   ANULOWANE
 }
@@ -93,6 +94,8 @@ model Order {
   buildJson           Json?
   selectedComponents  Json?
   totalPrice          Float?
+  tradeInDiscountPLN  Float?
+  tradeInEstimate     Json?
   status     OrderStatus @default(NOWE)
   crmLeadId           String?
   crmDealId           String?

@@ -34,9 +34,12 @@ export function Footer() {
           <div>
             <h4 className="text-sm font-semibold text-zinc-300 mb-4">{t("nav.home")}</h4>
             <ul className="space-y-2 text-sm text-zinc-500">
-              {(["builder", "advantages", "reviews", "contact"] as const).map((id) => (
+              {(["tradeIn", "builder", "advantages", "reviews", "contact"] as const).map((id) => (
                 <li key={id}>
-                  <Link href={`${base}#${id === "contact" ? "contacts" : id}`} className="hover:text-yellow-400 transition-colors">
+                  <Link
+                    href={id === "tradeIn" ? `${base}/trade-in` : `${base}#${id === "contact" ? "contacts" : id}`}
+                    className="hover:text-yellow-400 transition-colors"
+                  >
                     {t(`nav.${id}`)}
                   </Link>
                 </li>

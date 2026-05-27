@@ -20,6 +20,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { formatBuilderIssue } from "@/lib/format-builder-issue";
 import { formatPrice, cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { useUiSound } from "@/hooks/use-ui-sound";
 
 const CATEGORIES: ComponentCategory[] = [
   "CASE", "CPU", "MOTHERBOARD", "GPU", "RAM", "SSD", "HDD", "PSU", "COOLER", "AIO", "FANS",
@@ -50,6 +51,7 @@ export function PcBuilder() {
   const [sort, setSort] = useState<SortKey>("price-asc");
   const [brandFilter, setBrandFilter] = useState<string>("all");
   const [previewOpen, setPreviewOpen] = useState(false);
+  const { playTone } = useUiSound();
 
   const fetchComponents = useCallback(async () => {
     setLoading(true);
@@ -95,6 +97,7 @@ export function PcBuilder() {
   }, [components, search, brandFilter, sort]);
 
   const handleSelect = (c: ApiComponent) => {
+    playTone("click");
     const spec: ComponentSpec = {
       id: c.id,
       name: c.name,
@@ -140,6 +143,7 @@ export function PcBuilder() {
                   <button
                     key={cat}
                     onClick={() => setActiveCategory(cat)}
+                    onMouseDown={() => playTone("switch")}
                     className={cn(
                       "flex-shrink-0 lg:w-full text-left px-3 py-2.5 rounded-xl text-xs sm:text-sm transition-all flex items-center justify-between gap-2 whitespace-nowrap lg:whitespace-normal",
                       activeCategory === cat

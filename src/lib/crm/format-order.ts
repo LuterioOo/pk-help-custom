@@ -6,6 +6,7 @@ const ORDER_STATUS_LABELS: Record<OrderStatus, string> = {
   NOWE: "Новая / Nowe",
   W_TRAKCIE: "В работе / W trakcie",
   WYCENIONE: "Оценена / Wycenione",
+  estimated_waiting_service: "Оценена ±, ждём в сервисе",
   ZAKONCZONE: "Завершена / Zakończone",
   ANULOWANE: "Отменена / Anulowane",
 };
@@ -38,9 +39,14 @@ export function formatOrderCrmNote(
     | "createdAt"
     | "selectedComponents"
     | "buildJson"
+    | "tradeInEstimate"
   >,
   extra?: { source?: string }
 ): string {
+  const tradeInEstimate =
+    order.tradeInEstimate && typeof order.tradeInEstimate === "object"
+      ? (order.tradeInEstimate as Record<string, unknown>)
+      : null;
   const lines: string[] = [
     "PK-HELP Custom — заявка на сайте",
     "",
@@ -68,6 +74,9 @@ export function formatOrderCrmNote(
 
   if (order.totalPrice != null && Number.isFinite(order.totalPrice)) {
     lines.push("", `Бюджет / сумма сборки: ${order.totalPrice} PLN`);
+  }
+  if (tradeInEstimate && typeof tradeInEstimate.estimatedTotal === "number") {
+    lines.push("", `Trade-In (предв.): ${tradeInEstimate.estimatedTotal} PLN`);
   }
 
   if (order.comment?.trim()) {
