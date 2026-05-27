@@ -174,6 +174,7 @@ export function PcBuilder() {
               <select
                 value={brandFilter}
                 onChange={(e) => setBrandFilter(e.target.value)}
+                onMouseDown={() => playTone("select")}
                 className="px-4 py-2.5 rounded-xl glass text-sm text-zinc-300"
               >
                 {brands.map((b) => (
@@ -185,6 +186,7 @@ export function PcBuilder() {
               <select
                 value={sort}
                 onChange={(e) => setSort(e.target.value as SortKey)}
+                onMouseDown={() => playTone("select")}
                 className="px-4 py-2.5 rounded-xl glass text-sm text-zinc-300"
               >
                 <option value="price-asc">{t("sortPriceAsc")}</option>

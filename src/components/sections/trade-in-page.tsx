@@ -4,7 +4,9 @@ import { useEffect, useMemo, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { useUiSound } from "@/hooks/use-ui-sound";
 import { calculateTradeInEstimate } from "@/lib/trade-in";
+import { cn } from "@/lib/utils";
 
 type ComponentRow = {
   id: string;
@@ -20,13 +22,15 @@ const TRADE_IN_CATEGORIES = ["GPU", "CPU", "RAM", "PSU", "MOTHERBOARD", "SSD", "
 export function TradeInPage() {
   const t = useTranslations("tradeInPage");
   const locale = useLocale();
+  const { playTone } = useUiSound();
   const [components, setComponents] = useState<ComponentRow[]>([]);
-  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [selectedByCategory, setSelectedByCategory] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [contactOpen, setContactOpen] = useState(false);
   const [phone, setPhone] = useState("");
   const [messenger, setMessenger] = useState("");
+  const [search, setSearch] = useState("");
 
   useEffect(() => {
     const load = async () => {
@@ -45,10 +49,10 @@ export function TradeInPage() {
     void load();
   }, []);
 
-  const selectedComponents = useMemo(
-    () => components.filter((item) => selectedIds.includes(item.id)),
-    [components, selectedIds]
-  );
+  const selectedComponents = useMemo(() => {
+    const ids = new Set(Object.values(selectedByCategory).filter(Boolean));
+    return components.filter((item) => ids.has(item.id));
+  }, [components, selectedByCategory]);
 
   const estimate = useMemo(
     () =>
@@ -64,11 +68,15 @@ export function TradeInPage() {
   );
 
   const grouped = useMemo(() => {
-    return TRADE_IN_CATEGORIES.map((cat) => ({
-      category: cat,
-      items: components.filter((item) => item.category === cat),
-    })).filter((g) => g.items.length > 0);
-  }, [components]);
+    const q = search.trim().toLowerCase();
+    return TRADE_IN_CATEGORIES.map((cat) => {
+      const items = components
+        .filter((item) => item.category === cat)
+        .filter((item) => (q ? item.name.toLowerCase().includes(q) : true))
+        .sort((a, b) => a.name.localeCompare(b.name));
+      return { category: cat, items };
+    });
+  }, [components, search]);
 
   const loadStoredContacts = () => {
     try {
@@ -140,35 +148,73 @@ export function TradeInPage() {
 
         <div className="grid lg:grid-cols-[1fr_360px] gap-6">
           <div className="glass rounded-2xl p-4 md:p-5 space-y-4">
+            <div className="flex flex-col sm:flex-row gap-3">
+              <input
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder={t("searchPlaceholder")}
+                className="w-full px-4 py-2.5 rounded-xl glass text-sm focus:outline-none focus:ring-2 focus:ring-yellow-500/40"
+              />
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="sm:w-auto"
+                onClick={() => {
+                  setSearch("");
+                  setSelectedByCategory({});
+                }}
+              >
+                {t("reset")}
+              </Button>
+            </div>
             {loading ? <p className="text-zinc-500">{t("loading")}</p> : null}
-            {!loading && grouped.length === 0 ? <p className="text-zinc-500">{t("empty")}</p> : null}
+            {!loading && components.length === 0 ? <p className="text-zinc-500">{t("empty")}</p> : null}
             {grouped.map((group) => (
               <div key={group.category} className="space-y-2">
-                <h3 className="text-sm text-yellow-300 font-semibold">{group.category}</h3>
-                <div className="grid sm:grid-cols-2 gap-2">
-                  {group.items.map((item) => {
-                    const checked = selectedIds.includes(item.id);
-                    return (
-                      <label key={item.id} className="flex items-start gap-2 rounded-xl border border-white/10 bg-white/[0.02] p-3 cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={checked}
-                          onChange={(e) =>
-                            setSelectedIds((prev) =>
-                              e.target.checked ? [...prev, item.id] : prev.filter((id) => id !== item.id)
-                            )
-                          }
-                        />
-                        <span className="text-sm text-zinc-300">
-                          {item.name}
-                          <span className="block text-xs text-zinc-500">
-                            {Number(item.baseMarketPricePLN ?? item.price ?? 0)} PLN
-                          </span>
-                        </span>
-                      </label>
-                    );
-                  })}
+                <div className="flex items-center justify-between gap-3">
+                  <h3 className="text-sm text-yellow-300 font-semibold">{group.category}</h3>
+                  {selectedByCategory[group.category] ? (
+                    <button
+                      type="button"
+                      className="text-xs text-zinc-500 hover:text-zinc-300 transition-colors"
+                      onClick={() =>
+                        setSelectedByCategory((prev) => {
+                          const next = { ...prev };
+                          delete next[group.category];
+                          return next;
+                        })
+                      }
+                    >
+                      {t("clearCategory")}
+                    </button>
+                  ) : null}
                 </div>
+                {group.items.length === 0 ? (
+                  <p className="text-xs text-zinc-600">{t("emptyCategory")}</p>
+                ) : (
+                  <select
+                    value={selectedByCategory[group.category] ?? ""}
+                    onMouseDown={() => playTone("select")}
+                    onChange={(e) =>
+                      setSelectedByCategory((prev) => ({
+                        ...prev,
+                        [group.category]: e.target.value,
+                      }))
+                    }
+                    className={cn(
+                      "w-full px-4 py-3 rounded-xl glass text-sm text-zinc-300",
+                      !selectedByCategory[group.category] && "text-zinc-500"
+                    )}
+                  >
+                    <option value="">{t("selectPlaceholder")}</option>
+                    {group.items.map((item) => (
+                      <option key={item.id} value={item.id}>
+                        {item.name} — {Number(item.baseMarketPricePLN ?? item.price ?? 0)} PLN
+                      </option>
+                    ))}
+                  </select>
+                )}
               </div>
             ))}
           </div>

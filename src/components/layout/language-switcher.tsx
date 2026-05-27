@@ -2,7 +2,7 @@
 
 import { useLocale } from "next-intl";
 import { usePathname, useRouter } from "next/navigation";
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { type Locale } from "@/i18n/routing";
 import { getLocalesForSite } from "@/lib/locale-path";
 import { cn } from "@/lib/utils";
@@ -18,11 +18,14 @@ export function LanguageSwitcher({ className }: { className?: string }) {
   const locale = useLocale() as Locale;
   const pathname = usePathname();
   const router = useRouter();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => setMounted(true), []);
 
   const availableLocales = useMemo(() => {
-    if (typeof window === "undefined") return [];
+    if (!mounted) return [];
     return [...getLocalesForSite(window.location.hostname, pathname)] as Locale[];
-  }, [pathname]);
+  }, [mounted, pathname]);
 
   // Polish-only site or single locale — no switcher
   if (availableLocales.length <= 1) return null;

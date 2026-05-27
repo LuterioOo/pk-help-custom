@@ -5,7 +5,7 @@ import { useLocaleBase } from "@/hooks/use-locale-base";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ScrollReveal } from "@/components/ui/scroll-reveal";
-import { PcIllustration } from "@/components/sections/pc-illustration";
+import { HeroVisual } from "@/components/sections/hero-visual";
 
 export function Hero() {
   const t = useTranslations("hero");
@@ -49,8 +49,7 @@ export function Hero() {
 
         <ScrollReveal delay={0.15} direction="right" className="relative flex justify-center lg:justify-end">
           <div className="relative w-full max-w-[280px] sm:max-w-md lg:max-w-lg aspect-square">
-            <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-yellow-500/15 via-indigo-500/10 to-amber-500/5 blur-2xl md:blur-3xl" />
-            <PcIllustration />
+            <HeroVisual />
           </div>
         </ScrollReveal>
       </div>

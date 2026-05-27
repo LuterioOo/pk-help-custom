@@ -29,8 +29,7 @@ export type TradeInEstimate = {
 };
 
 const TRADE_IN_RATIO = 0.7;
-const USED_FROM_NEW_MIN_RATIO = 0.6;
-const USED_FROM_NEW_MAX_RATIO = 0.7;
+const USED_FROM_NEW_RATIO = 0.65;
 
 function sanitizePrice(value: unknown): number | null {
   if (typeof value !== "number" || !Number.isFinite(value) || value <= 0) return null;
@@ -42,9 +41,12 @@ export function calculateTradeInItem(item: TradeInInputItem): TradeInCalculatedI
   const newPriceRaw = sanitizePrice(item.newPrice);
 
   const usedMarketPriceMin =
-    usedMarketPriceRaw != null ? usedMarketPriceRaw : newPriceRaw != null ? newPriceRaw * USED_FROM_NEW_MIN_RATIO : null;
-  const usedMarketPriceMax =
-    usedMarketPriceRaw != null ? usedMarketPriceRaw : newPriceRaw != null ? newPriceRaw * USED_FROM_NEW_MAX_RATIO : null;
+    usedMarketPriceRaw != null
+      ? usedMarketPriceRaw
+      : newPriceRaw != null
+        ? newPriceRaw * USED_FROM_NEW_RATIO
+        : null;
+  const usedMarketPriceMax = usedMarketPriceMin;
 
   const tradeInMin = usedMarketPriceMin != null ? Math.round(usedMarketPriceMin * TRADE_IN_RATIO) : null;
   const tradeInMax = usedMarketPriceMax != null ? Math.round(usedMarketPriceMax * TRADE_IN_RATIO) : null;

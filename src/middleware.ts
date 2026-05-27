@@ -20,6 +20,7 @@ export default function middleware(request: NextRequest) {
   const allowedLocales = getLocalesForSite(host, pathname);
   const defaultLocale = getDefaultLocaleForSite(host, pathname);
   const segment = pathname.split("/")[1];
+  const segmentLooksLikeLocale = Boolean(segment && /^[a-z]{2}$/i.test(segment));
 
   if (isAdminPathname(pathname)) {
     const response = intlMiddleware(request);
@@ -51,7 +52,9 @@ export default function middleware(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  if (segment && !allowedLocales.includes(segment)) {
+  // Only validate/redirect when the first segment looks like a locale.
+  // Otherwise, allow routes like /trade-in (default locale, localePrefix: as-needed).
+  if (segmentLooksLikeLocale && segment && !allowedLocales.includes(segment)) {
     const url = request.nextUrl.clone();
     const rest = pathname.slice(segment.length + 1);
     url.pathname = polishSite

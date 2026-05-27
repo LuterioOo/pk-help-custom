@@ -17,6 +17,8 @@ import {
 import type { ComponentCategory } from "@prisma/client";
 import { calculateMarkupPLN, resolveComponentPrice } from "@/lib/pricing";
 import { ComponentImage } from "@/components/ui/component-image";
+import { toast } from "sonner";
+import { AnimatePresence, motion } from "framer-motion";
 
 type Tab = "components" | "reviews" | "orders" | "showcase";
 
@@ -94,6 +96,7 @@ export default function AdminDashboard() {
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [audioUnlocked, setAudioUnlocked] = useState(false);
   const [lastOrderId, setLastOrderId] = useState<string | null>(null);
+  const [newOrderIds, setNewOrderIds] = useState<Record<string, number>>({});
 
   useEffect(() => {
     try {
@@ -197,11 +200,32 @@ export default function AdminDashboard() {
       const next = await fetchOrders();
       if (!next || stopped) return;
       const newestId = next[0] ? String(next[0].id) : null;
-      if (newestId && lastOrderId && newestId !== lastOrderId) {
-        playBell();
-      }
+
+      setOrders((prev) => {
+        const prevIds = new Set(prev.map((o) => String(o.id)));
+        const added = next.filter((o) => !prevIds.has(String(o.id)));
+        if (added.length > 0) {
+          // Mark new orders for entry animation (auto-expire after ~4s)
+          const now = Date.now();
+          setNewOrderIds((m) => {
+            const copy = { ...m };
+            for (const o of added) copy[String(o.id)] = now;
+            return copy;
+          });
+          for (const o of added) {
+            toast.message(t("live.newOrder"), {
+              description: `${String(o.name)} • ${String(o.phone)}`,
+            });
+          }
+          playBell();
+        } else if (newestId && lastOrderId && newestId !== lastOrderId) {
+          // Fallback: ordering changed but cannot diff reliably
+          playBell();
+        }
+        return next;
+      });
+
       if (newestId) setLastOrderId(newestId);
-      setOrders(next);
     };
     void tick();
     const id = window.setInterval(() => void tick(), 5000);
@@ -209,7 +233,22 @@ export default function AdminDashboard() {
       stopped = true;
       window.clearInterval(id);
     };
-  }, [tab, fetchOrders, lastOrderId, playBell]);
+  }, [tab, fetchOrders, lastOrderId, playBell, t]);
+
+  useEffect(() => {
+    if (Object.keys(newOrderIds).length === 0) return;
+    const id = window.setInterval(() => {
+      const cutoff = Date.now() - 4000;
+      setNewOrderIds((m) => {
+        const next: Record<string, number> = {};
+        for (const [k, ts] of Object.entries(m)) {
+          if (ts >= cutoff) next[k] = ts;
+        }
+        return next;
+      });
+    }, 1000);
+    return () => window.clearInterval(id);
+  }, [newOrderIds]);
 
   useEffect(() => {
     if (authError) router.replace(adminUrl(locale));
@@ -485,123 +524,136 @@ export default function AdminDashboard() {
                 {visibleOrders.length === 0 ? (
                   <p className="text-zinc-500">{t("noOrders")}</p>
                 ) : (
-                  visibleOrders.map((o) => (
-                    <div key={String(o.id)} className="glass rounded-2xl p-5 space-y-3">
-                      <div className="flex flex-wrap justify-between gap-2">
-                        <span className="font-medium">{String(o.name)}</span>
-                        <span className="text-xs text-zinc-500">
-                          {new Date(String(o.createdAt)).toLocaleString("pl-PL")}
-                        </span>
-                      </div>
-                      <div className="grid sm:grid-cols-2 gap-2 text-sm text-zinc-400">
-                        <span>{t("orderFields.phone")}: {String(o.phone)}</span>
-                        {o.email ? <span>{t("orderFields.email")}: {String(o.email)}</span> : null}
-                        {o.messenger ? (
-                          <span>{t("orderFields.messenger")}: {String(o.messenger)}</span>
-                        ) : null}
-                        {o.totalPrice ? (
-                          <span className="text-yellow-400">
-                            {t("orderFields.total")}: {String(o.totalPrice)} PLN
-                          </span>
-                        ) : null}
-                        {typeof o.tradeInDiscountPLN === "number" && o.tradeInDiscountPLN > 0 ? (
-                          <span className="text-emerald-400">
-                            Trade-In: -{String(o.tradeInDiscountPLN)} PLN
-                          </span>
-                        ) : null}
-                      </div>
-                      {Array.isArray(o.services) && (o.services as string[]).length > 0 ? (
-                        <p className="text-sm text-zinc-500">
-                          {t("orderFields.services")}: {(o.services as string[]).join(", ")}
-                        </p>
-                      ) : null}
-                      {o.comment ? (
-                        <p className="text-sm text-zinc-500">{String(o.comment)}</p>
-                      ) : null}
-                      <OrderComponentsTable
-                        selectedComponents={o.selectedComponents}
-                        buildJson={o.buildJson}
-                        totalPrice={
-                          typeof o.totalPrice === "number" ? o.totalPrice : undefined
-                        }
-                      />
-                      <div className="rounded-xl border border-white/5 bg-white/[0.02] px-3 py-2 text-sm space-y-1">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <span className="text-zinc-500">{t("crm.label")}:</span>
-                          <span
-                            className={
-                              o.crmSyncStatus === "SYNCED"
-                                ? "text-emerald-400"
-                                : o.crmSyncStatus === "FAILED"
-                                  ? "text-red-400"
-                                  : o.crmSyncStatus === "SKIPPED"
-                                    ? "text-zinc-500"
-                                    : "text-amber-400"
-                            }
-                          >
-                            {crmStatusLabel(o.crmSyncStatus)}
-                          </span>
-                          {typeof o.crmDealUrl === "string" && o.crmDealUrl ? (
-                            <a
-                              href={o.crmDealUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-yellow-400 hover:underline text-xs"
-                            >
-                              {t("crm.openDeal")}
-                            </a>
-                          ) : null}
-                        </div>
-                        {typeof o.crmSyncError === "string" && o.crmSyncError ? (
-                          <p className="text-xs text-red-400/90 break-words">{o.crmSyncError}</p>
-                        ) : null}
-                        {o.crmSyncedAt ? (
-                          <p className="text-xs text-zinc-600">
-                            {t("crm.syncedAt")}:{" "}
-                            {new Date(String(o.crmSyncedAt)).toLocaleString("pl-PL")}
-                          </p>
-                        ) : null}
-                      </div>
-                      <div className="flex flex-wrap gap-2 items-center">
-                        {Array.isArray(o.services) && (o.services as string[]).some((s) => /trade/i.test(s)) ? (
-                          <div className="flex flex-wrap gap-1">
-                            {TRADE_IN_WORKFLOW.map((step) => (
-                              <Button
-                                key={step.id}
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => updateOrderStatus(String(o.id), step.status)}
-                              >
-                                {t(`tradeInStatus.${step.id}`)}
-                              </Button>
-                            ))}
+                  <AnimatePresence initial={false}>
+                    {visibleOrders.map((o) => {
+                      const id = String(o.id);
+                      const isNew = Boolean(newOrderIds[id]);
+                      return (
+                        <motion.div
+                          key={id}
+                          initial={{ opacity: 0, y: -10, scale: 0.995 }}
+                          animate={{ opacity: 1, y: 0, scale: 1 }}
+                          exit={{ opacity: 0, y: 6 }}
+                          transition={{ duration: 0.18, ease: "easeOut" }}
+                          className={`glass rounded-2xl p-5 space-y-3 ${isNew ? "ring-1 ring-yellow-500/40" : ""}`}
+                        >
+                          <div className="flex flex-wrap justify-between gap-2">
+                            <span className="font-medium">{String(o.name)}</span>
+                            <span className="text-xs text-zinc-500">
+                              {new Date(String(o.createdAt)).toLocaleString("pl-PL")}
+                            </span>
                           </div>
-                        ) : null}
-                        <select
-                          value={String(o.status)}
-                          onChange={(e) => updateOrderStatus(String(o.id), e.target.value)}
-                          className="px-3 py-1.5 rounded-lg glass text-sm"
-                        >
-                          {ORDER_STATUSES.map((s) => (
-                            <option key={s} value={s}>
-                              {t(`status.${s}`)}
-                            </option>
-                          ))}
-                        </select>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          disabled={crmSyncingId === String(o.id)}
-                          onClick={() => resyncCrm(String(o.id))}
-                        >
-                          {crmSyncingId === String(o.id) ? t("crm.syncing") : t("crm.resync")}
-                        </Button>
-                        <Button variant="ghost" size="sm" onClick={() => deleteOrder(String(o.id))}>
-                          {t("delete")}
-                        </Button>
-                      </div>
-                    </div>
-                  ))
+                          <div className="grid sm:grid-cols-2 gap-2 text-sm text-zinc-400">
+                            <span>{t("orderFields.phone")}: {String(o.phone)}</span>
+                            {o.email ? <span>{t("orderFields.email")}: {String(o.email)}</span> : null}
+                            {o.messenger ? (
+                              <span>{t("orderFields.messenger")}: {String(o.messenger)}</span>
+                            ) : null}
+                            {o.totalPrice ? (
+                              <span className="text-yellow-400">
+                                {t("orderFields.total")}: {String(o.totalPrice)} PLN
+                              </span>
+                            ) : null}
+                            {typeof o.tradeInDiscountPLN === "number" && o.tradeInDiscountPLN > 0 ? (
+                              <span className="text-emerald-400">
+                                Trade-In: -{String(o.tradeInDiscountPLN)} PLN
+                              </span>
+                            ) : null}
+                          </div>
+                          {Array.isArray(o.services) && (o.services as string[]).length > 0 ? (
+                            <p className="text-sm text-zinc-500">
+                              {t("orderFields.services")}: {(o.services as string[]).join(", ")}
+                            </p>
+                          ) : null}
+                          {o.comment ? (
+                            <p className="text-sm text-zinc-500">{String(o.comment)}</p>
+                          ) : null}
+                          <OrderComponentsTable
+                            selectedComponents={o.selectedComponents}
+                            buildJson={o.buildJson}
+                            totalPrice={
+                              typeof o.totalPrice === "number" ? o.totalPrice : undefined
+                            }
+                          />
+                          <div className="rounded-xl border border-white/5 bg-white/[0.02] px-3 py-2 text-sm space-y-1">
+                            <div className="flex flex-wrap items-center gap-2">
+                              <span className="text-zinc-500">{t("crm.label")}:</span>
+                              <span
+                                className={
+                                  o.crmSyncStatus === "SYNCED"
+                                    ? "text-emerald-400"
+                                    : o.crmSyncStatus === "FAILED"
+                                      ? "text-red-400"
+                                      : o.crmSyncStatus === "SKIPPED"
+                                        ? "text-zinc-500"
+                                        : "text-amber-400"
+                                }
+                              >
+                                {crmStatusLabel(o.crmSyncStatus)}
+                              </span>
+                              {typeof o.crmDealUrl === "string" && o.crmDealUrl ? (
+                                <a
+                                  href={o.crmDealUrl}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-yellow-400 hover:underline text-xs"
+                                >
+                                  {t("crm.openDeal")}
+                                </a>
+                              ) : null}
+                            </div>
+                            {typeof o.crmSyncError === "string" && o.crmSyncError ? (
+                              <p className="text-xs text-red-400/90 break-words">{o.crmSyncError}</p>
+                            ) : null}
+                            {o.crmSyncedAt ? (
+                              <p className="text-xs text-zinc-600">
+                                {t("crm.syncedAt")}:{" "}
+                                {new Date(String(o.crmSyncedAt)).toLocaleString("pl-PL")}
+                              </p>
+                            ) : null}
+                          </div>
+                          <div className="flex flex-wrap gap-2 items-center">
+                            {Array.isArray(o.services) && (o.services as string[]).some((s) => /trade/i.test(s)) ? (
+                              <div className="flex flex-wrap gap-1">
+                                {TRADE_IN_WORKFLOW.map((step) => (
+                                  <Button
+                                    key={step.id}
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => updateOrderStatus(String(o.id), step.status)}
+                                  >
+                                    {t(`tradeInStatus.${step.id}`)}
+                                  </Button>
+                                ))}
+                              </div>
+                            ) : null}
+                            <select
+                              value={String(o.status)}
+                              onChange={(e) => updateOrderStatus(String(o.id), e.target.value)}
+                              className="px-3 py-1.5 rounded-lg glass text-sm"
+                            >
+                              {ORDER_STATUSES.map((s) => (
+                                <option key={s} value={s}>
+                                  {t(`status.${s}`)}
+                                </option>
+                              ))}
+                            </select>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              disabled={crmSyncingId === String(o.id)}
+                              onClick={() => resyncCrm(String(o.id))}
+                            >
+                              {crmSyncingId === String(o.id) ? t("crm.syncing") : t("crm.resync")}
+                            </Button>
+                            <Button variant="ghost" size="sm" onClick={() => deleteOrder(String(o.id))}>
+                              {t("delete")}
+                            </Button>
+                          </div>
+                        </motion.div>
+                      );
+                    })}
+                  </AnimatePresence>
                 )}
               </div>
             )}

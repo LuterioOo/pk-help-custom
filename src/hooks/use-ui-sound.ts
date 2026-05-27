@@ -20,21 +20,6 @@ export function useUiSound() {
     if (unlocked) return;
     const unlock = () => {
       setUnlocked(true);
-      // #region agent log
-      fetch("http://127.0.0.1:7579/ingest/80e40a67-2b62-4a2b-8b6b-2495e3b7393b", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "ec767e" },
-        body: JSON.stringify({
-          sessionId: "ec767e",
-          runId: "pre-fix",
-          hypothesisId: "D",
-          location: "src/hooks/use-ui-sound.ts:unlock",
-          message: "UI sound unlocked by user gesture",
-          data: {},
-          timestamp: Date.now(),
-        }),
-      }).catch(() => {});
-      // #endregion agent log
     };
     window.addEventListener("pointerdown", unlock, { once: true });
     window.addEventListener("keydown", unlock, { once: true });
@@ -57,23 +42,7 @@ export function useUiSound() {
   }, []);
 
   const playTone = useCallback(
-    (type: "click" | "switch") => {
-      // #region agent log
-      fetch("http://127.0.0.1:7579/ingest/80e40a67-2b62-4a2b-8b6b-2495e3b7393b", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "ec767e" },
-        body: JSON.stringify({
-          sessionId: "ec767e",
-          runId: "pre-fix",
-          hypothesisId: "D",
-          location: "src/hooks/use-ui-sound.ts:playTone",
-          message: "playTone called",
-          data: { type, muted, unlocked },
-          timestamp: Date.now(),
-        }),
-      }).catch(() => {});
-      // #endregion agent log
-
+    (type: "click" | "hover" | "select" | "switch") => {
       if (muted || !unlocked) return;
       try {
         const AudioContextImpl = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
@@ -81,16 +50,24 @@ export function useUiSound() {
         const now = ctx.currentTime;
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
-        osc.type = type === "click" ? "triangle" : "sawtooth";
-        osc.frequency.setValueAtTime(type === "click" ? 540 : 320, now);
-        osc.frequency.exponentialRampToValueAtTime(type === "click" ? 420 : 260, now + 0.08);
+        osc.type = type === "hover" ? "sine" : type === "click" ? "triangle" : type === "select" ? "square" : "sawtooth";
+
+        const startFreq =
+          type === "hover" ? 920 : type === "click" ? 540 : type === "select" ? 460 : 320;
+        const endFreq =
+          type === "hover" ? 820 : type === "click" ? 420 : type === "select" ? 380 : 260;
+
+        osc.frequency.setValueAtTime(startFreq, now);
+        osc.frequency.exponentialRampToValueAtTime(endFreq, now + (type === "hover" ? 0.045 : 0.08));
         gain.gain.setValueAtTime(0.0001, now);
-        gain.gain.exponentialRampToValueAtTime(0.18, now + 0.01);
-        gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.11);
+        const peak = type === "hover" ? 0.08 : type === "select" ? 0.16 : 0.18;
+        const dur = type === "hover" ? 0.06 : type === "select" ? 0.09 : 0.11;
+        gain.gain.exponentialRampToValueAtTime(peak, now + 0.008);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + dur);
         osc.connect(gain);
         gain.connect(ctx.destination);
         osc.start(now);
-        osc.stop(now + 0.12);
+        osc.stop(now + (type === "hover" ? 0.065 : 0.12));
         setTimeout(() => void ctx.close().catch(() => {}), 180);
       } catch {
         /* ignore */

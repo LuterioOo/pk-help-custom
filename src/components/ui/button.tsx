@@ -2,6 +2,7 @@
 
 import { cn } from "@/lib/utils";
 import { cloneElement, forwardRef, isValidElement, type ButtonHTMLAttributes, type ReactElement, type ReactNode } from "react";
+import { useUiSound } from "@/hooks/use-ui-sound";
 
 type Variant = "primary" | "secondary" | "ghost" | "outline";
 
@@ -30,6 +31,7 @@ const sizes = {
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant = "primary", size = "md", isLoading, asChild, children, disabled, onClick, ...props }, ref) => {
+    const { playTone } = useUiSound();
     const baseClassName = cn(
       "inline-flex items-center justify-center gap-2 font-medium transition-[colors,transform] disabled:opacity-50 disabled:cursor-not-allowed",
       variants[variant],
@@ -38,29 +40,10 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     );
 
     const wrappedOnClick: NonNullable<typeof onClick> = (e) => {
-      // #region agent log
-      fetch("http://127.0.0.1:7579/ingest/80e40a67-2b62-4a2b-8b6b-2495e3b7393b", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "ec767e" },
-        body: JSON.stringify({
-          sessionId: "ec767e",
-          runId: "pre-fix",
-          hypothesisId: "A",
-          location: "src/components/ui/button.tsx:Button:onClick",
-          message: "Button click handler invoked",
-          data: {
-            variant,
-            size,
-            disabled: !!(disabled || isLoading),
-            defaultPrevented: e.defaultPrevented,
-            targetTag: (e.target as HTMLElement | null)?.tagName ?? null,
-          },
-          timestamp: Date.now(),
-        }),
-      }).catch(() => {});
-      // #endregion agent log
+      playTone("click");
       onClick?.(e);
     };
+    const wrappedOnHover = () => playTone("hover");
 
     if (asChild) {
       if (!isValidElement(children)) return null;
@@ -78,6 +61,12 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       return cloneElement(child, {
         className: cn(baseClassName, existing.className),
         onClick: mergedOnClick,
+        onPointerEnter: typeof (existing as { onPointerEnter?: unknown }).onPointerEnter === "function"
+          ? (e: unknown) => {
+              wrappedOnHover();
+              ((existing as { onPointerEnter: (ev: unknown) => void }).onPointerEnter)(e);
+            }
+          : wrappedOnHover,
         "aria-disabled": disabled || isLoading ? true : undefined,
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } as any);
@@ -89,6 +78,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         className={baseClassName}
         disabled={disabled || isLoading}
         onClick={wrappedOnClick}
+        onPointerEnter={wrappedOnHover}
         {...props}
       >
         {isLoading ? (
