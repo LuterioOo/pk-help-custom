@@ -257,7 +257,15 @@ export function MastersPanel() {
         <div className="flex gap-2">
           <Button disabled={saving} onClick={() => void saveMaster()}>{editingMasterId ? t("save") : t("add")}</Button>
           {editingMasterId && (
-            <Button variant="ghost" onClick={() => { setEditingMasterId(null); setMasterForm(emptyMaster); }}>{t("cancel")}</Button>
+            <Button
+              variant="ghost"
+              onClick={() => {
+                setEditingMasterId(null);
+                setMasterForm(emptyMaster);
+              }}
+            >
+              {t("cancel")}
+            </Button>
           )}
         </div>
       </div>

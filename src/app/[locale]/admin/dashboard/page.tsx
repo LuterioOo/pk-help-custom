@@ -37,6 +37,8 @@ const CATEGORIES = [
   "CPU", "GPU", "MOTHERBOARD", "RAM", "PSU", "SSD", "HDD", "CASE", "COOLER", "AIO", "FANS",
 ];
 
+const EXTERNAL_STORES = ["Media Expert", "RTV Euro AGD", "x-kom", "Morele"] as const;
+
 type ComponentRow = {
   id: string;
   category: string;
@@ -514,7 +516,7 @@ export default function AdminDashboard() {
   };
 
   return (
-    <div className="min-h-screen pt-28 pb-16 px-4 md:px-8">
+    <div className="min-h-screen pt-10 pb-16 px-4 md:px-8">
       <div className="max-w-6xl mx-auto">
         <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
           <Logo href={locale === "pl" ? "/" : `/${locale}`} size="sm" />
@@ -542,7 +544,11 @@ export default function AdminDashboard() {
           ))}
         </div>
 
-        {loading ? (
+        {tab === "showcase" && <ShowcasePanel />}
+
+        {tab === "masters" && <MastersPanel />}
+
+        {loading && (tab === "orders" || tab === "components" || tab === "reviews") ? (
           <div className="space-y-4">
             <Skeleton className="h-24 rounded-2xl" />
             <Skeleton className="h-24 rounded-2xl" />
@@ -910,12 +916,32 @@ export default function AdminDashboard() {
                     onChange={(e) => setForm({ ...form, manualPriceOverride: Number(e.target.value) })}
                     className="px-3 py-2 rounded-lg glass text-sm"
                   />
-                  <input
-                    placeholder={t("componentFields.externalStore")}
-                    value={form.externalStoreName}
-                    onChange={(e) => setForm({ ...form, externalStoreName: e.target.value })}
-                    className="px-3 py-2 rounded-lg glass text-sm"
-                  />
+                  <div className="flex flex-col gap-1">
+                    <input
+                      list="external-store-presets"
+                      placeholder={t("componentFields.externalStore")}
+                      value={form.externalStoreName}
+                      onChange={(e) => setForm({ ...form, externalStoreName: e.target.value })}
+                      className="px-3 py-2 rounded-lg glass text-sm"
+                    />
+                    <datalist id="external-store-presets">
+                      {EXTERNAL_STORES.map((store) => (
+                        <option key={store} value={store} />
+                      ))}
+                    </datalist>
+                    <div className="flex flex-wrap gap-1">
+                      {EXTERNAL_STORES.map((store) => (
+                        <button
+                          key={store}
+                          type="button"
+                          onClick={() => setForm({ ...form, externalStoreName: store })}
+                          className="text-xs px-2 py-0.5 rounded-md border border-white/10 text-zinc-500 hover:text-yellow-400 hover:border-yellow-500/30 transition-colors"
+                        >
+                          {store}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
                   <input
                     placeholder={t("componentFields.externalUrl")}
                     value={form.externalPriceUrl}
@@ -1051,10 +1077,6 @@ export default function AdminDashboard() {
                 )}
               </div>
             )}
-
-            {tab === "showcase" && <ShowcasePanel />}
-
-            {tab === "masters" && <MastersPanel />}
 
             {tab === "reviews" && (
               <div className="space-y-6">

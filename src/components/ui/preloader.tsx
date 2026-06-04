@@ -1,71 +1,39 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 import { Logo } from "./logo";
 
 const STORAGE_KEY = "pk-help-preloaded";
 
+function isAdminPath(pathname: string) {
+  return /\/admin(\/|$)/.test(pathname);
+}
+
 export function Preloader() {
+  const pathname = usePathname() ?? "";
   const [visible, setVisible] = useState(false);
   const [fade, setFade] = useState(false);
 
   useEffect(() => {
+    if (isAdminPath(pathname)) return;
     if (sessionStorage.getItem(STORAGE_KEY)) return;
+
     setVisible(true);
-    // #region agent log
-    fetch("http://127.0.0.1:7579/ingest/80e40a67-2b62-4a2b-8b6b-2495e3b7393b", {
-      method: "POST",
-      headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "ec767e" },
-      body: JSON.stringify({
-        sessionId: "ec767e",
-        runId: "pre-fix",
-        hypothesisId: "C",
-        location: "src/components/ui/preloader.tsx:useEffect",
-        message: "Preloader shown",
-        data: {},
-        timestamp: Date.now(),
-      }),
-    }).catch(() => {});
-    // #endregion agent log
-    const hide = setTimeout(() => {
+    let removeTimer: ReturnType<typeof setTimeout> | undefined;
+    const hideTimer = setTimeout(() => {
       setFade(true);
-      // #region agent log
-      fetch("http://127.0.0.1:7579/ingest/80e40a67-2b62-4a2b-8b6b-2495e3b7393b", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "ec767e" },
-        body: JSON.stringify({
-          sessionId: "ec767e",
-          runId: "pre-fix",
-          hypothesisId: "C",
-          location: "src/components/ui/preloader.tsx:hideTimeout",
-          message: "Preloader fade started",
-          data: {},
-          timestamp: Date.now(),
-        }),
-      }).catch(() => {});
-      // #endregion agent log
-      setTimeout(() => {
+      removeTimer = setTimeout(() => {
         sessionStorage.setItem(STORAGE_KEY, "1");
         setVisible(false);
-        // #region agent log
-        fetch("http://127.0.0.1:7579/ingest/80e40a67-2b62-4a2b-8b6b-2495e3b7393b", {
-          method: "POST",
-          headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "ec767e" },
-          body: JSON.stringify({
-            sessionId: "ec767e",
-            runId: "pre-fix",
-            hypothesisId: "C",
-            location: "src/components/ui/preloader.tsx:hideTimeout",
-            message: "Preloader hidden",
-            data: {},
-            timestamp: Date.now(),
-          }),
-        }).catch(() => {});
-        // #endregion agent log
       }, 280);
     }, 650);
-    return () => clearTimeout(hide);
-  }, []);
+
+    return () => {
+      clearTimeout(hideTimer);
+      if (removeTimer) clearTimeout(removeTimer);
+    };
+  }, [pathname]);
 
   if (!visible) return null;
 
@@ -76,6 +44,7 @@ export function Preloader() {
       }`}
       role="status"
       aria-label="Loading"
+      aria-hidden={fade}
     >
       <Logo href={undefined} size="lg" />
       <div className="mt-8 h-0.5 w-32 overflow-hidden rounded-full bg-white/10">

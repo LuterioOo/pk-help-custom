@@ -3,9 +3,7 @@ import { getMessages, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { routing } from "@/i18n/routing";
 import { Providers } from "@/components/providers";
-import { DeferredChrome } from "@/components/layout/deferred-chrome";
-import { Header } from "@/components/layout/header";
-import { Footer } from "@/components/layout/footer";
+import { LocaleShell } from "@/components/layout/locale-shell";
 
 type Props = { children: React.ReactNode; params: Promise<{ locale: string }> };
 
@@ -24,10 +22,7 @@ export default async function LocaleLayout({ children, params }: Props) {
   return (
     <NextIntlClientProvider messages={messages}>
       <Providers>
-        <DeferredChrome />
-        <Header />
-        <main className="relative z-10 min-h-screen">{children}</main>
-        <Footer />
+        <LocaleShell>{children}</LocaleShell>
       </Providers>
     </NextIntlClientProvider>
   );
