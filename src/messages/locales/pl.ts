@@ -34,11 +34,13 @@ const pl = {
     customizeNoPreset: "Otwórz konfigurator — ustaw preset w panelu admina",
   },
   masters: {
-    title: "Zbiorki mistrzów",
-    subtitle: "Gotowe konfiguracje od naszych specjalistów — sprawdzone zestawy z gwarancją",
-    orderBuild: "Zamów zbiorkę",
-    details: "Szczegóły",
-    noBuilds: "Zbiorki wkrótce",
+  title: "Zbiorki mistrzów",
+  subtitle: "Gotowe konfiguracje od naszych specjalistów — sprawdzone zestawy z gwarancją",
+  orderBuild: "Zamów zbiorkę",
+  details: "Szczegóły",
+  noBuilds: "Zbiorki wkrótce",
+  buildsCount: "{count} konfiguracji",
+  rating: "Ocena",
   },
   tradeInPreview: {
     badge: "Trade-In",
