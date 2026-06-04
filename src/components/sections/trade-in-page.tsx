@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { calculateTradeInEstimate } from "@/lib/trade-in";
 import {
   loadStoredContacts,
+  markTradeInFlowStarted,
   saveStoredContacts,
   saveTradeInCoupon,
   saveTradeInLead,
@@ -88,6 +89,10 @@ export function TradeInPage() {
       return { category: cat, items };
     });
   }, [components, search]);
+
+  useEffect(() => {
+    markTradeInFlowStarted();
+  }, []);
 
   useEffect(() => {
     const stored = loadStoredContacts();
@@ -207,10 +212,14 @@ export function TradeInPage() {
                       toast.error(t("needPhoneAndName"));
                       return;
                     }
+                    if (messenger.trim().length < 2) {
+                      toast.error(t("needTelegram"));
+                      return;
+                    }
                     saveStoredContacts({
                       name: name.trim(),
                       phone: phone.trim(),
-                      messenger: messenger.trim() || undefined,
+                      messenger: messenger.trim(),
                     });
                     setStep("hardware");
                   }}
@@ -310,9 +319,13 @@ export function TradeInPage() {
                   toast.error(t("needPhoneAndName"));
                   return;
                 }
+                if (messenger.trim().length < 2) {
+                  toast.error(t("needTelegram"));
+                  return;
+                }
                 void createRequest({
                   phone: phone.trim(),
-                  messenger: messenger.trim() || undefined,
+                  messenger: messenger.trim(),
                   name: name.trim(),
                 });
               }}

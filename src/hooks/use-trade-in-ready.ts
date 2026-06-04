@@ -1,16 +1,25 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { isTradeInBuildUnlocked, loadTradeInCoupon } from "@/lib/trade-in-storage";
+import {
+  isTradeInBuildUnlocked,
+  isTradeInFlowActive,
+  loadTradeInCoupon,
+  shouldLockBuilderCta,
+} from "@/lib/trade-in-storage";
 
 export function useTradeInReady() {
   const [ready, setReady] = useState(false);
+  const [locked, setLocked] = useState(false);
+  const [flowActive, setFlowActive] = useState(false);
   const [couponAmount, setCouponAmount] = useState(0);
 
   const refresh = useCallback(() => {
     const coupon = loadTradeInCoupon();
     setCouponAmount(coupon?.amount ?? 0);
     setReady(isTradeInBuildUnlocked());
+    setFlowActive(isTradeInFlowActive());
+    setLocked(shouldLockBuilderCta());
   }, []);
 
   useEffect(() => {
@@ -24,5 +33,5 @@ export function useTradeInReady() {
     };
   }, [refresh]);
 
-  return { ready, couponAmount, refresh };
+  return { ready, locked, flowActive, couponAmount, refresh };
 }

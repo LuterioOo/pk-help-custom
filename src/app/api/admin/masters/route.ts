@@ -16,6 +16,8 @@ const masterSchema = z.object({
   description: z.string().optional(),
   sortOrder: z.number().int().default(0),
   active: z.boolean().default(true),
+  rating: z.number().min(0).max(5).optional(),
+  buildsCount: z.number().int().min(0).optional(),
 });
 
 const buildSchema = z.object({
@@ -50,9 +52,11 @@ export async function POST(req: NextRequest) {
 
   const body = await req.json();
   const type = String(body.type ?? "master");
+  const rest = { ...(body as Record<string, unknown>) };
+  delete rest.type;
 
   if (type === "build") {
-    const data = buildSchema.parse(body);
+    const data = buildSchema.parse(rest);
     const build = await prisma.masterBuild.create({
       data: {
         masterId: data.masterId,
@@ -70,7 +74,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ build });
   }
 
-  const data = masterSchema.parse(body);
+  const data = masterSchema.parse(rest);
   const master = await prisma.master.create({
     data: {
       name: data.name,
@@ -83,6 +87,8 @@ export async function POST(req: NextRequest) {
       specEn: data.specEn || null,
       specPl: data.specPl || null,
       description: data.description || null,
+      rating: data.rating ?? 5,
+      buildsCount: data.buildsCount ?? 0,
       sortOrder: data.sortOrder,
       active: data.active,
     },
@@ -96,7 +102,10 @@ export async function PUT(req: NextRequest) {
 
   const body = await req.json();
   const type = String(body.type ?? "master");
-  const { id, ...rest } = body as { id: string };
+  const rest = { ...(body as Record<string, unknown>) };
+  const id = String(rest.id ?? "");
+  delete rest.id;
+  delete rest.type;
   if (!id) return NextResponse.json({ error: "Missing id" }, { status: 400 });
 
   if (type === "build") {
@@ -135,6 +144,8 @@ export async function PUT(req: NextRequest) {
       description: data.description ?? undefined,
       sortOrder: data.sortOrder ?? undefined,
       active: data.active ?? undefined,
+      rating: data.rating ?? undefined,
+      buildsCount: data.buildsCount ?? undefined,
     },
   });
   return NextResponse.json({ master });

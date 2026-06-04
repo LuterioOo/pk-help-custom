@@ -16,6 +16,8 @@ export type MasterItem = {
   avatarUrl: string | null;
   specialization: string | null;
   description: string | null;
+  rating: number;
+  buildsCount: number;
   sortOrder: number;
   builds: MasterBuildItem[];
 };
@@ -58,6 +60,8 @@ export async function getMastersData(locale = "ru"): Promise<MasterItem[]> {
         m.specPl
       ) || null,
       description: m.description,
+      rating: m.rating ?? 5,
+      buildsCount: m.buildsCount > 0 ? m.buildsCount : m.builds.length,
       sortOrder: m.sortOrder,
       builds: m.builds.map((b) => ({
         id: b.id,

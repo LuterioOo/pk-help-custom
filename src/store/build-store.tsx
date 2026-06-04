@@ -42,6 +42,7 @@ interface BuildContextValue {
   setTradeInCoupon: (amount: number) => void;
   setUseTradeInCoupon: (enabled: boolean) => void;
   setInstallmentsRequested: (enabled: boolean) => void;
+  applyPreset: (components: ComponentSpec[]) => void;
 }
 
 const BuildContext = createContext<BuildContextValue | null>(null);
@@ -110,6 +111,25 @@ export function BuildProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
+  const applyPreset = useCallback((components: ComponentSpec[]) => {
+    setSelection((prev) => {
+      const next = { ...prev };
+      for (const c of components) {
+        next[c.category] = c;
+      }
+      return next;
+    });
+  }, []);
+
+  useEffect(() => {
+    if (Object.keys(selection).length === 0) return;
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(selection));
+    } catch {
+      /* ignore */
+    }
+  }, [selection]);
+
   const issues = useMemo(() => checkCompatibility(selection), [selection]);
   const total = useMemo(() => getTotalPrice(selection), [selection]);
   const totalAfterTradeIn = useMemo(
@@ -138,6 +158,7 @@ export function BuildProvider({ children }: { children: React.ReactNode }) {
       setTradeInCoupon,
       setUseTradeInCoupon,
       setInstallmentsRequested,
+      applyPreset,
     }),
     [
       selection,
@@ -153,6 +174,7 @@ export function BuildProvider({ children }: { children: React.ReactNode }) {
       loadFromStorage,
       saveToStorage,
       setTradeInCoupon,
+      applyPreset,
     ]
   );
 

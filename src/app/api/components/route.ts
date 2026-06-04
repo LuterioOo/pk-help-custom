@@ -6,11 +6,16 @@ import type { ComponentCategory } from "@prisma/client";
 
 export async function GET(req: NextRequest) {
   const category = req.nextUrl.searchParams.get("category") as ComponentCategory | null;
+  const idsParam = req.nextUrl.searchParams.get("ids");
+  const ids = idsParam
+    ? idsParam.split(",").map((s) => s.trim()).filter(Boolean)
+    : [];
   try {
     const rows = await prisma.component.findMany({
       where: {
         active: true,
-        ...(category ? { category } : {}),
+        ...(ids.length > 0 ? { id: { in: ids } } : {}),
+        ...(category && ids.length === 0 ? { category } : {}),
       },
       orderBy: [{ featured: "desc" }, { price: "asc" }],
     });

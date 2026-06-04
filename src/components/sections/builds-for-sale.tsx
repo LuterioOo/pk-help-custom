@@ -10,7 +10,12 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { formatPrice } from "@/lib/utils";
 import type { ShowcaseItem } from "@/lib/showcase-data";
-import { RefreshCw, CreditCard, ArrowRight } from "lucide-react";
+import { RefreshCw, CreditCard, ArrowRight, Settings2 } from "lucide-react";
+import { useBuild } from "@/store/build-store";
+import type { ComponentCategory } from "@prisma/client";
+import type { ComponentSpec } from "@/lib/compatibility";
+import { toast } from "sonner";
+import { useState } from "react";
 
 type Props = {
   initialItems: ShowcaseItem[];
@@ -21,10 +26,58 @@ export function BuildsForSale({ initialItems, featured = false }: Props) {
   const t = useTranslations("forSale");
   const locale = useLocale();
   const base = useLocaleBase();
+  const { applyPreset } = useBuild();
+  const [loadingId, setLoadingId] = useState<string | null>(null);
 
   if (initialItems.length === 0) return null;
 
   const items = featured ? initialItems.slice(0, 3) : initialItems;
+
+  const customizeBuild = async (item: ShowcaseItem) => {
+    const preset = item.presetComponents;
+    if (!preset || Object.keys(preset).length === 0) {
+      document.getElementById("builder")?.scrollIntoView({ behavior: "smooth" });
+      toast.info(t("customizeNoPreset"));
+      return;
+    }
+    setLoadingId(item.id);
+    try {
+      const ids = Object.values(preset).filter(Boolean);
+      const res = await fetch(`/api/components?ids=${encodeURIComponent(ids.join(","))}`);
+      const data = (await res.json()) as {
+        components?: Array<{
+          id: string;
+          name: string;
+          category: ComponentCategory;
+          price: number;
+          baseMarketPricePLN?: number;
+          markupPLN?: number;
+          specs: Record<string, unknown>;
+        }>;
+      };
+      const rows = data.components ?? [];
+      if (rows.length === 0) {
+        toast.error(t("customizeError"));
+        return;
+      }
+      const specs: ComponentSpec[] = rows.map((c) => ({
+        id: c.id,
+        name: c.name,
+        category: c.category,
+        price: c.price,
+        baseMarketPricePLN: c.baseMarketPricePLN ?? Math.max(0, c.price - (c.markupPLN ?? 0)),
+        markupPLN: c.markupPLN ?? 0,
+        specs: c.specs ?? {},
+      }));
+      applyPreset(specs);
+      toast.success(t("customizeLoaded"));
+      document.getElementById("builder")?.scrollIntoView({ behavior: "smooth" });
+    } catch {
+      toast.error(t("customizeError"));
+    } finally {
+      setLoadingId(null);
+    }
+  };
 
   return (
     <section id="shop" className="section-pad px-4 md:px-8">
@@ -74,12 +127,23 @@ export function BuildsForSale({ initialItems, featured = false }: Props) {
                         {t("tradeInApply")}
                       </Badge>
                     </div>
-                    <Button asChild className="w-full mt-auto">
-                      <Link href={`${base}#order`} className="flex items-center justify-center gap-2">
-                        {t("cta")}
-                        <ArrowRight className="w-4 h-4" />
-                      </Link>
-                    </Button>
+                    <div className="flex flex-col gap-2 mt-auto">
+                      <Button
+                        className="w-full"
+                        isLoading={loadingId === item.id}
+                        onClick={() => void customizeBuild(item)}
+                      >
+                        <Settings2 className="w-4 h-4 mr-1" />
+                        {t("customize")}
+                      </Button>
+                      <p className="text-[10px] text-zinc-600 text-center">{t("customizeDesc")}</p>
+                      <Button asChild variant="outline" className="w-full">
+                        <Link href={`${base}#order`} className="flex items-center justify-center gap-2">
+                          {t("cta")}
+                          <ArrowRight className="w-4 h-4" />
+                        </Link>
+                      </Button>
+                    </div>
                   </div>
                 </article>
               </ScrollReveal>

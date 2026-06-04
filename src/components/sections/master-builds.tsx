@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { StoredImage } from "@/components/ui/stored-image";
 import { formatPrice } from "@/lib/utils";
 import type { MasterItem } from "@/lib/masters-data";
-import { User, ArrowRight } from "lucide-react";
+import { User, ArrowRight, Star } from "lucide-react";
 
 type Props = {
   initialMasters: MasterItem[];
@@ -47,11 +47,18 @@ export function MasterBuilds({ initialMasters }: Props) {
                     </div>
                     <div>
                       <h3 className="text-lg sm:text-xl font-bold text-zinc-100">{master.name}</h3>
-                      {master.specialization ? (
-                        <Badge variant="accent" className="mt-1.5">
-                          {master.specialization}
-                        </Badge>
-                      ) : null}
+                      <div className="flex flex-wrap items-center gap-2 mt-1.5">
+                        {master.specialization ? (
+                          <Badge variant="accent">{master.specialization}</Badge>
+                        ) : null}
+                        <span className="inline-flex items-center gap-1 text-xs text-yellow-400/90">
+                          <Star className="w-3.5 h-3.5 fill-yellow-500/30" />
+                          {t("rating", { value: master.rating.toFixed(1) })}
+                        </span>
+                        <span className="text-xs text-zinc-500">
+                          {t("buildsCount", { count: master.buildsCount })}
+                        </span>
+                      </div>
                     </div>
                   </div>
                   {master.description ? (

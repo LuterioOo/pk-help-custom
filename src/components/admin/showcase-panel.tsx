@@ -19,6 +19,7 @@ type Item = {
   tradeInLabel?: string | null;
   sortOrder: number;
   active: boolean;
+  presetComponents?: Record<string, string> | null;
 };
 
 const emptyForm = {
@@ -32,6 +33,7 @@ const emptyForm = {
   sortOrder: 0,
   active: true,
   imageUrl: "",
+  presetJson: "",
 };
 
 export function ShowcasePanel() {
@@ -93,6 +95,20 @@ export function ShowcasePanel() {
       toast.error(t("needImage"));
       return;
     }
+    let presetComponents: Record<string, string> | null = null;
+    if (form.presetJson.trim()) {
+      try {
+        const parsed = JSON.parse(form.presetJson) as Record<string, unknown>;
+        presetComponents = {};
+        for (const [k, v] of Object.entries(parsed)) {
+          if (typeof v === "string" && v.trim()) presetComponents[k] = v.trim();
+        }
+        if (Object.keys(presetComponents).length === 0) presetComponents = null;
+      } catch {
+        toast.error("Invalid preset JSON");
+        return;
+      }
+    }
     const payload = {
       title: form.title,
       caption: form.caption,
@@ -101,6 +117,7 @@ export function ShowcasePanel() {
       pricePLN: form.forSale ? form.pricePLN : null,
       installmentEnabled: form.installmentEnabled,
       tradeInLabel: form.tradeInLabel || null,
+      presetComponents,
       sortOrder: form.sortOrder,
       active: form.active,
       imageUrl: form.imageUrl,
@@ -137,6 +154,9 @@ export function ShowcasePanel() {
       sortOrder: item.sortOrder,
       active: item.active,
       imageUrl: item.imageUrl,
+      presetJson: item.presetComponents
+        ? JSON.stringify(item.presetComponents, null, 2)
+        : "",
     });
   };
 
@@ -251,6 +271,13 @@ export function ShowcasePanel() {
                 value={form.tradeInLabel}
                 onChange={(e) => setForm({ ...form, tradeInLabel: e.target.value })}
                 className="px-3 py-2 rounded-lg glass text-sm"
+              />
+              <textarea
+                placeholder='{"GPU":"componentId","CPU":"componentId"}'
+                value={form.presetJson}
+                onChange={(e) => setForm({ ...form, presetJson: e.target.value })}
+                className="px-3 py-2 rounded-lg glass text-sm font-mono sm:col-span-2 min-h-[80px]"
+                rows={3}
               />
             </>
           ) : null}

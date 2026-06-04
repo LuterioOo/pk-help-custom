@@ -4,8 +4,9 @@ import { useCallback, useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { StoredImage } from "@/components/ui/stored-image";
+import { MasterAvatarUpload } from "@/components/admin/master-avatar-upload";
 import { toast } from "sonner";
-import { Pencil, Trash2, User, Plus } from "lucide-react";
+import { Pencil, Trash2, User, Plus, Star } from "lucide-react";
 
 type MasterBuild = {
   id: string;
@@ -32,6 +33,8 @@ type Master = {
   specEn?: string | null;
   specPl?: string | null;
   description?: string | null;
+  rating?: number;
+  buildsCount?: number;
   sortOrder: number;
   active: boolean;
   builds: MasterBuild[];
@@ -48,6 +51,8 @@ const emptyMaster = {
   specEn: "",
   specPl: "",
   description: "",
+  rating: 5,
+  buildsCount: 0,
   sortOrder: 0,
   active: true,
 };
@@ -74,6 +79,7 @@ export function MastersPanel() {
   const [editingBuildId, setEditingBuildId] = useState<string | null>(null);
   const [buildForm, setBuildForm] = useState(emptyBuild);
   const [showBuildForm, setShowBuildForm] = useState(false);
+  const [saving, setSaving] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -82,10 +88,12 @@ export function MastersPanel() {
       if (res.status === 401) return;
       const data = await res.json();
       setMasters(data.masters ?? []);
+    } catch {
+      toast.error(t("saveError"));
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     void load();
@@ -96,24 +104,35 @@ export function MastersPanel() {
       toast.error(t("nameRequired"));
       return;
     }
-    const payload = { ...masterForm, type: "master" };
-    if (editingMasterId) {
-      await fetch("/api/admin/masters", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id: editingMasterId, ...payload }),
-      });
-    } else {
-      await fetch("/api/admin/masters", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
+    setSaving(true);
+    try {
+      const payload = { ...masterForm };
+      const url = "/api/admin/masters";
+      const res = editingMasterId
+        ? await fetch(url, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ id: editingMasterId, ...payload }),
+          })
+        : await fetch(url, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          });
+      const json = (await res.json()) as { master?: { id: string }; error?: string };
+      if (!res.ok) throw new Error(json.error ?? t("saveError"));
+      if (!editingMasterId && json.master?.id) {
+        setEditingMasterId(json.master.id);
+      }
+      setMasterForm(emptyMaster);
+      setEditingMasterId(null);
+      await load();
+      toast.success(t("saved"));
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : t("saveError"));
+    } finally {
+      setSaving(false);
     }
-    setEditingMasterId(null);
-    setMasterForm(emptyMaster);
-    await load();
-    toast.success(t("saved"));
   };
 
   const saveBuild = async () => {
@@ -121,25 +140,32 @@ export function MastersPanel() {
       toast.error(t("buildRequired"));
       return;
     }
-    const payload = { ...buildForm, type: "build" };
-    if (editingBuildId) {
-      await fetch("/api/admin/masters", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id: editingBuildId, ...payload }),
-      });
-    } else {
-      await fetch("/api/admin/masters", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
+    setSaving(true);
+    try {
+      const payload = { ...buildForm };
+      const res = editingBuildId
+        ? await fetch("/api/admin/masters", {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ id: editingBuildId, type: "build", ...payload }),
+          })
+        : await fetch("/api/admin/masters", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ type: "build", ...payload }),
+          });
+      const json = (await res.json()) as { error?: string };
+      if (!res.ok) throw new Error(json.error ?? t("saveError"));
+      setEditingBuildId(null);
+      setBuildForm(emptyBuild);
+      setShowBuildForm(false);
+      await load();
+      toast.success(t("saved"));
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : t("saveError"));
+    } finally {
+      setSaving(false);
     }
-    setEditingBuildId(null);
-    setBuildForm(emptyBuild);
-    setShowBuildForm(false);
-    await load();
-    toast.success(t("saved"));
   };
 
   const editMaster = (m: Master) => {
@@ -155,6 +181,8 @@ export function MastersPanel() {
       specEn: m.specEn ?? "",
       specPl: m.specPl ?? "",
       description: m.description ?? "",
+      rating: m.rating ?? 5,
+      buildsCount: m.buildsCount ?? m.builds.length,
       sortOrder: m.sortOrder,
       active: m.active,
     });
@@ -179,7 +207,15 @@ export function MastersPanel() {
 
   const removeMaster = async (id: string) => {
     if (!confirm(t("deleteConfirm"))) return;
-    await fetch(`/api/admin/masters?id=${id}`, { method: "DELETE" });
+    const res = await fetch(`/api/admin/masters?id=${id}`, { method: "DELETE" });
+    if (!res.ok) {
+      toast.error(t("saveError"));
+      return;
+    }
+    if (editingMasterId === id) {
+      setEditingMasterId(null);
+      setMasterForm(emptyMaster);
+    }
     await load();
   };
 
@@ -197,13 +233,20 @@ export function MastersPanel() {
         <p className="text-sm text-yellow-400/90 font-medium">
           {editingMasterId ? t("editMaster") : t("addMaster")}
         </p>
+        <MasterAvatarUpload
+          masterId={editingMasterId}
+          avatarUrl={masterForm.avatarUrl}
+          onAvatarUrlChange={(url) => setMasterForm({ ...masterForm, avatarUrl: url })}
+          onMasterId={(id) => setEditingMasterId(id)}
+        />
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
           <input placeholder={t("name")} value={masterForm.name} onChange={(e) => setMasterForm({ ...masterForm, name: e.target.value })} className={inputClass} />
           <input placeholder={t("nameUk")} value={masterForm.nameUk} onChange={(e) => setMasterForm({ ...masterForm, nameUk: e.target.value })} className={inputClass} />
           <input placeholder={t("nameEn")} value={masterForm.nameEn} onChange={(e) => setMasterForm({ ...masterForm, nameEn: e.target.value })} className={inputClass} />
           <input placeholder={t("namePl")} value={masterForm.namePl} onChange={(e) => setMasterForm({ ...masterForm, namePl: e.target.value })} className={inputClass} />
           <input placeholder={t("specialization")} value={masterForm.specialization} onChange={(e) => setMasterForm({ ...masterForm, specialization: e.target.value })} className={inputClass} />
-          <input placeholder={t("avatarUrl")} value={masterForm.avatarUrl} onChange={(e) => setMasterForm({ ...masterForm, avatarUrl: e.target.value })} className={inputClass} />
+          <input type="number" step="0.1" min={0} max={5} placeholder={t("rating")} value={masterForm.rating} onChange={(e) => setMasterForm({ ...masterForm, rating: Number(e.target.value) })} className={inputClass} />
+          <input type="number" min={0} placeholder={t("buildsCount")} value={masterForm.buildsCount} onChange={(e) => setMasterForm({ ...masterForm, buildsCount: Number(e.target.value) })} className={inputClass} />
           <input type="number" placeholder={t("sortOrder")} value={masterForm.sortOrder} onChange={(e) => setMasterForm({ ...masterForm, sortOrder: Number(e.target.value) })} className={inputClass} />
           <label className="flex items-center gap-2 text-sm text-zinc-400">
             <input type="checkbox" checked={masterForm.active} onChange={(e) => setMasterForm({ ...masterForm, active: e.target.checked })} />
@@ -212,7 +255,7 @@ export function MastersPanel() {
         </div>
         <textarea placeholder={t("description")} value={masterForm.description} onChange={(e) => setMasterForm({ ...masterForm, description: e.target.value })} className={`${inputClass} sm:col-span-2`} rows={2} />
         <div className="flex gap-2">
-          <Button onClick={() => void saveMaster()}>{editingMasterId ? t("save") : t("add")}</Button>
+          <Button disabled={saving} onClick={() => void saveMaster()}>{editingMasterId ? t("save") : t("add")}</Button>
           {editingMasterId && (
             <Button variant="ghost" onClick={() => { setEditingMasterId(null); setMasterForm(emptyMaster); }}>{t("cancel")}</Button>
           )}
@@ -236,7 +279,7 @@ export function MastersPanel() {
           </div>
           <textarea placeholder={t("buildDescription")} value={buildForm.description} onChange={(e) => setBuildForm({ ...buildForm, description: e.target.value })} className={inputClass} rows={2} />
           <div className="flex gap-2">
-            <Button onClick={() => void saveBuild()}>{t("save")}</Button>
+            <Button disabled={saving} onClick={() => void saveBuild()}>{t("save")}</Button>
             <Button variant="ghost" onClick={() => { setShowBuildForm(false); setEditingBuildId(null); setBuildForm(emptyBuild); }}>{t("cancel")}</Button>
           </div>
         </div>
@@ -267,7 +310,15 @@ export function MastersPanel() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="font-medium">{master.name}</p>
-                  <p className="text-xs text-zinc-500">{master.specialization} · #{master.sortOrder}{master.active ? "" : ` (${t("hidden")})`}</p>
+                  <p className="text-xs text-zinc-500 flex flex-wrap items-center gap-2">
+                    <span>{master.specialization}</span>
+                    <span className="inline-flex items-center gap-0.5 text-yellow-400/80">
+                      <Star className="w-3 h-3 fill-yellow-500/40" />
+                      {master.rating ?? 5}
+                    </span>
+                    <span>· {master.buildsCount ?? master.builds.length} builds · #{master.sortOrder}</span>
+                    {!master.active ? ` (${t("hidden")})` : ""}
+                  </p>
                 </div>
                 <div className="flex gap-1">
                   <Button variant="ghost" size="sm" onClick={() => editMaster(master)}><Pencil className="w-4 h-4" /></Button>
@@ -275,7 +326,7 @@ export function MastersPanel() {
                 </div>
               </div>
               {master.builds.length > 0 ? (
-                <div className="grid sm:grid-cols-2 gap-2 mt--2">
+                <div className="grid sm:grid-cols-2 gap-2 mt-2">
                   {master.builds.map((b) => (
                     <div key={b.id} className="flex items-center justify-between gap-2 text-sm bg-white/[0.02] rounded-lg px-3 py-2">
                       <span className="truncate">{b.title} {b.pricePLN ? `— ${b.pricePLN} PLN` : ""}</span>

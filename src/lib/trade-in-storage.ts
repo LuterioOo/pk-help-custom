@@ -1,6 +1,7 @@
 export const TRADE_IN_COUPON_STORAGE_KEY = "pkhelp-trade-in-coupon";
 export const CONTACTS_STORAGE_KEY = "pkhelp-contacts";
 export const TRADE_IN_LEAD_STORAGE_KEY = "pkhelp-trade-in-lead";
+export const TRADE_IN_FLOW_KEY = "pkhelp-trade-in-flow";
 
 export type TradeInCouponState = {
   amount: number;
@@ -28,8 +29,8 @@ export function loadStoredContacts(): StoredContacts | null {
     if (!parsed.phone || String(parsed.phone).trim().length < 8) return null;
     return {
       phone: String(parsed.phone).trim(),
-      messenger: parsed.messenger ? String(parsed.messenger) : undefined,
-      name: parsed.name ? String(parsed.name) : undefined,
+      messenger: parsed.messenger ? String(parsed.messenger).trim() : undefined,
+      name: parsed.name ? String(parsed.name).trim() : undefined,
     };
   } catch {
     return null;
@@ -38,6 +39,7 @@ export function loadStoredContacts(): StoredContacts | null {
 
 export function saveStoredContacts(contacts: StoredContacts) {
   localStorage.setItem(CONTACTS_STORAGE_KEY, JSON.stringify(contacts));
+  window.dispatchEvent(new Event("pkhelp-trade-in-updated"));
 }
 
 export function loadTradeInCoupon(): TradeInCouponState | null {
@@ -80,8 +82,39 @@ export function clearTradeInLead() {
   localStorage.removeItem(TRADE_IN_LEAD_STORAGE_KEY);
 }
 
+/** User opened Trade-In flow — builder CTA stays locked until coupon + contacts are complete. */
+export function markTradeInFlowStarted() {
+  try {
+    localStorage.setItem(TRADE_IN_FLOW_KEY, "1");
+    window.dispatchEvent(new Event("pkhelp-trade-in-updated"));
+  } catch {
+    /* ignore */
+  }
+}
+
+export function isTradeInFlowActive(): boolean {
+  try {
+    return localStorage.getItem(TRADE_IN_FLOW_KEY) === "1";
+  } catch {
+    return false;
+  }
+}
+
+export function hasTradeInContactsComplete(): boolean {
+  const contacts = loadStoredContacts();
+  if (!contacts) return false;
+  const hasName = Boolean(contacts.name && contacts.name.length >= 2);
+  const hasPhone = contacts.phone.length >= 8;
+  const hasTelegram = Boolean(contacts.messenger && contacts.messenger.length >= 2);
+  return hasName && hasPhone && hasTelegram;
+}
+
 export function isTradeInBuildUnlocked(): boolean {
   const coupon = loadTradeInCoupon();
-  const contacts = loadStoredContacts();
-  return Boolean(coupon && coupon.amount > 0 && contacts?.phone);
+  return Boolean(coupon && coupon.amount > 0 && hasTradeInContactsComplete());
+}
+
+/** Lock «Собрать ПК» only when user started Trade-In and has not finished the flow. */
+export function shouldLockBuilderCta(): boolean {
+  return isTradeInFlowActive() && !isTradeInBuildUnlocked();
 }

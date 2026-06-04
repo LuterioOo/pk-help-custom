@@ -15,6 +15,7 @@ const schema = z.object({
   pricePLN: z.number().min(0).optional().nullable(),
   installmentEnabled: z.boolean().default(true),
   tradeInLabel: z.string().max(100).optional().or(z.literal("")),
+  presetComponents: z.record(z.string(), z.string()).optional().nullable(),
   imageUrl: z
     .string()
     .optional()
@@ -50,6 +51,7 @@ export async function POST(req: NextRequest) {
       pricePLN: data.forSale && data.pricePLN != null ? data.pricePLN : null,
       installmentEnabled: data.installmentEnabled,
       tradeInLabel: data.tradeInLabel || null,
+      presetComponents: data.presetComponents ?? undefined,
       sortOrder: data.sortOrder,
       active: data.active,
     },
@@ -74,6 +76,7 @@ export async function PUT(req: NextRequest) {
       pricePLN: data.forSale && data.pricePLN != null ? data.pricePLN : null,
       installmentEnabled: data.installmentEnabled,
       tradeInLabel: data.tradeInLabel || null,
+      presetComponents: data.presetComponents ?? undefined,
       sortOrder: data.sortOrder,
       active: data.active,
       ...(data.imageUrl ? { imageUrl: data.imageUrl } : {}),

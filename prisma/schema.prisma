@@ -7,69 +7,39 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-enum ComponentCategory {
-  CASE
-  CPU
-  MOTHERBOARD
-  GPU
-  RAM
-  SSD
-  HDD
-  PSU
-  COOLER
-  AIO
-  FANS
-}
-
-enum OrderStatus {
-  NOWE
-  W_TRAKCIE
-  WYCENIONE
-  estimated_waiting_service
-  ZAKONCZONE
-  ANULOWANE
-}
-
-enum CrmSyncStatus {
-  PENDING
-  SYNCED
-  FAILED
-  SKIPPED
-}
-
 model Component {
-  id                   String            @id @default(cuid())
-  category             ComponentCategory
-  name                 String
-  nameUk               String?
-  nameEn               String?
-  namePl               String?
-  brand                String
-  model                String?
-  socket               String?
-  chipset              String?
-  wattage              Int?
-  capacity             String?
-  memoryType           String?
-  formFactor           String?
-  baseMarketPricePLN   Float             @default(0)
-  markupPLN            Float             @default(0)
-  price                Float
-  usedPrice            Float?
-  sourceUrl            String?
-  externalPriceUrl     String?
-  externalStoreName    String?
-  externalPrice        Float?
-  lastPriceSyncAt      DateTime?
-  manualPriceOverride  Float?
-  imageUrl             String?
-  specs                Json              @default("{}")
-  popularityScore      Int               @default(0)
-  stock                Int               @default(10)
-  featured             Boolean           @default(false)
-  active               Boolean           @default(true)
-  createdAt            DateTime          @default(now())
-  updatedAt            DateTime          @updatedAt
+  id                  String            @id @default(cuid())
+  category            ComponentCategory
+  name                String
+  nameUk              String?
+  nameEn              String?
+  namePl              String?
+  brand               String
+  model               String?
+  socket              String?
+  chipset             String?
+  wattage             Int?
+  capacity            String?
+  memoryType          String?
+  formFactor          String?
+  baseMarketPricePLN  Float             @default(0)
+  markupPLN           Float             @default(0)
+  price               Float
+  sourceUrl           String?
+  imageUrl            String?
+  specs               Json              @default("{}")
+  popularityScore     Int               @default(0)
+  stock               Int               @default(10)
+  featured            Boolean           @default(false)
+  active              Boolean           @default(true)
+  createdAt           DateTime          @default(now())
+  updatedAt           DateTime          @updatedAt
+  externalPrice       Float?
+  externalPriceUrl    String?
+  externalStoreName   String?
+  lastPriceSyncAt     DateTime?
+  manualPriceOverride Float?
+  usedPrice           Float?
 }
 
 model Review {
@@ -90,27 +60,27 @@ model Review {
 }
 
 model Order {
-  id         String      @id @default(cuid())
-  name       String
-  phone      String
-  email      String?
-  messenger  String?
-  services   String[]    @default([])
-  comment             String?
-  buildJson           Json?
-  selectedComponents  Json?
-  totalPrice          Float?
-  tradeInDiscountPLN  Float?
-  tradeInEstimate     Json?
-  status     OrderStatus @default(NOWE)
-  crmLeadId           String?
-  crmDealId           String?
-  crmDealUrl          String?
-  crmSyncStatus       CrmSyncStatus @default(PENDING)
-  crmSyncError        String?
-  crmSyncedAt         DateTime?
-  createdAt  DateTime    @default(now())
-  updatedAt  DateTime    @updatedAt
+  id                 String        @id @default(cuid())
+  name               String
+  phone              String
+  email              String?
+  messenger          String?
+  services           String[]      @default([])
+  comment            String?
+  buildJson          Json?
+  selectedComponents Json?
+  totalPrice         Float?
+  status             OrderStatus   @default(NOWE)
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
+  crmDealId          String?
+  crmDealUrl         String?
+  crmLeadId          String?
+  crmSyncError       String?
+  crmSyncStatus      CrmSyncStatus @default(PENDING)
+  crmSyncedAt        DateTime?
+  tradeInDiscountPLN Float?
+  tradeInEstimate    Json?
 }
 
 model ShowcaseBuild {
@@ -121,12 +91,14 @@ model ShowcaseBuild {
   showText           Boolean  @default(true)
   forSale            Boolean  @default(false)
   pricePLN           Float?
-  installmentEnabled Boolean  @default(true)
-  tradeInLabel       String?
   sortOrder          Int      @default(0)
   active             Boolean  @default(true)
   createdAt          DateTime @default(now())
   updatedAt          DateTime @updatedAt
+  installmentEnabled Boolean  @default(true)
+  tradeInLabel       String?
+  /// Map of ComponentCategory → component id for «customize ready build» in builder
+  presetComponents   Json?
 }
 
 model Master {
@@ -141,17 +113,18 @@ model Master {
   specEn         String?
   specPl         String?
   description    String?
+  rating         Float         @default(5)
+  buildsCount    Int           @default(0)
   sortOrder      Int           @default(0)
   active         Boolean       @default(true)
-  builds         MasterBuild[]
   createdAt      DateTime      @default(now())
   updatedAt      DateTime      @updatedAt
+  builds         MasterBuild[]
 }
 
 model MasterBuild {
   id          String   @id @default(cuid())
   masterId    String
-  master      Master   @relation(fields: [masterId], references: [id], onDelete: Cascade)
   title       String
   titleUk     String?
   titleEn     String?
@@ -163,6 +136,7 @@ model MasterBuild {
   active      Boolean  @default(true)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  master      Master   @relation(fields: [masterId], references: [id], onDelete: Cascade)
 }
 
 model SiteSettings {
@@ -189,4 +163,34 @@ model AdminUser {
   username     String   @unique
   passwordHash String
   createdAt    DateTime @default(now())
+}
+
+enum ComponentCategory {
+  CASE
+  CPU
+  MOTHERBOARD
+  GPU
+  RAM
+  SSD
+  HDD
+  PSU
+  COOLER
+  AIO
+  FANS
+}
+
+enum OrderStatus {
+  NOWE
+  W_TRAKCIE
+  WYCENIONE
+  ZAKONCZONE
+  ANULOWANE
+  estimated_waiting_service
+}
+
+enum CrmSyncStatus {
+  PENDING
+  SYNCED
+  FAILED
+  SKIPPED
 }

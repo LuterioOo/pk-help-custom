@@ -2,6 +2,8 @@ import { prisma } from "@/lib/prisma";
 
 const orderBy = [{ sortOrder: "asc" as const }, { createdAt: "desc" as const }];
 
+export type ShowcasePresetComponents = Partial<Record<string, string>>;
+
 export type ShowcaseItem = {
   id: string;
   imageUrl: string;
@@ -9,7 +11,17 @@ export type ShowcaseItem = {
   caption: string | null;
   showText: boolean;
   pricePLN: number | null;
+  presetComponents: ShowcasePresetComponents | null;
 };
+
+function parsePresetComponents(raw: unknown): ShowcasePresetComponents | null {
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return null;
+  const out: ShowcasePresetComponents = {};
+  for (const [k, v] of Object.entries(raw as Record<string, unknown>)) {
+    if (typeof v === "string" && v.trim()) out[k] = v.trim();
+  }
+  return Object.keys(out).length > 0 ? out : null;
+}
 
 export async function getShowcaseData(): Promise<{ items: ShowcaseItem[]; forSale: ShowcaseItem[] }> {
   try {
@@ -25,6 +37,7 @@ export async function getShowcaseData(): Promise<{ items: ShowcaseItem[]; forSal
           caption: true,
           showText: true,
           pricePLN: true,
+          presetComponents: true,
         },
       }),
       prisma.showcaseBuild.findMany({
@@ -37,6 +50,7 @@ export async function getShowcaseData(): Promise<{ items: ShowcaseItem[]; forSal
           caption: true,
           showText: true,
           pricePLN: true,
+          presetComponents: true,
         },
       }),
     ]);
@@ -51,6 +65,7 @@ export async function getShowcaseData(): Promise<{ items: ShowcaseItem[]; forSal
           caption: r.caption,
           showText: r.showText,
           pricePLN: r.pricePLN,
+          presetComponents: parsePresetComponents(r.presetComponents),
         }));
 
     return { items: map(decorative), forSale: map(forSale) };

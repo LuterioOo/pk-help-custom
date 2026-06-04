@@ -18,7 +18,7 @@ const items = [
 export function HomeCtaStrip() {
   const t = useTranslations("homeCta");
   const base = useLocaleBase();
-  const { ready: buildReady } = useTradeInReady();
+  const { locked: buildLocked } = useTradeInReady();
 
   return (
     <section className="section-pad-tight px-4 md:px-8">
@@ -26,7 +26,7 @@ export function HomeCtaStrip() {
         <ScrollReveal>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-1.5 sm:gap-2">
             {items.map(({ key, icon: Icon, href, primary, requiresCoupon }) => {
-              const locked = requiresCoupon && !buildReady;
+              const locked = requiresCoupon && buildLocked;
               const path = locked
                 ? `${base}/trade-in`
                 : href.startsWith("#")

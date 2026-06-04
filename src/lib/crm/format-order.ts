@@ -89,6 +89,7 @@ export function formatOrderCrmNote(
       typeof tradeInEstimate.sourceType === "string" ? tradeInEstimate.sourceType : "";
     lines.push(
       `Trade-In: ${sourceType === "trade_in" ? "да" : "нет"}`,
+      `installment: ${installmentsRequested ? "true" : "false"}`,
       `Рассрочка: ${installmentsRequested ? "да" : "нет"}`,
       `Купон применён к сборке: ${couponAppliedToBuild ? "да" : "нет"}`
     );

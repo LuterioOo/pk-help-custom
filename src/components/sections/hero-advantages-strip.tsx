@@ -18,7 +18,9 @@ export function HeroAdvantagesStrip() {
       {items.map(({ key, Icon }) => (
         <div
           key={key}
-          className="flex items-center gap-2.5 rounded-lg bg-white/[0.02] px-3 py-2.5"
+          role="presentation"
+          aria-hidden
+          className="flex items-center gap-2.5 rounded-lg bg-white/[0.02] border border-transparent px-3 py-2.5 pointer-events-none select-none"
         >
           <div className="p-1.5 rounded-md bg-yellow-500/8 shrink-0">
             <Icon className="w-3.5 h-3.5 text-yellow-400/70" />
