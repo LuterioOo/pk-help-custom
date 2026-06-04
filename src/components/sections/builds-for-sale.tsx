@@ -7,9 +7,10 @@ import { useLocaleBase } from "@/hooks/use-locale-base";
 import { useLocale } from "next-intl";
 import { ScrollReveal } from "@/components/ui/scroll-reveal";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { formatPrice } from "@/lib/utils";
 import type { ShowcaseItem } from "@/lib/showcase-data";
-import { RefreshCw, CreditCard } from "lucide-react";
+import { RefreshCw, CreditCard, ArrowRight } from "lucide-react";
 
 type Props = {
   initialItems: ShowcaseItem[];
@@ -24,62 +25,60 @@ export function BuildsForSale({ initialItems, featured = false }: Props) {
   if (initialItems.length === 0) return null;
 
   const items = featured ? initialItems.slice(0, 3) : initialItems;
-  const sectionClass = featured ? "section-pad-tight" : "section-pad";
 
   return (
-    <section id="shop" className={`${sectionClass} px-4 md:px-8`}>
+    <section id="shop" className="section-pad px-4 md:px-8">
       <div className="max-w-7xl mx-auto">
-        <ScrollReveal className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-1 mb-2 sm:mb-2.5">
-          <div>
-            <h2 className="text-base sm:text-xl md:text-2xl font-bold neon-text">{t("title")}</h2>
-            <p className="mt-0.5 text-[11px] sm:text-xs text-zinc-400 max-w-xl">{t("subtitle")}</p>
-          </div>
+        <ScrollReveal className="mb-6 sm:mb-8">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold neon-text">{t("title")}</h2>
+          <p className="mt-2 text-sm text-zinc-400 max-w-2xl">{t("subtitle")}</p>
         </ScrollReveal>
 
-        <div className={`grid gap-2 sm:gap-3 ${featured ? "grid-cols-1 sm:grid-cols-3" : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"}`}>
+        <div className="grid gap-4 sm:gap-5 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
           {items.map((item, i) => {
             const monthly =
               item.pricePLN != null && item.pricePLN > 0 ? Math.max(1, Math.round(item.pricePLN / 12)) : null;
 
             return (
               <ScrollReveal key={item.id} delay={Math.min(i * 0.05, 0.2)}>
-                <article className="relative overflow-hidden rounded-xl glass neon-border transition-transform duration-300 hover:-translate-y-0.5 h-full flex flex-col">
-                  <div className={`relative ${featured ? "aspect-[16/10]" : "aspect-[4/3]"}`}>
+                <article className="relative overflow-hidden rounded-2xl bg-white/[0.02] border border-white/8 transition-transform duration-300 hover:-translate-y-1 h-full flex flex-col">
+                  <div className="relative aspect-[16/10]">
                     <ShowcaseImage
                       src={item.imageUrl}
                       alt={item.title ?? "PC"}
                       sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                     />
-                    <span className="absolute top-2 left-2 px-2 py-0.5 rounded-full text-[10px] font-bold bg-yellow-400 text-black">
+                    <Badge variant="accent" className="absolute top-3 left-3 font-bold uppercase">
                       {t("badge")}
-                    </span>
+                    </Badge>
                     {item.pricePLN != null && item.pricePLN > 0 ? (
-                      <span className="absolute top-2 right-2 px-2 py-0.5 rounded-lg text-xs font-bold bg-black/85 text-yellow-400 border border-yellow-500/40">
+                      <Badge variant="price" className="absolute top-3 right-3 text-sm font-bold px-2.5 py-1">
                         {formatPrice(item.pricePLN, locale)}
-                      </span>
+                      </Badge>
                     ) : null}
                   </div>
-                  <div className="p-3 sm:p-4 flex flex-col flex-1 gap-2">
+                  <div className="p-4 sm:p-5 flex flex-col flex-1 gap-3">
                     {item.title ? (
-                      <h3 className="font-semibold text-sm sm:text-base text-yellow-400 line-clamp-1">{item.title}</h3>
+                      <h3 className="font-semibold text-base sm:text-lg text-zinc-100 line-clamp-1">{item.title}</h3>
                     ) : null}
                     {item.showText && item.caption ? (
-                      <p className="text-xs text-zinc-400 line-clamp-2 flex-1">{item.caption}</p>
+                      <p className="text-sm text-zinc-500 line-clamp-2 flex-1">{item.caption}</p>
                     ) : null}
-                    <div className="flex flex-wrap gap-1.5 text-[10px]">
+                    <div className="flex flex-wrap gap-2">
                       {monthly != null ? (
-                        <span className="inline-flex items-center gap-1 rounded-md bg-white/5 px-2 py-0.5 text-zinc-400">
-                          <CreditCard className="w-3 h-3 text-yellow-400/80" />
+                        <Badge variant="muted" icon={<CreditCard className="w-3 h-3 text-yellow-400/70" />}>
                           {t("installment", { amount: monthly })}
-                        </span>
+                        </Badge>
                       ) : null}
-                      <span className="inline-flex items-center gap-1 rounded-md bg-yellow-500/10 px-2 py-0.5 text-yellow-400/90 border border-yellow-500/20">
-                        <RefreshCw className="w-3 h-3" />
+                      <Badge variant="accent" icon={<RefreshCw className="w-3 h-3" />}>
                         {t("tradeInApply")}
-                      </span>
+                      </Badge>
                     </div>
-                    <Button asChild size="sm" className="w-full h-9 mt-auto">
-                      <Link href={`${base}#order`}>{t("cta")}</Link>
+                    <Button asChild className="w-full mt-auto">
+                      <Link href={`${base}#order`} className="flex items-center justify-center gap-2">
+                        {t("cta")}
+                        <ArrowRight className="w-4 h-4" />
+                      </Link>
                     </Button>
                   </div>
                 </article>

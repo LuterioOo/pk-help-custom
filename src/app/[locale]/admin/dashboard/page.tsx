@@ -7,8 +7,9 @@ import { adminUrl } from "@/lib/admin-path";
 import { Button } from "@/components/ui/button";
 import { Logo } from "@/components/ui/logo";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Package, MessageSquare, ShoppingCart, LogOut, Pencil, Images } from "lucide-react";
+import { Package, MessageSquare, ShoppingCart, LogOut, Pencil, Images, Users } from "lucide-react";
 import { ShowcasePanel } from "@/components/admin/showcase-panel";
+import { MastersPanel } from "@/components/admin/masters-panel";
 import { OrderComponentsTable } from "@/components/admin/order-components-table";
 import {
   ComponentImageUpload,
@@ -20,7 +21,7 @@ import { ComponentImage } from "@/components/ui/component-image";
 import { toast } from "sonner";
 import { AnimatePresence, motion } from "framer-motion";
 
-type Tab = "components" | "reviews" | "orders" | "showcase";
+type Tab = "components" | "reviews" | "orders" | "showcase" | "masters";
 
 const ORDER_STATUSES = ["NOWE", "W_TRAKCIE", "WYCENIONE", "estimated_waiting_service", "ZAKONCZONE", "ANULOWANE"] as const;
 const TRADE_IN_WORKFLOW = [
@@ -45,12 +46,18 @@ type ComponentRow = {
   baseMarketPricePLN: number;
   markupPLN: number;
   price: number;
+  usedPrice?: number | null;
   socket?: string | null;
   memoryType?: string | null;
   formFactor?: string | null;
   wattage?: number | null;
   capacity?: string | null;
   sourceUrl?: string | null;
+  externalPriceUrl?: string | null;
+  externalStoreName?: string | null;
+  externalPrice?: number | null;
+  manualPriceOverride?: number | null;
+  lastPriceSyncAt?: string | null;
   imageUrl?: string | null;
   popularityScore: number;
   active: boolean;
@@ -64,12 +71,17 @@ const emptyComponent = {
   baseMarketPricePLN: 0,
   markupPLN: 0,
   price: 0,
+  usedPrice: 0,
   socket: "",
   memoryType: "",
   formFactor: "",
   wattage: 0,
   capacity: "",
   sourceUrl: "",
+  externalPriceUrl: "",
+  externalStoreName: "",
+  externalPrice: 0,
+  manualPriceOverride: 0,
   imageUrl: "",
   popularityScore: 50,
   active: true,
@@ -325,8 +337,7 @@ export default function AdminDashboard() {
     const installmentsRequested = Boolean(meta?.installmentsRequested);
     if (isTradeIn) {
       return [
-        "Проверить старое железо",
-        "Подтвердить coupon",
+        "Проверить старое железо и подтвердить купон",
         "Ожидаем клиента в сервисе",
         ...(installmentsRequested ? ["Отправить документы на рассрочку"] : []),
       ];
@@ -413,6 +424,11 @@ export default function AdminDashboard() {
       wattage: c.wattage ?? 0,
       capacity: c.capacity ?? "",
       sourceUrl: c.sourceUrl ?? "",
+      externalPriceUrl: c.externalPriceUrl ?? "",
+      externalStoreName: c.externalStoreName ?? "",
+      externalPrice: c.externalPrice ?? 0,
+      manualPriceOverride: c.manualPriceOverride ?? 0,
+      usedPrice: c.usedPrice ?? 0,
       imageUrl: c.imageUrl ?? "",
       popularityScore: c.popularityScore,
       active: c.active,
@@ -454,6 +470,7 @@ export default function AdminDashboard() {
     { id: "orders", icon: ShoppingCart, label: t("orders") },
     { id: "components", icon: Package, label: t("components") },
     { id: "showcase", icon: Images, label: t("showcaseTab") },
+    { id: "masters", icon: Users, label: t("mastersTab") },
     { id: "reviews", icon: MessageSquare, label: t("reviews") },
   ];
 
@@ -879,6 +896,68 @@ export default function AdminDashboard() {
                     onChange={(e) => setForm({ ...form, sourceUrl: e.target.value })}
                     className="px-3 py-2 rounded-lg glass text-sm sm:col-span-2"
                   />
+                  <input
+                    type="number"
+                    placeholder={t("componentFields.usedPrice")}
+                    value={form.usedPrice || ""}
+                    onChange={(e) => setForm({ ...form, usedPrice: Number(e.target.value) })}
+                    className="px-3 py-2 rounded-lg glass text-sm"
+                  />
+                  <input
+                    type="number"
+                    placeholder={t("componentFields.manualOverride")}
+                    value={form.manualPriceOverride || ""}
+                    onChange={(e) => setForm({ ...form, manualPriceOverride: Number(e.target.value) })}
+                    className="px-3 py-2 rounded-lg glass text-sm"
+                  />
+                  <input
+                    placeholder={t("componentFields.externalStore")}
+                    value={form.externalStoreName}
+                    onChange={(e) => setForm({ ...form, externalStoreName: e.target.value })}
+                    className="px-3 py-2 rounded-lg glass text-sm"
+                  />
+                  <input
+                    placeholder={t("componentFields.externalUrl")}
+                    value={form.externalPriceUrl}
+                    onChange={(e) => setForm({ ...form, externalPriceUrl: e.target.value })}
+                    className="px-3 py-2 rounded-lg glass text-sm sm:col-span-2"
+                  />
+                  <input
+                    type="number"
+                    placeholder={t("componentFields.externalPrice")}
+                    value={form.externalPrice || ""}
+                    onChange={(e) => setForm({ ...form, externalPrice: Number(e.target.value) })}
+                    className="px-3 py-2 rounded-lg glass text-sm"
+                  />
+                  {editingId && form.externalPriceUrl ? (
+                    <div className="flex flex-wrap gap-2 sm:col-span-2">
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        size="sm"
+                        onClick={() => window.open(form.externalPriceUrl, "_blank")}
+                      >
+                        {t("componentFields.openStore")}
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={async () => {
+                          if (!editingId) return;
+                          await fetch("/api/admin/components/sync-price", {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ id: editingId, externalPrice: form.externalPrice || undefined }),
+                          });
+                          fetchAll();
+                          toast.success(t("componentFields.priceSynced"));
+                        }}
+                      >
+                        {t("componentFields.syncPrice")}
+                      </Button>
+                    </div>
+                  ) : null}
                   <ComponentImageUpload
                     componentId={editingId}
                     imageUrl={form.imageUrl}
@@ -974,6 +1053,8 @@ export default function AdminDashboard() {
             )}
 
             {tab === "showcase" && <ShowcasePanel />}
+
+            {tab === "masters" && <MastersPanel />}
 
             {tab === "reviews" && (
               <div className="space-y-6">

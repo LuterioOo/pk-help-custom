@@ -38,32 +38,38 @@ enum CrmSyncStatus {
 }
 
 model Component {
-  id                 String            @id @default(cuid())
-  category           ComponentCategory
-  name               String
-  nameUk             String?
-  nameEn             String?
-  namePl             String?
-  brand              String
-  model              String?
-  socket             String?
-  chipset            String?
-  wattage            Int?
-  capacity           String?
-  memoryType         String?
-  formFactor         String?
-  baseMarketPricePLN Float             @default(0)
-  markupPLN          Float             @default(0)
-  price              Float
-  sourceUrl          String?
-  imageUrl           String?
-  specs              Json              @default("{}")
-  popularityScore    Int               @default(0)
-  stock              Int               @default(10)
-  featured           Boolean           @default(false)
-  active             Boolean           @default(true)
-  createdAt          DateTime          @default(now())
-  updatedAt          DateTime          @updatedAt
+  id                   String            @id @default(cuid())
+  category             ComponentCategory
+  name                 String
+  nameUk               String?
+  nameEn               String?
+  namePl               String?
+  brand                String
+  model                String?
+  socket               String?
+  chipset              String?
+  wattage              Int?
+  capacity             String?
+  memoryType           String?
+  formFactor           String?
+  baseMarketPricePLN   Float             @default(0)
+  markupPLN            Float             @default(0)
+  price                Float
+  usedPrice            Float?
+  sourceUrl            String?
+  externalPriceUrl     String?
+  externalStoreName    String?
+  externalPrice        Float?
+  lastPriceSyncAt      DateTime?
+  manualPriceOverride  Float?
+  imageUrl             String?
+  specs                Json              @default("{}")
+  popularityScore      Int               @default(0)
+  stock                Int               @default(10)
+  featured             Boolean           @default(false)
+  active               Boolean           @default(true)
+  createdAt            DateTime          @default(now())
+  updatedAt            DateTime          @updatedAt
 }
 
 model Review {
@@ -108,17 +114,55 @@ model Order {
 }
 
 model ShowcaseBuild {
-  id        String   @id @default(cuid())
-  imageUrl  String?
-  title     String?
-  caption   String?
-  showText  Boolean  @default(true)
-  forSale   Boolean  @default(false)
-  pricePLN  Float?
-  sortOrder Int      @default(0)
-  active    Boolean  @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id                 String   @id @default(cuid())
+  imageUrl           String?
+  title              String?
+  caption            String?
+  showText           Boolean  @default(true)
+  forSale            Boolean  @default(false)
+  pricePLN           Float?
+  installmentEnabled Boolean  @default(true)
+  tradeInLabel       String?
+  sortOrder          Int      @default(0)
+  active             Boolean  @default(true)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+}
+
+model Master {
+  id             String        @id @default(cuid())
+  name           String
+  nameUk         String?
+  nameEn         String?
+  namePl         String?
+  avatarUrl      String?
+  specialization String?
+  specUk         String?
+  specEn         String?
+  specPl         String?
+  description    String?
+  sortOrder      Int           @default(0)
+  active         Boolean       @default(true)
+  builds         MasterBuild[]
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+}
+
+model MasterBuild {
+  id          String   @id @default(cuid())
+  masterId    String
+  master      Master   @relation(fields: [masterId], references: [id], onDelete: Cascade)
+  title       String
+  titleUk     String?
+  titleEn     String?
+  titlePl     String?
+  description String?
+  imageUrl    String?
+  pricePLN    Float?
+  sortOrder   Int      @default(0)
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
 
 model SiteSettings {

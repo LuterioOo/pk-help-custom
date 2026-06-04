@@ -71,6 +71,7 @@ export function TradeInPage() {
           id: item.id,
           name: item.name,
           category: item.category,
+          usedMarketPrice: Number((item as { usedMarketPrice?: number | null }).usedMarketPrice ?? (item as { usedPrice?: number | null }).usedPrice ?? 0) || null,
           newPrice: Number(item.baseMarketPricePLN ?? item.price ?? 0),
         }))
       ),

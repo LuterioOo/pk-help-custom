@@ -15,6 +15,8 @@ type Item = {
   showText: boolean;
   forSale: boolean;
   pricePLN?: number | null;
+  installmentEnabled: boolean;
+  tradeInLabel?: string | null;
   sortOrder: number;
   active: boolean;
 };
@@ -25,6 +27,8 @@ const emptyForm = {
   showText: true,
   forSale: false,
   pricePLN: 0,
+  installmentEnabled: true,
+  tradeInLabel: "",
   sortOrder: 0,
   active: true,
   imageUrl: "",
@@ -95,6 +99,8 @@ export function ShowcasePanel() {
       showText: form.showText,
       forSale: form.forSale,
       pricePLN: form.forSale ? form.pricePLN : null,
+      installmentEnabled: form.installmentEnabled,
+      tradeInLabel: form.tradeInLabel || null,
       sortOrder: form.sortOrder,
       active: form.active,
       imageUrl: form.imageUrl,
@@ -126,6 +132,8 @@ export function ShowcasePanel() {
       showText: item.showText,
       forSale: item.forSale,
       pricePLN: item.pricePLN ?? 0,
+      installmentEnabled: item.installmentEnabled ?? true,
+      tradeInLabel: item.tradeInLabel ?? "",
       sortOrder: item.sortOrder,
       active: item.active,
       imageUrl: item.imageUrl,
@@ -226,13 +234,25 @@ export function ShowcasePanel() {
             {t("forSale")}
           </label>
           {form.forSale ? (
-            <input
-              type="number"
-              placeholder={t("pricePLN")}
-              value={form.pricePLN || ""}
-              onChange={(e) => setForm({ ...form, pricePLN: Number(e.target.value) })}
-              className="px-3 py-2 rounded-lg glass text-sm"
-            />
+            <>
+              <input
+                type="number"
+                placeholder={t("pricePLN")}
+                value={form.pricePLN || ""}
+                onChange={(e) => setForm({ ...form, pricePLN: Number(e.target.value) })}
+                className="px-3 py-2 rounded-lg glass text-sm"
+              />
+              <label className="flex items-center gap-2 text-sm text-zinc-400 px-2">
+                <input type="checkbox" checked={form.installmentEnabled} onChange={(e) => setForm({ ...form, installmentEnabled: e.target.checked })} />
+                {t("installmentEnabled")}
+              </label>
+              <input
+                placeholder={t("tradeInLabel")}
+                value={form.tradeInLabel}
+                onChange={(e) => setForm({ ...form, tradeInLabel: e.target.value })}
+                className="px-3 py-2 rounded-lg glass text-sm"
+              />
+            </>
           ) : null}
         </div>
         <div className="flex gap-2">

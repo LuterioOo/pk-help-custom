@@ -18,12 +18,12 @@ export function HeroAdvantagesStrip() {
       {items.map(({ key, Icon }) => (
         <div
           key={key}
-          className="flex items-center gap-2.5 rounded-xl glass border border-white/5 px-3 py-2.5"
+          className="flex items-center gap-2.5 rounded-lg bg-white/[0.02] px-3 py-2.5"
         >
-          <div className="p-2 rounded-lg bg-yellow-500/10 shrink-0">
-            <Icon className="w-4 h-4 text-yellow-400" />
+          <div className="p-1.5 rounded-md bg-yellow-500/8 shrink-0">
+            <Icon className="w-3.5 h-3.5 text-yellow-400/70" />
           </div>
-          <p className="text-[10px] sm:text-xs text-zinc-400 uppercase tracking-wide font-semibold leading-tight">
+          <p className="text-[10px] sm:text-xs text-zinc-500 uppercase tracking-wide leading-tight">
             {t(`features.${key}`)}
           </p>
         </div>

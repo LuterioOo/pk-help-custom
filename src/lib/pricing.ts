@@ -20,3 +20,18 @@ export function resolveComponentPrice(
   const markup = markupPLN ?? calculateMarkupPLN(baseMarketPricePLN);
   return { markupPLN: markup, price: baseMarketPricePLN + markup };
 }
+
+/** Builder/catalog price: manual override → external → local DB price */
+export function resolveEffectiveComponentPrice(component: {
+  manualPriceOverride?: number | null;
+  externalPrice?: number | null;
+  price: number;
+}): number {
+  if (component.manualPriceOverride != null && component.manualPriceOverride > 0) {
+    return component.manualPriceOverride;
+  }
+  if (component.externalPrice != null && component.externalPrice > 0) {
+    return component.externalPrice;
+  }
+  return component.price;
+}

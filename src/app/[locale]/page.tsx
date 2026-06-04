@@ -1,9 +1,8 @@
 import dynamic from "next/dynamic";
 import { Hero } from "@/components/sections/hero";
 import { TradeInPreview } from "@/components/sections/trade-in-preview";
-import { HomeCtaStrip } from "@/components/sections/home-cta-strip";
-import { ShowcaseGallery } from "@/components/sections/showcase-gallery";
 import { BuildsForSale } from "@/components/sections/builds-for-sale";
+import { MasterBuilds } from "@/components/sections/master-builds";
 import { Advantages } from "@/components/sections/advantages";
 import { setRequestLocale } from "next-intl/server";
 import { routing } from "@/i18n/routing";
@@ -12,6 +11,7 @@ import { getTranslations } from "next-intl/server";
 import { getSiteUrl } from "@/lib/site-url";
 import { getShowcaseData } from "@/lib/showcase-data";
 import { getReviewsData } from "@/lib/reviews-data";
+import { getMastersData } from "@/lib/masters-data";
 import { SectionSkeleton } from "@/components/ui/section-skeleton";
 
 const PcBuilder = dynamic(
@@ -74,18 +74,19 @@ export default async function HomePage({ params }: Props) {
   const { locale } = await params;
   setRequestLocale(locale);
 
-  const [showcase, reviews] = await Promise.all([getShowcaseData(), getReviewsData()]);
+  const [showcase, reviews, masters] = await Promise.all([
+    getShowcaseData(),
+    getReviewsData(),
+    getMastersData(locale),
+  ]);
 
   return (
     <>
-      <div className="home-fold">
-        <Hero />
-        <Advantages compact />
-        <HomeCtaStrip />
-        <BuildsForSale initialItems={showcase.forSale} featured />
-        <TradeInPreview />
-      </div>
-      <ShowcaseGallery initialItems={showcase.items} />
+      <Hero />
+      <BuildsForSale initialItems={showcase.forSale} />
+      <MasterBuilds initialMasters={masters} />
+      <TradeInPreview />
+      <Advantages />
       <PcBuilder />
       <Reviews initialReviews={reviews} />
       <OrderForm />

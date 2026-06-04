@@ -34,12 +34,14 @@ interface BuildContextValue {
   useTradeInCoupon: boolean;
   totalAfterTradeIn: number;
   installmentMonthly: number;
+  installmentsRequested: boolean;
   selectComponent: (category: ComponentCategory, component: ComponentSpec | null) => void;
   clearBuild: () => void;
   loadFromStorage: () => void;
   saveToStorage: () => void;
   setTradeInCoupon: (amount: number) => void;
   setUseTradeInCoupon: (enabled: boolean) => void;
+  setInstallmentsRequested: (enabled: boolean) => void;
 }
 
 const BuildContext = createContext<BuildContextValue | null>(null);
@@ -49,6 +51,7 @@ export function BuildProvider({ children }: { children: React.ReactNode }) {
   const initialCoupon = readCouponFromStorage();
   const [tradeInCoupon, setTradeInCouponState] = useState(initialCoupon.amount);
   const [useTradeInCoupon, setUseTradeInCoupon] = useState(initialCoupon.use);
+  const [installmentsRequested, setInstallmentsRequested] = useState(false);
 
   const syncCouponFromStorage = useCallback(() => {
     const { amount, use } = readCouponFromStorage();
@@ -127,12 +130,14 @@ export function BuildProvider({ children }: { children: React.ReactNode }) {
       useTradeInCoupon,
       totalAfterTradeIn,
       installmentMonthly,
+      installmentsRequested,
       selectComponent,
       clearBuild,
       loadFromStorage,
       saveToStorage,
       setTradeInCoupon,
       setUseTradeInCoupon,
+      setInstallmentsRequested,
     }),
     [
       selection,
@@ -142,6 +147,7 @@ export function BuildProvider({ children }: { children: React.ReactNode }) {
       useTradeInCoupon,
       totalAfterTradeIn,
       installmentMonthly,
+      installmentsRequested,
       selectComponent,
       clearBuild,
       loadFromStorage,

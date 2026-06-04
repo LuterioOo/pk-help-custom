@@ -157,8 +157,7 @@ function deriveAdminTasks(
   const installmentsRequested = Boolean(tradeInEstimate?.installmentsRequested);
   if (isTradeIn) {
     return [
-      "Проверить старое железо",
-      "Подтвердить coupon",
+      "Проверить старое железо и подтвердить купон",
       "Ожидаем клиента в сервисе",
       ...(installmentsRequested ? ["Отправить документы на рассрочку"] : []),
     ];

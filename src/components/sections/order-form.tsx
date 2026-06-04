@@ -46,13 +46,14 @@ export function OrderForm() {
     setUseTradeInCoupon,
     totalAfterTradeIn,
     installmentMonthly,
+    installmentsRequested,
+    setInstallmentsRequested,
   } = useBuild();
   const hasBuild = Object.keys(selection).length > 0;
   const [tradeInContactOpen, setTradeInContactOpen] = useState(false);
   const [tradeInPhone, setTradeInPhone] = useState("");
   const [tradeInMessenger, setTradeInMessenger] = useState("");
   const [tradeInSubmitting, setTradeInSubmitting] = useState(false);
-  const [installmentsRequested, setInstallmentsRequested] = useState(false);
 
   const {
     register,

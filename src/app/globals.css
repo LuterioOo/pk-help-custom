@@ -224,6 +224,14 @@ section[id] {
   }
 }
 
+.label-muted {
+  @apply inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs text-zinc-500 bg-white/[0.03] cursor-default select-none;
+}
+
+.cta-primary-glow {
+  box-shadow: 0 8px 40px rgba(255, 215, 0, 0.35);
+}
+
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;

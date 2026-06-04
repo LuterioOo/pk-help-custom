@@ -12,17 +12,16 @@ import { LanguageSwitcher } from "./language-switcher";
 import { cn } from "@/lib/utils";
 import { useUiSound } from "@/hooks/use-ui-sound";
 
-const navIds = ["home", "tradeIn", "showcase", "shop", "builder", "advantages", "reviews", "contact", "order"] as const;
+const navIds = ["home", "shop", "masters", "tradeIn", "builder", "advantages", "reviews", "contact"] as const;
 const hrefMap: Record<(typeof navIds)[number], string> = {
   home: "#hero",
-  tradeIn: "#trade-in",
-  showcase: "#showcase",
   shop: "#shop",
+  masters: "#masters",
+  tradeIn: "#trade-in",
   builder: "#builder",
   advantages: "#advantages",
   reviews: "#reviews",
   contact: "#contacts",
-  order: "#order",
 };
 
 export function Header() {

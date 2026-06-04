@@ -13,6 +13,8 @@ const schema = z.object({
   active: z.boolean().default(true),
   forSale: z.boolean().default(false),
   pricePLN: z.number().min(0).optional().nullable(),
+  installmentEnabled: z.boolean().default(true),
+  tradeInLabel: z.string().max(100).optional().or(z.literal("")),
   imageUrl: z
     .string()
     .optional()
@@ -46,6 +48,8 @@ export async function POST(req: NextRequest) {
       showText: data.showText,
       forSale: data.forSale,
       pricePLN: data.forSale && data.pricePLN != null ? data.pricePLN : null,
+      installmentEnabled: data.installmentEnabled,
+      tradeInLabel: data.tradeInLabel || null,
       sortOrder: data.sortOrder,
       active: data.active,
     },
@@ -68,6 +72,8 @@ export async function PUT(req: NextRequest) {
       showText: data.showText,
       forSale: data.forSale,
       pricePLN: data.forSale && data.pricePLN != null ? data.pricePLN : null,
+      installmentEnabled: data.installmentEnabled,
+      tradeInLabel: data.tradeInLabel || null,
       sortOrder: data.sortOrder,
       active: data.active,
       ...(data.imageUrl ? { imageUrl: data.imageUrl } : {}),

@@ -1,14 +1,13 @@
 "use client";
 
-import { cn } from "@/lib/utils";
-import { cloneElement, forwardRef, isValidElement, type ButtonHTMLAttributes, type ReactElement, type ReactNode } from "react";
+import { cn } from "@/lib/utils";import { cloneElement, forwardRef, isValidElement, type ButtonHTMLAttributes, type ReactElement, type ReactNode } from "react";
 import { useUiSound } from "@/hooks/use-ui-sound";
 
 type Variant = "primary" | "secondary" | "ghost" | "outline";
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: Variant;
-  size?: "sm" | "md" | "lg";
+  size?: "sm" | "md" | "lg" | "xl";
   isLoading?: boolean;
   asChild?: boolean;
   children?: ReactNode;
@@ -16,24 +15,26 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 
 const variants: Record<Variant, string> = {
   primary:
-    "bg-gradient-to-r from-yellow-300 to-amber-500 text-black font-semibold neon-border hover:from-yellow-200 hover:to-amber-400 hover:shadow-[0_8px_24px_rgba(255,215,0,0.28)] active:scale-[0.98]",
-  secondary: "glass text-zinc-200 border border-white/10 hover:bg-white/8 hover:border-white/20 active:scale-[0.98]",
-  ghost: "text-zinc-300 hover:text-white hover:bg-white/5 active:scale-[0.98]",
+    "cursor-pointer bg-gradient-to-r from-yellow-300 to-amber-500 text-black font-semibold shadow-[0_4px_20px_rgba(255,215,0,0.25)] hover:from-yellow-200 hover:to-amber-400 hover:shadow-[0_8px_32px_rgba(255,215,0,0.35)] active:scale-[0.97] active:shadow-[0_2px_12px_rgba(255,215,0,0.2)]",
+  secondary:
+    "cursor-pointer glass text-zinc-200 border border-white/15 hover:bg-white/10 hover:border-yellow-500/40 active:scale-[0.98]",
+  ghost: "cursor-pointer text-zinc-300 hover:text-white hover:bg-white/5 active:scale-[0.98]",
   outline:
-    "border border-white/15 text-zinc-200 hover:border-yellow-500/50 hover:bg-yellow-500/10 active:scale-[0.98]",
+    "cursor-pointer border border-white/20 text-zinc-200 hover:border-yellow-500/50 hover:bg-yellow-500/10 active:scale-[0.98]",
 };
 
 const sizes = {
-  sm: "px-4 py-2 text-sm rounded-lg",
-  md: "px-6 py-2.5 text-sm rounded-xl",
-  lg: "px-8 py-3.5 text-base rounded-xl",
+  sm: "px-4 py-2 text-sm rounded-lg min-h-[36px]",
+  md: "px-6 py-2.5 text-sm rounded-xl min-h-[42px]",
+  lg: "px-8 py-3.5 text-base rounded-xl min-h-[48px]",
+  xl: "px-10 py-4 sm:py-5 text-lg sm:text-xl rounded-2xl min-h-[56px] sm:min-h-[64px] font-bold",
 };
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant = "primary", size = "md", isLoading, asChild, children, disabled, onClick, ...props }, ref) => {
     const { playTone } = useUiSound();
     const baseClassName = cn(
-      "inline-flex items-center justify-center gap-2 font-medium transition-[colors,transform] disabled:opacity-50 disabled:cursor-not-allowed",
+      "inline-flex items-center justify-center gap-2 font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:active:scale-100",
       variants[variant],
       sizes[size],
       className
