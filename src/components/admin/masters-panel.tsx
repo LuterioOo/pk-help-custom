@@ -7,6 +7,7 @@ import { StoredImage } from "@/components/ui/stored-image";
 import { MasterAvatarUpload } from "@/components/admin/master-avatar-upload";
 import { toast } from "sonner";
 import { Pencil, Trash2, User, Plus, Star } from "lucide-react";
+import { shouldRenderStoredAvatar } from "@/lib/avatar-url";
 
 type MasterBuild = {
   id: string;
@@ -307,9 +308,9 @@ export function MastersPanel() {
           {masters.map((master) => (
             <div key={master.id} className="glass rounded-xl p-4 border border-white/5">
               <div className="flex flex-wrap items-center gap-3 mb-3">
-                <div className="w-12 h-12 rounded-full overflow-hidden bg-zinc-800 flex-shrink-0">
-                  {master.avatarUrl ? (
-                    <StoredImage src={master.avatarUrl} sizes="48px" />
+                <div className="relative w-12 h-12 rounded-full overflow-hidden bg-zinc-800 flex-shrink-0">
+                  {master.avatarUrl && shouldRenderStoredAvatar(master.avatarUrl) ? (
+                    <StoredImage src={master.avatarUrl} />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center">
                       <User className="w-5 h-5 text-zinc-600" />

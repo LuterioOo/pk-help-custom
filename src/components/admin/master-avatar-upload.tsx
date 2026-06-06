@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { ImagePlus, Loader2, Trash2, User } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { shouldRenderStoredAvatar } from "@/lib/avatar-url";
 
 type Props = {
   masterId: string | null;
@@ -28,12 +29,12 @@ export function MasterAvatarUpload({ masterId, avatarUrl, onAvatarUrlChange, onM
   }, []);
 
   useEffect(() => {
-    const onWindowDragEnd = () => resetDragState();
-    window.addEventListener("dragend", onWindowDragEnd);
-    window.addEventListener("drop", onWindowDragEnd);
+    const reset = () => resetDragState();
+    window.addEventListener("dragend", reset);
+    window.addEventListener("drop", reset);
     return () => {
-      window.removeEventListener("dragend", onWindowDragEnd);
-      window.removeEventListener("drop", onWindowDragEnd);
+      window.removeEventListener("dragend", reset);
+      window.removeEventListener("drop", reset);
     };
   }, [resetDragState]);
 
@@ -94,6 +95,8 @@ export function MasterAvatarUpload({ masterId, avatarUrl, onAvatarUrlChange, onM
     }
   };
 
+  const showPreview = avatarUrl && shouldRenderStoredAvatar(avatarUrl);
+
   return (
     <div className="space-y-2 sm:col-span-2 lg:col-span-3">
       <p className="text-sm text-zinc-400">{t("avatarLabel")}</p>
@@ -103,9 +106,7 @@ export function MasterAvatarUpload({ masterId, avatarUrl, onAvatarUrlChange, onM
           dragDepthRef.current += 1;
           setDragOver(true);
         }}
-        onDragOver={(e) => {
-          e.preventDefault();
-        }}
+        onDragOver={(e) => e.preventDefault()}
         onDragLeave={(e) => {
           e.preventDefault();
           dragDepthRef.current = Math.max(0, dragDepthRef.current - 1);
@@ -123,21 +124,21 @@ export function MasterAvatarUpload({ masterId, avatarUrl, onAvatarUrlChange, onM
             aria-hidden
           />
         ) : null}
-        <div className="relative z-[1] w-24 h-24 rounded-full overflow-hidden bg-zinc-800 border border-yellow-500/20 flex-shrink-0">
-          {avatarUrl ? (
-            <StoredImage src={avatarUrl} sizes="96px" />
+        <div className="relative z-[1] w-20 h-20 sm:w-24 sm:h-24 rounded-full overflow-hidden bg-zinc-800 border border-yellow-500/20 flex-shrink-0">
+          {showPreview ? (
+            <StoredImage src={avatarUrl} objectFit="cover" />
           ) : (
-            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-              <User className="w-10 h-10 text-zinc-600" />
+            <div className="flex h-full w-full items-center justify-center pointer-events-none">
+              <User className="w-8 h-8 sm:w-10 sm:h-10 text-zinc-600" />
             </div>
           )}
           {uploading ? (
-            <div className="pointer-events-none absolute inset-0 z-[2] flex items-center justify-center bg-black/50 rounded-full">
-              <Loader2 className="w-8 h-8 text-yellow-400 animate-spin" />
+            <div className="pointer-events-none absolute inset-0 z-[2] flex items-center justify-center bg-black/40 rounded-full">
+              <Loader2 className="w-7 h-7 text-yellow-400 animate-spin" />
             </div>
           ) : null}
         </div>
-        <div className="relative z-[1] flex flex-col gap-2 min-w-[180px]">
+        <div className="relative z-[1] flex flex-col gap-2 min-w-0 flex-1 sm:min-w-[180px] sm:flex-none">
           <input
             ref={inputRef}
             type="file"

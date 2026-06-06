@@ -7,11 +7,11 @@ import { cn } from "@/lib/utils";
 interface LogoProps {
   className?: string;
   href?: string;
-  size?: "sm" | "md" | "lg";
+  size?: "xs" | "sm" | "md" | "lg";
 }
 
 export function Logo({ className, href = "/", size = "md" }: LogoProps) {
-  const heights = { sm: 44, md: 56, lg: 64 } as const;
+  const heights = { xs: 36, sm: 44, md: 56, lg: 64 } as const;
   const h = heights[size];
 
   const content = (

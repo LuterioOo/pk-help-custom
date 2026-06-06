@@ -1,51 +1,57 @@
 "use client";
 
-import { useState } from "react";
-import Image from "next/image";
+import { useEffect, useState } from "react";
 import { ImageOff } from "lucide-react";
-import { resolveImageSrc, shouldUseUnoptimizedImage } from "@/lib/resolve-image-src";
+import { resolveImageSrc } from "@/lib/resolve-image-src";
 import { cn } from "@/lib/utils";
 
 type Props = {
   src: string;
   alt?: string;
   className?: string;
-  sizes?: string;
   objectFit?: "cover" | "contain";
 };
 
-/** Admin previews — fallback on 404 / invalid URL. */
+/**
+ * Admin image preview — native <img> only (no next/image fill).
+ * Prevents absolute-positioned overlays from escaping parent bounds on 404.
+ */
 export function StoredImage({
   src,
   alt = "",
   className,
-  sizes = "160px",
   objectFit = "cover",
 }: Props) {
   const [failed, setFailed] = useState(false);
   const resolved = resolveImageSrc(src);
 
+  useEffect(() => {
+    setFailed(false);
+  }, [src]);
+
   if (failed || !resolved) {
     return (
       <div
         className={cn(
-          "absolute inset-0 flex items-center justify-center bg-black/50 text-zinc-600",
+          "flex h-full w-full items-center justify-center bg-zinc-800 text-zinc-600 pointer-events-none",
           className
         )}
       >
-        <ImageOff className="w-8 h-8" strokeWidth={1.25} />
+        <ImageOff className="w-6 h-6 sm:w-8 sm:h-8" strokeWidth={1.25} />
       </div>
     );
   }
 
   return (
-    <Image
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
       src={resolved}
       alt={alt}
-      fill
-      className={cn(objectFit === "contain" ? "object-contain p-1" : "object-cover", className)}
-      sizes={sizes}
-      unoptimized={shouldUseUnoptimizedImage(resolved)}
+      className={cn(
+        "h-full w-full pointer-events-none",
+        objectFit === "contain" ? "object-contain p-0.5" : "object-cover",
+        className
+      )}
       onError={() => setFailed(true)}
     />
   );

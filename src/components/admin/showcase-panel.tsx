@@ -191,7 +191,7 @@ export function ShowcasePanel() {
         <div className="flex flex-wrap gap-4 items-start">
           <div className="relative w-40 h-28 rounded-xl bg-black/40 border border-yellow-500/20 overflow-hidden">
             {form.imageUrl ? (
-              <StoredImage src={form.imageUrl} sizes="160px" />
+              <StoredImage src={form.imageUrl} />
             ) : (
               <div className="absolute inset-0 flex items-center justify-center text-xs text-zinc-600 px-2 text-center">
                 {t("noImage")}
@@ -303,7 +303,7 @@ export function ShowcasePanel() {
             <div key={item.id} className="glass rounded-xl overflow-hidden border border-yellow-500/10">
               <div className="relative aspect-video bg-black">
                 {item.imageUrl ? (
-                  <StoredImage src={item.imageUrl} sizes="400px" />
+                  <StoredImage src={item.imageUrl} />
                 ) : null}
                 {item.showText && item.title ? (
                   <div className="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-black/90 to-transparent">

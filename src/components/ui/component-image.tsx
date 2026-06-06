@@ -27,7 +27,7 @@ function CategoryPlaceholder({
   return (
     <div
       className={cn(
-        "absolute inset-0 flex flex-col items-center justify-center gap-1.5 bg-gradient-to-br",
+        "relative flex h-full w-full flex-col items-center justify-center gap-1.5 bg-gradient-to-br pointer-events-none",
         gradient,
         className
       )}
@@ -50,15 +50,17 @@ export function ComponentImage({ src, alt, category, className, sizes = "80px" }
   }
 
   return (
-    <Image
-      src={resolved}
-      alt={alt}
-      fill
-      className={cn("object-contain p-1", className)}
-      sizes={sizes}
-      loading="lazy"
-      unoptimized={shouldUseUnoptimizedImage(resolved)}
-      onError={() => setBroken(true)}
-    />
+    <div className="relative h-full w-full min-h-0 min-w-0">
+      <Image
+        src={resolved}
+        alt={alt}
+        fill
+        className={cn("object-contain p-1", className)}
+        sizes={sizes}
+        loading="lazy"
+        unoptimized={shouldUseUnoptimizedImage(resolved)}
+        onError={() => setBroken(true)}
+      />
+    </div>
   );
 }

@@ -25,6 +25,8 @@ node_modules/
 !/public/uploads/components/.gitkeep
 /public/uploads/showcase/*
 !/public/uploads/showcase/.gitkeep
+/public/uploads/masters/*
+!/public/uploads/masters/.gitkeep
 
 # misc
 .DS_Store

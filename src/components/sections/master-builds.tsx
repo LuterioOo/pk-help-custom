@@ -38,7 +38,7 @@ export function MasterBuilds({ initialMasters }: Props) {
                   <div className="flex items-center gap-4">
                     <div className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-full overflow-hidden bg-zinc-800 flex-shrink-0 border border-yellow-500/20">
                       {master.avatarUrl ? (
-                        <StoredImage src={master.avatarUrl} sizes="80px" />
+                        <StoredImage src={master.avatarUrl} />
                       ) : (
                         <div className="absolute inset-0 flex items-center justify-center">
                           <User className="w-8 h-8 text-zinc-600" />
@@ -75,7 +75,7 @@ export function MasterBuilds({ initialMasters }: Props) {
                       >
                         {build.imageUrl ? (
                           <div className="relative aspect-video bg-black/40">
-                            <StoredImage src={build.imageUrl} sizes="400px" />
+                            <StoredImage src={build.imageUrl} />
                             {build.pricePLN != null && build.pricePLN > 0 ? (
                               <Badge variant="price" className="absolute top-2 right-2 text-xs font-bold px-2 py-1">
                                 {formatPrice(build.pricePLN, locale)}

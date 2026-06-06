@@ -18,7 +18,7 @@ export function Hero() {
   const { locked: buildLocked } = useTradeInReady();
 
   return (
-    <section id="hero" className="relative pt-[6.5rem] sm:pt-[7rem] pb-8 sm:pb-12 px-4 md:px-8 min-h-[min(92vh,880px)] flex flex-col justify-center">
+    <section id="hero" className="relative pt-[5.25rem] sm:pt-[6.25rem] pb-8 sm:pb-12 px-4 md:px-8 min-h-[min(92vh,880px)] flex flex-col justify-center">
       <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_78%_28%,rgba(99,102,241,0.12),transparent_45%),radial-gradient(circle_at_15%_12%,rgba(255,215,0,0.14),transparent_38%)]" />
       <div className="max-w-7xl mx-auto w-full relative z-10">
         <div className="grid lg:grid-cols-[1.05fr_minmax(260px,38%)] gap-8 lg:gap-12 items-center">
