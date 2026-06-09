@@ -142,6 +142,7 @@ const pl = {
     completeBuildFirst: "Najpierw dokończ konfigurację PC",
     missingParts: "Brakujące części",
     orderDisabled: "Dokończ konfigurację",
+    buildProgress: "Gotowość {pct}%",
     stepOf: "Krok {current} z {total}",
     categoriesLabel: "Kategorie komponentów",
     installments: {
@@ -223,6 +224,8 @@ const pl = {
       coupon: "Otrzymałeś/-aś kupon o wartości około: {amount} PLN",
       afterDiscount: "Kwota po Trade-In: {amount} PLN",
       useCoupon: "Użyj kuponu Trade-In do tej konfiguracji",
+      hint: "Masz stary sprzęt? Oceń go w Trade-In i otrzymaj kupon —",
+      goto: "przejdź do wyceny",
       installmentFromDiscounted: "Rata orientacyjna (12 mies.): {amount} PLN/mies.",
       disclaimer:
         "To wstępna wycena. Ostateczna cena zostanie potwierdzona w serwisie po diagnostyce i ocenie stanu oddanego sprzętu.",

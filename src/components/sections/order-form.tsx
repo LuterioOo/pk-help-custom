@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect } from "react";
+import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -8,14 +9,13 @@ import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { useBuild } from "@/store/build-store";
 import { selectionToSelectedComponents } from "@/lib/order-components";
-import { calculateTradeInEstimate } from "@/lib/trade-in";
+import { useLocaleBase } from "@/hooks/use-locale-base";
 import { Button } from "@/components/ui/button";
 import { ScrollReveal } from "@/components/ui/scroll-reveal";
 import { cn } from "@/lib/utils";
 
 import {
   saveStoredContacts,
-  loadStoredContacts,
   loadTradeInLead,
   clearTradeInLead,
 } from "@/lib/trade-in-storage";
@@ -38,10 +38,12 @@ type FormData = z.infer<typeof schema>;
 export function OrderForm() {
   const t = useTranslations("order");
   const locale = useLocale();
+  const base = useLocaleBase();
   const {
     selection,
     total,
-    setTradeInCoupon,
+    tradeInCoupon,
+    tradeInUnlocked,
     useTradeInCoupon,
     setUseTradeInCoupon,
     totalAfterTradeIn,
@@ -51,10 +53,6 @@ export function OrderForm() {
     isBuildComplete,
   } = useBuild();
   const hasBuild = Object.keys(selection).length > 0;
-  const [tradeInContactOpen, setTradeInContactOpen] = useState(false);
-  const [tradeInPhone, setTradeInPhone] = useState("");
-  const [tradeInMessenger, setTradeInMessenger] = useState("");
-  const [tradeInSubmitting, setTradeInSubmitting] = useState(false);
 
   const {
     register,
@@ -72,91 +70,8 @@ export function OrderForm() {
   const attachBuild = watch("attachBuild");
   const canAttachBuild = hasBuild && isBuildComplete;
 
-  const tradeInEstimate = useMemo(() => {
-    const selected = Object.values(selection);
-    if (!selected.length) return null;
-    const items = selected
-      .filter((c) => c && typeof c === "object")
-      .map((c) => c as { name?: string; category?: string; baseMarketPricePLN?: number; price?: number });
-    const estimate = calculateTradeInEstimate(
-      items
-        .filter((c) => typeof c.name === "string")
-        .map((c) => ({
-          name: c.name as string,
-          category: c.category,
-          newPrice: Number(c.baseMarketPricePLN ?? c.price ?? 0),
-        }))
-    );
-    const couponPLN = estimate.estimatedTotal;
-    return {
-      items: estimate.items,
-      couponPLN: Math.round(couponPLN),
-      sumMin: estimate.sumMin,
-      sumMax: estimate.sumMax,
-      discountedTotal: Math.max(0, Math.round(total - couponPLN)),
-      hasManualItems: estimate.hasManualItems,
-    };
-  }, [selection, total]);
-
-  useEffect(() => {
-    if (!tradeInEstimate) {
-      setTradeInCoupon(0);
-      return;
-    }
-    setTradeInCoupon(tradeInEstimate.couponPLN);
-  }, [tradeInEstimate, setTradeInCoupon]);
-
   const storeContacts = (phone: string, messenger?: string) => {
     saveStoredContacts({ phone, messenger });
-  };
-
-  const createTradeInRequest = async (contacts: { phone: string; messenger?: string }) => {
-    if (!tradeInEstimate) return;
-    setTradeInSubmitting(true);
-    try {
-      const res = await fetch("/api/orders", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: t("tradeIn.autoName"),
-          phone: contacts.phone,
-          messenger: contacts.messenger,
-          services: [t("tradeIn.serviceLabel")],
-          comment: t("tradeIn.preliminaryNote"),
-          buildJson: hasBuild ? selection : undefined,
-          selectedComponents: hasBuild ? selectionToSelectedComponents(selection) : undefined,
-          totalPrice: totalAfterTradeIn,
-          tradeInDiscountPLN: tradeInEstimate.couponPLN,
-          tradeInEstimate: {
-            estimatedTotal: tradeInEstimate.couponPLN,
-            hasManualItems: tradeInEstimate.hasManualItems,
-            couponPLN: tradeInEstimate.couponPLN,
-            items: tradeInEstimate.items,
-            preliminary: true,
-            selectedParts: tradeInEstimate.items.map((item) => ({
-              category: item.category,
-              name: item.name,
-            })),
-          },
-          installmentsRequested,
-          couponAppliedToBuild: useTradeInCoupon,
-          sourceType: "trade_in",
-          status: "estimated_waiting_service",
-          locale,
-          source: typeof window !== "undefined" ? window.location.href : undefined,
-        }),
-      });
-      const json = (await res.json().catch(() => ({}))) as { success?: boolean; message?: string; error?: string };
-      if (!res.ok || !json.success) throw new Error(json.message ?? json.error ?? "error");
-      storeContacts(contacts.phone, contacts.messenger);
-      toast.success(t("tradeIn.requestCreated"));
-      setTradeInContactOpen(false);
-    } catch (err) {
-      console.error("Trade-In request failed:", err);
-      toast.error(t("tradeIn.requestError"));
-    } finally {
-      setTradeInSubmitting(false);
-    }
   };
 
   const toggleService = (label: string) => {
@@ -348,92 +263,37 @@ export function OrderForm() {
               </span>
             </label>
 
-            {hasBuild && tradeInEstimate && (
+            {tradeInUnlocked && tradeInCoupon > 0 ? (
               <div className="rounded-2xl border border-yellow-500/20 bg-yellow-500/5 p-4 space-y-2">
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <p className="text-sm font-medium text-yellow-300">{t("tradeIn.title")}</p>
-                  <p className="text-xs text-zinc-500">{t("tradeIn.preliminaryBadge")}</p>
-                </div>
-                <p className="text-xs text-zinc-400">
-                  {t("tradeIn.range", { min: tradeInEstimate.sumMin, max: tradeInEstimate.sumMax })}
-                </p>
-                <p className="text-sm text-zinc-200">{t("tradeIn.coupon", { amount: tradeInEstimate.couponPLN })}</p>
-                <p className="text-xs text-zinc-500">
-                  {t("tradeIn.afterDiscount", { amount: totalAfterTradeIn })}
-                </p>
-                <label className="flex items-center gap-2 text-xs text-zinc-300">
+                <p className="text-sm font-medium text-yellow-300">{t("tradeIn.title")}</p>
+                <p className="text-sm text-zinc-200">{t("tradeIn.coupon", { amount: tradeInCoupon })}</p>
+                <label className="flex items-center gap-2 text-xs text-zinc-300 cursor-pointer">
                   <input
                     type="checkbox"
                     checked={useTradeInCoupon}
                     onChange={(e) => setUseTradeInCoupon(e.target.checked)}
+                    className="accent-theme"
                   />
                   <span>{t("tradeIn.useCoupon")}</span>
                 </label>
-                <p className="text-xs text-zinc-500">
-                  {t("tradeIn.installmentFromDiscounted", { amount: installmentMonthly })}
-                </p>
-                <p className="text-[11px] text-zinc-500">{t("tradeIn.disclaimer")}</p>
-                <div className="flex flex-wrap gap-2 pt-1">
-                  <Button
-                    type="button"
-                    size="sm"
-                    isLoading={tradeInSubmitting}
-                    onClick={() => {
-                      const stored = loadStoredContacts();
-                      if (stored?.phone) {
-                        void createTradeInRequest(stored);
-                        return;
-                      }
-                      setTradeInContactOpen(true);
-                    }}
-                  >
-                    {t("tradeIn.createRequest")}
-                  </Button>
-                  {tradeInContactOpen && (
-                    <div className="w-full grid sm:grid-cols-2 gap-2 pt-2">
-                      <input
-                        value={tradeInPhone}
-                        onChange={(e) => setTradeInPhone(e.target.value)}
-                        placeholder={t("tradeIn.phonePlaceholder")}
-                        className={inputClass}
-                      />
-                      <input
-                        value={tradeInMessenger}
-                        onChange={(e) => setTradeInMessenger(e.target.value)}
-                        placeholder={t("tradeIn.messengerPlaceholder")}
-                        className={inputClass}
-                      />
-                      <div className="sm:col-span-2 flex gap-2">
-                        <Button
-                          type="button"
-                          size="sm"
-                          isLoading={tradeInSubmitting}
-                          onClick={() => {
-                            if (tradeInPhone.trim().length < 8) {
-                              toast.error(t("tradeIn.contactRequired"));
-                              return;
-                            }
-                            void createTradeInRequest({
-                              phone: tradeInPhone.trim(),
-                              messenger: tradeInMessenger.trim() || undefined,
-                            });
-                          }}
-                        >
-                          {t("tradeIn.submitContacts")}
-                        </Button>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => setTradeInContactOpen(false)}
-                        >
-                          {t("tradeIn.cancel")}
-                        </Button>
-                      </div>
-                    </div>
-                  )}
-                </div>
+                {useTradeInCoupon ? (
+                  <>
+                    <p className="text-xs text-zinc-500">
+                      {t("tradeIn.afterDiscount", { amount: totalAfterTradeIn })}
+                    </p>
+                    <p className="text-xs text-zinc-500">
+                      {t("tradeIn.installmentFromDiscounted", { amount: installmentMonthly })}
+                    </p>
+                  </>
+                ) : null}
               </div>
+            ) : (
+              <p className="text-xs text-zinc-500">
+                {t("tradeIn.hint")}{" "}
+                <Link href={`${base}/trade-in`} className="text-yellow-400/90 hover:text-yellow-300 underline-offset-2 hover:underline">
+                  {t("tradeIn.goto")}
+                </Link>
+              </p>
             )}
 
             <Button

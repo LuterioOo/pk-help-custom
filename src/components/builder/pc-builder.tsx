@@ -31,7 +31,9 @@ import {
   BUILDER_CATEGORY_ORDER,
   canAccessCategory,
   getNextCategory,
+  hasCoolingSelected,
   isCategoryLocked,
+  REQUIRED_BUILDER_CATEGORIES,
 } from "@/lib/builder-flow";
 type SortKey = "price-asc" | "price-desc" | "name";
 
@@ -109,6 +111,7 @@ export function PcBuilder() {
     issues,
     total,
     tradeInCoupon,
+    tradeInUnlocked,
     useTradeInCoupon,
     totalAfterTradeIn,
     installmentMonthly,
@@ -191,6 +194,14 @@ export function PcBuilder() {
   const displayTotal = useTradeInCoupon && tradeInCoupon > 0 ? totalAfterTradeIn : total;
   const stepIndex = BUILDER_CATEGORY_ORDER.indexOf(activeCategory);
   const stepLabel = t(`categories.${activeCategory}`);
+
+  const buildProgress = useMemo(() => {
+    const required = REQUIRED_BUILDER_CATEGORIES.length + 1;
+    const filled =
+      REQUIRED_BUILDER_CATEGORIES.filter((cat) => Boolean(selection[cat])).length +
+      (hasCoolingSelected(selection) ? 1 : 0);
+    return { filled, required, pct: Math.round((filled / required) * 100) };
+  }, [selection]);
 
   const handleCategoryClick = (cat: ComponentCategory) => {
     if (!canAccessCategory(cat, selection)) {
@@ -335,9 +346,18 @@ export function PcBuilder() {
               <p className="text-[10px] uppercase tracking-wider text-zinc-500">{t("summaryTitle")}</p>
               <p className="text-lg font-bold neon-text tabular-nums">{formatPrice(displayTotal, locale)}</p>
             </div>
-            <p className="text-[11px] text-zinc-500 text-right shrink-0">
-              {t("componentsSelected", { count: selectedCount })}
-            </p>
+            <div className="text-right shrink-0">
+              <p className="text-[11px] text-zinc-500">{t("buildProgress", { pct: buildProgress.pct })}</p>
+              <p className="text-[10px] text-zinc-600 tabular-nums">
+                {buildProgress.filled}/{buildProgress.required}
+              </p>
+            </div>
+          </div>
+          <div className="h-1 rounded-full bg-white/[0.06] overflow-hidden">
+            <div
+              className="h-full rounded-full bg-gradient-to-r from-yellow-500/80 to-amber-400/90 transition-all duration-500"
+              style={{ width: `${buildProgress.pct}%` }}
+            />
           </div>
 
           {selectedCount > 0 ? (
@@ -361,7 +381,7 @@ export function PcBuilder() {
             </ul>
           ) : null}
 
-          {tradeInCoupon > 0 ? (
+          {tradeInUnlocked && tradeInCoupon > 0 ? (
             <label className="flex items-center gap-2 text-[11px] text-zinc-400 cursor-pointer rounded-lg bg-theme-soft border border-theme/30 px-2.5 py-2">
               <input
                 type="checkbox"
@@ -596,7 +616,7 @@ export function PcBuilder() {
                 </div>
               )}
 
-              {tradeInCoupon > 0 ? (
+              {tradeInUnlocked && tradeInCoupon > 0 ? (
                 <div className="rounded-xl bg-theme-soft border border-theme p-3 space-y-2">
                   <div className="flex items-center gap-2">
                     <Ticket className="w-4 h-4 text-theme" />

@@ -16,20 +16,35 @@ import {
   type ComponentSpec,
   type CompatibilityIssue,
 } from "@/lib/compatibility";
-import { loadTradeInCoupon } from "@/lib/trade-in-storage";
+import {
+  isTradeInBuildUnlocked,
+  loadTradeInCoupon,
+} from "@/lib/trade-in-storage";
+
 import {
   getFirstIncompleteRequired,
   getMissingBuildCategories,
   isBuildComplete,
 } from "@/lib/builder-flow";
 
+const COUPON_APPLY_PREF_KEY = "pkhelp-apply-trade-in";
+
 const STORAGE_KEY = "pkhelp-build";
 export const DEFAULT_BUILDER_CATEGORY: ComponentCategory = "CASE";
 
 function readCouponFromStorage() {
+  if (!isTradeInBuildUnlocked()) {
+    return { amount: 0, use: false, unlocked: false };
+  }
   const saved = loadTradeInCoupon();
-  if (!saved) return { amount: 0, use: false };
-  return { amount: Math.round(saved.amount), use: true };
+  const amount = saved ? Math.round(saved.amount) : 0;
+  let use = false;
+  try {
+    use = localStorage.getItem(COUPON_APPLY_PREF_KEY) === "1" && amount > 0;
+  } catch {
+    /* ignore */
+  }
+  return { amount, use, unlocked: amount > 0 };
 }
 
 interface BuildContextValue {
@@ -38,6 +53,7 @@ interface BuildContextValue {
   issues: CompatibilityIssue[];
   total: number;
   tradeInCoupon: number;
+  tradeInUnlocked: boolean;
   useTradeInCoupon: boolean;
   totalAfterTradeIn: number;
   installmentMonthly: number;
@@ -62,13 +78,25 @@ export function BuildProvider({ children }: { children: React.ReactNode }) {
   const [activeCategory, setActiveCategory] = useState<ComponentCategory>(DEFAULT_BUILDER_CATEGORY);
   const initialCoupon = readCouponFromStorage();
   const [tradeInCoupon, setTradeInCouponState] = useState(initialCoupon.amount);
-  const [useTradeInCoupon, setUseTradeInCoupon] = useState(initialCoupon.use);
+  const [tradeInUnlocked, setTradeInUnlocked] = useState(initialCoupon.unlocked);
+  const [useTradeInCoupon, setUseTradeInCouponState] = useState(initialCoupon.use);
   const [installmentsRequested, setInstallmentsRequested] = useState(false);
 
   const syncCouponFromStorage = useCallback(() => {
-    const { amount, use } = readCouponFromStorage();
+    const { amount, use, unlocked } = readCouponFromStorage();
+    setTradeInUnlocked(unlocked);
     setTradeInCouponState(amount);
-    setUseTradeInCoupon(use);
+    setUseTradeInCouponState(use);
+  }, []);
+
+  const setUseTradeInCoupon = useCallback((enabled: boolean) => {
+    setUseTradeInCouponState(enabled);
+    try {
+      if (enabled) localStorage.setItem(COUPON_APPLY_PREF_KEY, "1");
+      else localStorage.removeItem(COUPON_APPLY_PREF_KEY);
+    } catch {
+      /* ignore */
+    }
   }, []);
 
   useEffect(() => {
@@ -123,18 +151,22 @@ export function BuildProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  const applyPreset = useCallback((components: ComponentSpec[]) => {
-    const next: BuildSelection = {};
-    for (const c of components) {
-      next[c.category] = c;
-    }
-    setSelection(next);
-    const focus = getFirstIncompleteRequired(next) ?? "GPU";
-    setActiveCategory(focus);
-    requestAnimationFrame(() => {
-      window.dispatchEvent(new Event("pkhelp-builder-preset-loaded"));
-    });
-  }, []);
+  const applyPreset = useCallback(
+    (components: ComponentSpec[]) => {
+      const next: BuildSelection = {};
+      for (const c of components) {
+        next[c.category] = c;
+      }
+      setSelection(next);
+      const focus = getFirstIncompleteRequired(next) ?? "GPU";
+      setActiveCategory(focus);
+      setUseTradeInCoupon(false);
+      requestAnimationFrame(() => {
+        window.dispatchEvent(new Event("pkhelp-builder-preset-loaded"));
+      });
+    },
+    [setUseTradeInCoupon]
+  );
 
   useEffect(() => {
     if (Object.keys(selection).length === 0) return;
@@ -168,6 +200,7 @@ export function BuildProvider({ children }: { children: React.ReactNode }) {
       isBuildComplete: buildComplete,
       missingCategories,
       tradeInCoupon,
+      tradeInUnlocked,
       useTradeInCoupon,
       totalAfterTradeIn,
       installmentMonthly,
@@ -190,6 +223,7 @@ export function BuildProvider({ children }: { children: React.ReactNode }) {
       buildComplete,
       missingCategories,
       tradeInCoupon,
+      tradeInUnlocked,
       useTradeInCoupon,
       totalAfterTradeIn,
       installmentMonthly,
@@ -199,6 +233,7 @@ export function BuildProvider({ children }: { children: React.ReactNode }) {
       loadFromStorage,
       saveToStorage,
       setTradeInCoupon,
+      setUseTradeInCoupon,
       applyPreset,
     ]
   );

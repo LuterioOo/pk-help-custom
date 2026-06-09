@@ -140,6 +140,7 @@ const en = {
     completeBuildFirst: "Complete your PC build first",
     missingParts: "Missing parts",
     orderDisabled: "Complete build",
+    buildProgress: "{pct}% complete",
     stepOf: "Step {current} of {total}",
     categoriesLabel: "Component categories",
     installments: {
@@ -231,6 +232,8 @@ const en = {
       coupon: "You received a preliminary coupon for about: {amount} PLN",
       afterDiscount: "Amount after Trade-In: {amount} PLN",
       useCoupon: "Use Trade-In coupon for this build",
+      hint: "Have old hardware? Get a Trade-In estimate and coupon —",
+      goto: "go to Trade-In",
       installmentFromDiscounted: "Installment estimate (12 months): {amount} PLN/month",
       disclaimer:
         "Preliminary amount. Final price will be confirmed by the service after diagnostics and a check of the hardware condition.",

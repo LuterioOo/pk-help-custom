@@ -143,6 +143,7 @@ const ru = {
     completeBuildFirst: "Сначала завершите сборку ПК",
     missingParts: "Не хватает деталей",
     orderDisabled: "Завершите сборку",
+    buildProgress: "Готовность {pct}%",
     stepOf: "Шаг {current} из {total}",
     categoriesLabel: "Категории компонентов",
     installments: {
@@ -229,6 +230,8 @@ const ru = {
       coupon: "Вы получили купон на сумму примерно: {amount} PLN",
       afterDiscount: "Сумма после Trade-In: {amount} PLN",
       useCoupon: "Использовать купон Trade-In для этой сборки",
+      hint: "Есть старое железо? Оцените его в Trade-In и получите купон —",
+      goto: "перейти к оценке",
       installmentFromDiscounted: "Рассрочка (12 мес., предварительно): {amount} PLN/мес",
       disclaimer:
         "Сумма предварительная. Финальная стоимость будет подтверждена в сервисе после диагностики и проверки состояния железа.",

@@ -140,6 +140,7 @@ const uk = {
     completeBuildFirst: "Спочатку завершіть збірку ПК",
     missingParts: "Не вистачає деталей",
     orderDisabled: "Завершіть збірку",
+    buildProgress: "Готовність {pct}%",
     stepOf: "Крок {current} з {total}",
     categoriesLabel: "Категорії компонентів",
     installments: {
@@ -231,6 +232,8 @@ const uk = {
       coupon: "Ви отримали попередній купон приблизно: {amount} PLN",
       afterDiscount: "Сума після Trade-In: {amount} PLN",
       useCoupon: "Застосувати Trade-In купон до цієї збірки",
+      hint: "Є старе залізо? Оцініть його в Trade-In і отримайте купон —",
+      goto: "перейти до оцінки",
       installmentFromDiscounted: "Орієнтовна розстрочка (12 міс.): {amount} PLN/міс",
       disclaimer:
         "Попередня сума. Підсумкову ціну підтвердить сервіс після діагностики та перевірки стану заліза.",
