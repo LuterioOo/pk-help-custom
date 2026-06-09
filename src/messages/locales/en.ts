@@ -445,6 +445,8 @@ const en = {
       buildImageRemoveError: "Could not remove photo",
       buildImageManualUrl: "Enter URL manually (advanced)",
       buildImageHideUrl: "Hide URL field",
+      selectMasterFirst: "Select a master first — the photo will upload automatically",
+      pendingFileHint: "File selected — choose a master to upload",
     },
     componentImage: {
       label: "Component photo",

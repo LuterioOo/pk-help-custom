@@ -11,7 +11,7 @@ interface LogoProps {
 }
 
 export function Logo({ className, href = "/", size = "md" }: LogoProps) {
-  const heights = { xs: 36, sm: 44, md: 56, lg: 64 } as const;
+  const heights = { xs: 28, sm: 40, md: 56, lg: 64 } as const;
   const h = heights[size];
 
   const content = (
@@ -21,7 +21,7 @@ export function Logo({ className, href = "/", size = "md" }: LogoProps) {
         className
       )}
     >
-      <div className="relative px-2 py-1">
+      <div className="relative px-1.5 py-0.5 sm:px-2 sm:py-1">
         <Image
           src="/logo.png"
           alt="PK HELP"

@@ -451,6 +451,8 @@ const pl = {
       buildImageRemoveError: "Nie udało się usunąć zdjęcia",
       buildImageManualUrl: "Podaj URL ręcznie (zaawansowane)",
       buildImageHideUrl: "Ukryj pole URL",
+      selectMasterFirst: "Najpierw wybierz mistrza — zdjęcie zostanie przesłane automatycznie",
+      pendingFileHint: "Plik wybrany — wybierz mistrza, aby przesłać",
     },
     componentImage: {
       label: "Zdjęcie komponentu",

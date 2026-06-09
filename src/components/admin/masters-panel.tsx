@@ -101,6 +101,12 @@ export function MastersPanel() {
     void load();
   }, [load]);
 
+  useEffect(() => {
+    if (masters.length === 1 && showBuildForm && !buildForm.masterId) {
+      setBuildForm((f) => ({ ...f, masterId: masters[0]!.id }));
+    }
+  }, [masters, showBuildForm, buildForm.masterId]);
+
   const saveMaster = async () => {
     if (!masterForm.name.trim()) {
       toast.error(t("nameRequired"));
@@ -300,7 +306,16 @@ export function MastersPanel() {
           </div>
         </div>
       ) : (
-        <Button variant="secondary" size="sm" onClick={() => setShowBuildForm(true)}>
+        <Button
+          variant="secondary"
+          size="sm"
+          onClick={() => {
+            setShowBuildForm(true);
+            if (masters.length === 1) {
+              setBuildForm((f) => ({ ...f, masterId: masters[0]!.id }));
+            }
+          }}
+        >
           <Plus className="w-4 h-4 mr-1" />
           {t("addBuild")}
         </Button>

@@ -457,6 +457,8 @@ const ru = {
       buildImageRemoveError: "Не удалось удалить фото",
       buildImageManualUrl: "Указать URL вручную (расширенно)",
       buildImageHideUrl: "Скрыть поле URL",
+      selectMasterFirst: "Сначала выберите мастера — фото будет загружено автоматически",
+      pendingFileHint: "Файл выбран — выберите мастера для загрузки",
     },
     componentImage: {
       label: "\u0424\u043E\u0442\u043E \u043A\u043E\u043C\u043F\u043E\u043D\u0435\u043D\u0442\u0430",

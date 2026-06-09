@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { StoredImage } from "@/components/ui/stored-image";
 import { Button } from "@/components/ui/button";
@@ -26,11 +26,13 @@ export function MasterBuildImageUpload({
   showManualUrl = true,
 }: Props) {
   const t = useTranslations("admin.masters");
+  const inputId = useId();
   const inputRef = useRef<HTMLInputElement>(null);
   const dragDepthRef = useRef(0);
   const [uploading, setUploading] = useState(false);
   const [dragOver, setDragOver] = useState(false);
   const [showUrlInput, setShowUrlInput] = useState(false);
+  const [pendingFile, setPendingFile] = useState<File | null>(null);
 
   const resetDragState = useCallback(() => {
     dragDepthRef.current = 0;
@@ -54,35 +56,46 @@ export function MasterBuildImageUpload({
     };
   }, [resetDragState]);
 
-  const uploadFile = async (file: File) => {
-    if (!masterId) {
-      toast.error(t("buildRequired"));
-      return;
+  const uploadFile = useCallback(
+    async (file: File) => {
+      if (!masterId) {
+        setPendingFile(file);
+        toast.info(t("selectMasterFirst"));
+        return;
+      }
+      setUploading(true);
+      resetDragState();
+      setPendingFile(null);
+      try {
+        const body = new FormData();
+        body.append("file", file);
+        if (buildId) body.append("buildId", buildId);
+        else body.append("masterId", masterId);
+        const res = await fetch("/api/admin/masters/build-upload", { method: "POST", body });
+        const json = (await res.json()) as {
+          imageUrl?: string;
+          build?: { id: string };
+          error?: string;
+        };
+        if (!res.ok) throw new Error(json.error ?? "Upload failed");
+        if (json.build?.id) onBuildId?.(json.build.id);
+        if (json.imageUrl) onImageUrlChange(json.imageUrl);
+        toast.success(t("buildImageUploaded"));
+      } catch (e) {
+        toast.error(e instanceof Error ? e.message : t("buildImageUploadError"));
+      } finally {
+        setUploading(false);
+        if (inputRef.current) inputRef.current.value = "";
+      }
+    },
+    [buildId, masterId, onBuildId, onImageUrlChange, resetDragState, t]
+  );
+
+  useEffect(() => {
+    if (masterId && pendingFile && !uploading) {
+      void uploadFile(pendingFile);
     }
-    setUploading(true);
-    resetDragState();
-    try {
-      const body = new FormData();
-      body.append("file", file);
-      if (buildId) body.append("buildId", buildId);
-      else body.append("masterId", masterId);
-      const res = await fetch("/api/admin/masters/build-upload", { method: "POST", body });
-      const json = (await res.json()) as {
-        imageUrl?: string;
-        build?: { id: string };
-        error?: string;
-      };
-      if (!res.ok) throw new Error(json.error ?? "Upload failed");
-      if (json.build?.id) onBuildId?.(json.build.id);
-      if (json.imageUrl) onImageUrlChange(json.imageUrl);
-      toast.success(t("buildImageUploaded"));
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : t("buildImageUploadError"));
-    } finally {
-      setUploading(false);
-      if (inputRef.current) inputRef.current.value = "";
-    }
-  };
+  }, [masterId, pendingFile, uploadFile, uploading]);
 
   const onDrop = (e: React.DragEvent) => {
     e.preventDefault();
@@ -133,7 +146,7 @@ export function MasterBuildImageUpload({
         }}
         onDrop={onDrop}
         className={cn(
-          "relative flex flex-wrap items-start gap-4 rounded-xl border border-dashed p-4 transition-colors overflow-hidden",
+          "relative flex flex-wrap items-start gap-4 rounded-xl border border-dashed p-4 transition-colors",
           dragOver ? "border-yellow-500/50 bg-yellow-500/5" : "border-white/15 bg-white/[0.02]"
         )}
       >
@@ -143,7 +156,27 @@ export function MasterBuildImageUpload({
             aria-hidden
           />
         ) : null}
-        <div className="relative z-[1] w-full max-w-[200px] aspect-video rounded-xl overflow-hidden bg-zinc-800 border border-yellow-500/20 flex-shrink-0">
+
+        <input
+          ref={inputRef}
+          id={inputId}
+          type="file"
+          accept="image/jpeg,image/png,image/webp,image/gif"
+          className="sr-only"
+          disabled={uploading}
+          onChange={(e) => {
+            const file = e.target.files?.[0];
+            if (file) void uploadFile(file);
+          }}
+        />
+
+        <label
+          htmlFor={inputId}
+          className={cn(
+            "relative z-[1] w-full max-w-[200px] aspect-video rounded-xl overflow-hidden bg-zinc-800 border border-yellow-500/20 flex-shrink-0 cursor-pointer",
+            uploading && "pointer-events-none opacity-70"
+          )}
+        >
           {showPreview ? (
             <StoredImage src={imageUrl} objectFit="cover" />
           ) : (
@@ -156,28 +189,20 @@ export function MasterBuildImageUpload({
               <Loader2 className="w-8 h-8 text-yellow-400 animate-spin" />
             </div>
           ) : null}
-        </div>
+        </label>
+
         <div className="relative z-[1] flex flex-col gap-2 min-w-0 flex-1 sm:min-w-[180px]">
-          <input
-            ref={inputRef}
-            type="file"
-            accept="image/jpeg,image/png,image/webp,image/gif"
-            className="hidden"
-            onChange={(e) => {
-              const file = e.target.files?.[0];
-              if (file) void uploadFile(file);
-            }}
-          />
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            disabled={uploading || !masterId}
-            onClick={() => inputRef.current?.click()}
+          <label
+            htmlFor={inputId}
+            className={cn(
+              "inline-flex items-center justify-center gap-1 px-4 py-2 text-sm rounded-lg min-h-[36px]",
+              "cursor-pointer text-zinc-300 hover:text-white hover:bg-white/5 transition-all",
+              uploading && "opacity-50 pointer-events-none"
+            )}
           >
-            <ImagePlus className="w-4 h-4 mr-1" />
+            <ImagePlus className="w-4 h-4" />
             {imageUrl ? t("buildImageReplace") : t("buildImageUpload")}
-          </Button>
+          </label>
           {imageUrl ? (
             <Button
               type="button"
@@ -191,6 +216,9 @@ export function MasterBuildImageUpload({
             </Button>
           ) : null}
           <p className="text-xs text-zinc-600">{t("buildImageDropHint")}</p>
+          {pendingFile && !masterId ? (
+            <p className="text-xs text-amber-400/90">{t("pendingFileHint")}</p>
+          ) : null}
           {showManualUrl ? (
             <button
               type="button"

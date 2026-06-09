@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useLocaleBase } from "@/hooks/use-locale-base";
 import Link from "next/link";
-import { Menu, Volume2, VolumeX, X } from "lucide-react";
+import { Menu, Volume2, VolumeX, X, ArrowRight } from "lucide-react";
 import { Logo } from "@/components/ui/logo";
 import { Button } from "@/components/ui/button";
 import { LanguageSwitcher } from "./language-switcher";
@@ -32,6 +32,7 @@ export function Header() {
   const { muted, toggleMute, playTone } = useUiSound();
 
   const isHome = pathname === `${base}` || pathname === `${base}/` || pathname === "/";
+  const builderHref = isHome ? `${base}#builder` : `${base || "/"}/#builder`;
 
   const links = navIds.map((id) => {
     const rawHref = hrefMap[id];
@@ -51,9 +52,9 @@ export function Header() {
   });
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 px-2 sm:px-4 md:px-8 py-1.5 sm:py-2.5 md:py-3">
-      <div className="max-w-7xl mx-auto flex items-center justify-between glass-strong rounded-lg sm:rounded-xl md:rounded-2xl px-2 sm:px-3.5 md:px-6 py-1 sm:py-2 md:py-2.5 min-h-[44px] sm:min-h-[48px]">
-        <Logo href={base || "/"} size="xs" className="sm:hidden" />
+    <header className="fixed top-0 left-0 right-0 z-50 px-1.5 sm:px-4 md:px-8 py-1 sm:py-2 md:py-3">
+      <div className="max-w-7xl mx-auto flex items-center justify-between gap-2 glass-strong rounded-lg sm:rounded-xl md:rounded-2xl px-2 sm:px-3.5 md:px-6 py-1 sm:py-2 md:py-2.5 min-h-[40px] sm:min-h-[48px]">
+        <Logo href={base || "/"} size="xs" className="sm:hidden shrink-0" />
         <Logo href={base || "/"} size="sm" className="hidden sm:block xl:hidden" />
         <Logo href={base || "/"} size="lg" className="hidden xl:block" />
 
@@ -83,33 +84,43 @@ export function Header() {
           >
             {muted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
           </button>
-          <Button
-            asChild
-            size="sm"
-            onClick={() => playTone("click")}
-          >
-            <Link href={isHome ? `${base}#builder` : `${base || "/"}/#builder`}>{t("builder")}</Link>
+          <Button asChild size="sm" onClick={() => playTone("click")}>
+            <Link href={builderHref}>{t("builder")}</Link>
           </Button>
         </div>
 
-        <button
-          type="button"
-          className="xl:hidden p-2.5 text-zinc-300 touch-manipulation -mr-1"
-          onClick={() => setOpen(!open)}
-          aria-expanded={open}
-          aria-label="Menu"
-        >
-          {open ? <X size={22} /> : <Menu size={22} />}
-        </button>
+        <div className="flex items-center gap-1 xl:hidden ml-auto">
+          <Link
+            href={builderHref}
+            onClick={() => playTone("click")}
+            className={cn(
+              "inline-flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-[11px] font-bold",
+              "bg-gradient-to-r from-yellow-300 to-amber-500 text-black",
+              "shadow-[0_2px_12px_rgba(255,215,0,0.3)] active:scale-[0.97] transition-transform touch-manipulation"
+            )}
+          >
+            {t("builder")}
+            <ArrowRight className="w-3 h-3" />
+          </Link>
+          <button
+            type="button"
+            className="p-2 text-zinc-300 touch-manipulation"
+            onClick={() => setOpen(!open)}
+            aria-expanded={open}
+            aria-label="Menu"
+          >
+            {open ? <X size={20} /> : <Menu size={20} />}
+          </button>
+        </div>
       </div>
 
       <div
         className={cn(
-          "xl:hidden mt-2 mx-3 sm:mx-4 glass-strong rounded-2xl overflow-hidden transition-all duration-200 origin-top",
+          "xl:hidden mt-1.5 mx-2 sm:mx-4 glass-strong rounded-xl overflow-hidden transition-all duration-200 origin-top",
           open ? "opacity-100 max-h-[85vh] visible" : "opacity-0 max-h-0 invisible pointer-events-none"
         )}
       >
-        <nav className="flex flex-col gap-0.5 p-3 max-h-[70vh] overflow-y-auto overscroll-contain">
+        <nav className="flex flex-col gap-0.5 p-2.5 max-h-[70vh] overflow-y-auto overscroll-contain">
           {links.map((link) => (
             <Link
               key={link.id}
@@ -118,13 +129,13 @@ export function Header() {
                 setOpen(false);
                 playTone("click");
               }}
-              className="px-4 py-3 text-sm text-zinc-300 hover:text-white rounded-lg hover:bg-white/5 touch-manipulation"
+              className="px-3 py-2.5 text-sm text-zinc-300 hover:text-white rounded-lg hover:bg-white/5 touch-manipulation"
             >
               {link.label}
             </Link>
           ))}
         </nav>
-        <div className="p-3 pt-0 border-t border-white/10 flex flex-col gap-3">
+        <div className="p-2.5 pt-0 border-t border-white/10 flex flex-col gap-2">
           <LanguageSwitcher className="w-full justify-center" />
           <Button
             asChild
@@ -134,9 +145,7 @@ export function Header() {
               playTone("click");
             }}
           >
-            <Link href={isHome ? `${base}#builder` : `${base || "/"}/#builder`}>
-              {t("builder")}
-            </Link>
+            <Link href={builderHref}>{t("builder")}</Link>
           </Button>
         </div>
       </div>

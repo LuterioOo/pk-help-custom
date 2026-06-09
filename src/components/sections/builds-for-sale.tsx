@@ -80,22 +80,22 @@ export function BuildsForSale({ initialItems, featured = false }: Props) {
   };
 
   return (
-    <section id="shop" className="section-pad px-4 md:px-8">
+    <section id="shop" className="section-pad px-3 sm:px-4 md:px-8">
       <div className="max-w-7xl mx-auto">
-        <ScrollReveal className="mb-6 sm:mb-8">
-          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold neon-text">{t("title")}</h2>
-          <p className="mt-2 text-sm text-zinc-400 max-w-2xl">{t("subtitle")}</p>
+        <ScrollReveal className="mb-4 sm:mb-8">
+          <h2 className="text-xl sm:text-3xl md:text-4xl font-bold neon-text">{t("title")}</h2>
+          <p className="mt-1.5 sm:mt-2 text-xs sm:text-sm text-zinc-400 max-w-2xl">{t("subtitle")}</p>
         </ScrollReveal>
 
-        <div className="grid gap-4 sm:gap-5 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-3 sm:gap-5 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
           {items.map((item, i) => {
             const monthly =
               item.pricePLN != null && item.pricePLN > 0 ? Math.max(1, Math.round(item.pricePLN / 12)) : null;
 
             return (
               <ScrollReveal key={item.id} delay={Math.min(i * 0.05, 0.2)}>
-                <article className="relative overflow-hidden rounded-2xl bg-white/[0.02] border border-white/8 transition-transform duration-300 hover:-translate-y-1 h-full flex flex-col">
-                  <div className="relative aspect-[16/10]">
+                <article className="relative overflow-hidden rounded-xl sm:rounded-2xl bg-white/[0.02] border border-white/8 transition-transform duration-300 hover:-translate-y-1 h-full flex flex-col card-hover-lift">
+                  <div className="relative aspect-[16/10] sm:aspect-[16/10]">
                     <ShowcaseImage
                       src={item.imageUrl}
                       alt={item.title ?? "PC"}
@@ -110,9 +110,9 @@ export function BuildsForSale({ initialItems, featured = false }: Props) {
                       </Badge>
                     ) : null}
                   </div>
-                  <div className="p-4 sm:p-5 flex flex-col flex-1 gap-3">
+                  <div className="p-3 sm:p-5 flex flex-col flex-1 gap-2 sm:gap-3">
                     {item.title ? (
-                      <h3 className="font-semibold text-base sm:text-lg text-zinc-100 line-clamp-1">{item.title}</h3>
+                      <h3 className="font-semibold text-sm sm:text-lg text-zinc-100 line-clamp-1">{item.title}</h3>
                     ) : null}
                     {item.showText && item.caption ? (
                       <p className="text-sm text-zinc-500 line-clamp-2 flex-1">{item.caption}</p>
@@ -127,9 +127,9 @@ export function BuildsForSale({ initialItems, featured = false }: Props) {
                         {t("tradeInApply")}
                       </Badge>
                     </div>
-                    <div className="flex flex-col gap-2 mt-auto">
+                    <div className="flex flex-col gap-1.5 sm:gap-2 mt-auto">
                       <Button
-                        className="w-full"
+                        className="w-full min-h-[44px] shadow-[0_4px_20px_rgba(255,215,0,0.2)]"
                         isLoading={loadingId === item.id}
                         onClick={() => void customizeBuild(item)}
                       >

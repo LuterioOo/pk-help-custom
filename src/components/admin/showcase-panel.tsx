@@ -24,7 +24,13 @@ type Item = {
 
 const emptyForm = {
   title: "",
+  titleUk: "",
+  titleEn: "",
+  titlePl: "",
   caption: "",
+  captionUk: "",
+  captionEn: "",
+  captionPl: "",
   showText: true,
   forSale: false,
   pricePLN: 0,
@@ -111,7 +117,13 @@ export function ShowcasePanel() {
     }
     const payload = {
       title: form.title,
+      titleUk: form.titleUk,
+      titleEn: form.titleEn,
+      titlePl: form.titlePl,
       caption: form.caption,
+      captionUk: form.captionUk,
+      captionEn: form.captionEn,
+      captionPl: form.captionPl,
       showText: form.showText,
       forSale: form.forSale,
       pricePLN: form.forSale ? form.pricePLN : null,
@@ -145,7 +157,13 @@ export function ShowcasePanel() {
     setEditingId(item.id);
     setForm({
       title: item.title ?? "",
+      titleUk: (item as Item & { titleUk?: string }).titleUk ?? "",
+      titleEn: (item as Item & { titleEn?: string }).titleEn ?? "",
+      titlePl: (item as Item & { titlePl?: string }).titlePl ?? "",
       caption: item.caption ?? "",
+      captionUk: (item as Item & { captionUk?: string }).captionUk ?? "",
+      captionEn: (item as Item & { captionEn?: string }).captionEn ?? "",
+      captionPl: (item as Item & { captionPl?: string }).captionPl ?? "",
       showText: item.showText,
       forSale: item.forSale,
       pricePLN: item.pricePLN ?? 0,
@@ -223,15 +241,51 @@ export function ShowcasePanel() {
         />
         <div className="grid sm:grid-cols-2 gap-3">
           <input
-            placeholder={t("title")}
+            placeholder={`${t("title")} (RU)`}
             value={form.title}
             onChange={(e) => setForm({ ...form, title: e.target.value })}
             className="px-3 py-2 rounded-lg glass text-sm"
           />
           <input
-            placeholder={t("caption")}
+            placeholder={`${t("title")} (UA)`}
+            value={form.titleUk}
+            onChange={(e) => setForm({ ...form, titleUk: e.target.value })}
+            className="px-3 py-2 rounded-lg glass text-sm"
+          />
+          <input
+            placeholder={`${t("title")} (EN)`}
+            value={form.titleEn}
+            onChange={(e) => setForm({ ...form, titleEn: e.target.value })}
+            className="px-3 py-2 rounded-lg glass text-sm"
+          />
+          <input
+            placeholder={`${t("title")} (PL)`}
+            value={form.titlePl}
+            onChange={(e) => setForm({ ...form, titlePl: e.target.value })}
+            className="px-3 py-2 rounded-lg glass text-sm"
+          />
+          <input
+            placeholder={`${t("caption")} (RU)`}
             value={form.caption}
             onChange={(e) => setForm({ ...form, caption: e.target.value })}
+            className="px-3 py-2 rounded-lg glass text-sm"
+          />
+          <input
+            placeholder={`${t("caption")} (UA)`}
+            value={form.captionUk}
+            onChange={(e) => setForm({ ...form, captionUk: e.target.value })}
+            className="px-3 py-2 rounded-lg glass text-sm"
+          />
+          <input
+            placeholder={`${t("caption")} (EN)`}
+            value={form.captionEn}
+            onChange={(e) => setForm({ ...form, captionEn: e.target.value })}
+            className="px-3 py-2 rounded-lg glass text-sm"
+          />
+          <input
+            placeholder={`${t("caption")} (PL)`}
+            value={form.captionPl}
+            onChange={(e) => setForm({ ...form, captionPl: e.target.value })}
             className="px-3 py-2 rounded-lg glass text-sm"
           />
           <input

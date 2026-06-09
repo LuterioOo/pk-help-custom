@@ -75,7 +75,7 @@ export default async function HomePage({ params }: Props) {
   setRequestLocale(locale);
 
   const [showcase, reviews, masters] = await Promise.all([
-    getShowcaseData(),
+    getShowcaseData(locale),
     getReviewsData(),
     getMastersData(locale),
   ]);

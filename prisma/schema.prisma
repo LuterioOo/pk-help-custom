@@ -87,7 +87,13 @@ model ShowcaseBuild {
   id                 String   @id @default(cuid())
   imageUrl           String?
   title              String?
+  titleUk            String?
+  titleEn            String?
+  titlePl            String?
   caption            String?
+  captionUk          String?
+  captionEn          String?
+  captionPl          String?
   showText           Boolean  @default(true)
   forSale            Boolean  @default(false)
   pricePLN           Float?

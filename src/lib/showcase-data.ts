@@ -23,35 +23,51 @@ function parsePresetComponents(raw: unknown): ShowcasePresetComponents | null {
   return Object.keys(out).length > 0 ? out : null;
 }
 
-export async function getShowcaseData(): Promise<{ items: ShowcaseItem[]; forSale: ShowcaseItem[] }> {
+function pickLocalized(
+  locale: string,
+  base: string | null | undefined,
+  uk?: string | null,
+  en?: string | null,
+  pl?: string | null
+): string | null {
+  if (!base && !uk && !en && !pl) return null;
+  if (locale === "uk" && uk) return uk;
+  if (locale === "en" && en) return en;
+  if (locale === "pl" && pl) return pl;
+  return base ?? null;
+}
+
+export async function getShowcaseData(
+  locale = "ru"
+): Promise<{ items: ShowcaseItem[]; forSale: ShowcaseItem[] }> {
   try {
     const whereBase = { active: true, imageUrl: { not: null } };
+    const select = {
+      id: true,
+      imageUrl: true,
+      title: true,
+      titleUk: true,
+      titleEn: true,
+      titlePl: true,
+      caption: true,
+      captionUk: true,
+      captionEn: true,
+      captionPl: true,
+      showText: true,
+      pricePLN: true,
+      presetComponents: true,
+    } as const;
+
     const [decorative, forSale] = await Promise.all([
       prisma.showcaseBuild.findMany({
         where: { ...whereBase, forSale: false },
         orderBy,
-        select: {
-          id: true,
-          imageUrl: true,
-          title: true,
-          caption: true,
-          showText: true,
-          pricePLN: true,
-          presetComponents: true,
-        },
+        select,
       }),
       prisma.showcaseBuild.findMany({
         where: { ...whereBase, forSale: true },
         orderBy,
-        select: {
-          id: true,
-          imageUrl: true,
-          title: true,
-          caption: true,
-          showText: true,
-          pricePLN: true,
-          presetComponents: true,
-        },
+        select,
       }),
     ]);
 
@@ -61,8 +77,8 @@ export async function getShowcaseData(): Promise<{ items: ShowcaseItem[]; forSal
         .map((r) => ({
           id: r.id,
           imageUrl: r.imageUrl,
-          title: r.title,
-          caption: r.caption,
+          title: pickLocalized(locale, r.title, r.titleUk, r.titleEn, r.titlePl),
+          caption: pickLocalized(locale, r.caption, r.captionUk, r.captionEn, r.captionPl),
           showText: r.showText,
           pricePLN: r.pricePLN,
           presetComponents: parsePresetComponents(r.presetComponents),

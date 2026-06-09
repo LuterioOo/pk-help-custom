@@ -4,6 +4,7 @@ import { usePathname } from "next/navigation";
 import { DeferredChrome } from "@/components/layout/deferred-chrome";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
+import { MobileStickyCta } from "@/components/layout/mobile-sticky-cta";
 
 function isAdminPath(pathname: string) {
   return /\/admin(\/|$)/.test(pathname);
@@ -25,7 +26,8 @@ export function LocaleShell({ children }: { children: React.ReactNode }) {
     <>
       <DeferredChrome />
       <Header />
-      <main className="relative z-10 min-h-screen">{children}</main>
+      <main className="relative z-10 min-h-screen pb-[4.5rem] md:pb-0">{children}</main>
+      <MobileStickyCta />
       <Footer />
     </>
   );
