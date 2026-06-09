@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { StoredImage } from "@/components/ui/stored-image";
 import { formatPrice } from "@/lib/utils";
 import type { MasterItem } from "@/lib/masters-data";
-import { User, ArrowRight, Star } from "lucide-react";
+import { User, ArrowRight, Star, Monitor } from "lucide-react";
 
 type Props = {
   initialMasters: MasterItem[];
@@ -71,18 +71,22 @@ export function MasterBuilds({ initialMasters }: Props) {
                     {master.builds.map((build) => (
                       <div
                         key={build.id}
-                        className="rounded-xl bg-white/[0.02] border border-white/5 overflow-hidden flex flex-col"
+                        className="card-hover-lift rounded-xl bg-white/[0.02] border border-white/5 overflow-hidden flex flex-col"
                       >
-                        {build.imageUrl ? (
-                          <div className="relative aspect-video bg-black/40">
+                        <div className="relative aspect-video bg-black/40">
+                          {build.imageUrl ? (
                             <StoredImage src={build.imageUrl} />
-                            {build.pricePLN != null && build.pricePLN > 0 ? (
-                              <Badge variant="price" className="absolute top-2 right-2 text-xs font-bold px-2 py-1">
-                                {formatPrice(build.pricePLN, locale)}
-                              </Badge>
-                            ) : null}
-                          </div>
-                        ) : null}
+                          ) : (
+                            <div className="absolute inset-0 flex items-center justify-center bg-zinc-900/80">
+                              <Monitor className="w-10 h-10 text-zinc-700" />
+                            </div>
+                          )}
+                          {build.pricePLN != null && build.pricePLN > 0 ? (
+                            <Badge variant="price" className="absolute top-2 right-2 text-xs font-bold px-2 py-1">
+                              {formatPrice(build.pricePLN, locale)}
+                            </Badge>
+                          ) : null}
+                        </div>
                         <div className="p-3 sm:p-4 flex flex-col flex-1 gap-2">
                           <h4 className="font-semibold text-sm text-yellow-400/95">{build.title}</h4>
                           {build.description ? (

@@ -13,7 +13,10 @@ Premium custom PC build service — marketing site, PC configurator, order form,
 |------|----------|----------|
 | [README.md](./README.md) | Everyone | Overview, quick start |
 | [README_DEPLOY.md](./README_DEPLOY.md) | DevOps / deploy | Vercel, env, domains, Blob |
-| [README_ADMIN.md](./README_ADMIN.md) | Content / shop manager | Admin panel, prices, images |
+| [ADMIN_GUIDE.md](./ADMIN_GUIDE.md) | Content / shop manager | Admin panel, uploads, masters |
+| [TRADEIN_GUIDE.md](./TRADEIN_GUIDE.md) | Sales / support | Trade-In flow, coupons |
+| [CRM_GUIDE.md](./CRM_GUIDE.md) | CRM admin | Kommo sync, tasks |
+| [README_ADMIN.md](./README_ADMIN.md) | Legacy admin notes | (see ADMIN_GUIDE.md) |
 | [README_DATABASE.md](./README_DATABASE.md) | Backend / DB | Prisma, Neon, seed, schema |
 | [README_I18N.md](./README_I18N.md) | Content / i18n | Locales RU/UK/EN/PL, domains, SEO |
 | [FINAL_REPORT.md](./FINAL_REPORT.md) | Handoff | What was done, checklist |

@@ -51,8 +51,8 @@ export function Header() {
   });
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 px-2 sm:px-4 md:px-8 py-2 sm:py-3">
-      <div className="max-w-7xl mx-auto flex items-center justify-between glass-strong rounded-lg sm:rounded-xl md:rounded-2xl px-2.5 sm:px-4 md:px-6 py-1.5 sm:py-2.5 md:py-3">
+    <header className="fixed top-0 left-0 right-0 z-50 px-2 sm:px-4 md:px-8 py-1.5 sm:py-2.5 md:py-3">
+      <div className="max-w-7xl mx-auto flex items-center justify-between glass-strong rounded-lg sm:rounded-xl md:rounded-2xl px-2 sm:px-3.5 md:px-6 py-1 sm:py-2 md:py-2.5 min-h-[44px] sm:min-h-[48px]">
         <Logo href={base || "/"} size="xs" className="sm:hidden" />
         <Logo href={base || "/"} size="sm" className="hidden sm:block xl:hidden" />
         <Logo href={base || "/"} size="lg" className="hidden xl:block" />

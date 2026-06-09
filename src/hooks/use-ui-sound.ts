@@ -5,12 +5,13 @@ import { useCallback, useEffect, useState } from "react";
 const STORAGE_KEY = "pkhelp-ui-sound-mute";
 
 export function useUiSound() {
-  const [muted, setMuted] = useState(false);
+  const [muted, setMuted] = useState(true);
   const [unlocked, setUnlocked] = useState(false);
 
   useEffect(() => {
     try {
-      setMuted(localStorage.getItem(STORAGE_KEY) === "1");
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw === "0") setMuted(false);
     } catch {
       /* ignore */
     }

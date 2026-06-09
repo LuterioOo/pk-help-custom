@@ -516,7 +516,7 @@ export default function AdminDashboard() {
   };
 
   return (
-    <div className="min-h-screen pt-6 sm:pt-10 pb-12 sm:pb-16 px-3 sm:px-4 md:px-8">
+    <div className="admin-content min-h-screen pt-6 sm:pt-10 pb-12 sm:pb-16 px-3 sm:px-4 md:px-8 relative z-10">
       <div className="max-w-6xl mx-auto">
         <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
           <Logo href={locale === "pl" ? "/" : `/${locale}`} size="sm" />

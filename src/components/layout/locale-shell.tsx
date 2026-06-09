@@ -15,7 +15,9 @@ export function LocaleShell({ children }: { children: React.ReactNode }) {
 
   if (isAdminPath(pathname)) {
     return (
-      <div className="min-h-screen bg-[#050508] relative isolate">{children}</div>
+      <div className="admin-shell min-h-screen bg-[#050508] relative">
+        <div className="admin-content relative z-10 pointer-events-auto">{children}</div>
+      </div>
     );
   }
 

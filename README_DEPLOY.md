@@ -74,7 +74,14 @@ Copy templates from `.env.example` — **never commit real values**.
 2. `BLOB_READ_WRITE_TOKEN` is injected automatically  
 3. Without Blob, component/showcase uploads fail in production (API returns an error)
 
-Local dev stores files under `public/uploads/components` and `public/uploads/showcase`.
+Local dev stores files under:
+
+- `public/uploads/components` — component photos  
+- `public/uploads/showcase` — gallery / ready-build photos  
+- `public/uploads/masters` — master avatars  
+- `public/uploads/master-builds` — master build photos  
+
+On Vercel all of the above use **Vercel Blob** (`masters/`, `master-builds/`, etc.).
 
 ---
 

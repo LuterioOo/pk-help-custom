@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { StoredImage } from "@/components/ui/stored-image";
 import { MasterAvatarUpload } from "@/components/admin/master-avatar-upload";
+import { MasterBuildImageUpload } from "@/components/admin/master-build-image-upload";
 import { toast } from "sonner";
 import { Pencil, Trash2, User, Plus, Star } from "lucide-react";
 import { shouldRenderStoredAvatar } from "@/lib/avatar-url";
@@ -283,9 +284,15 @@ export function MastersPanel() {
             </select>
             <input placeholder={t("buildTitle")} value={buildForm.title} onChange={(e) => setBuildForm({ ...buildForm, title: e.target.value })} className={inputClass} />
             <input type="number" placeholder={t("pricePLN")} value={buildForm.pricePLN || ""} onChange={(e) => setBuildForm({ ...buildForm, pricePLN: Number(e.target.value) })} className={inputClass} />
-            <input placeholder={t("imageUrl")} value={buildForm.imageUrl} onChange={(e) => setBuildForm({ ...buildForm, imageUrl: e.target.value })} className={inputClass} />
             <input type="number" placeholder={t("sortOrder")} value={buildForm.sortOrder} onChange={(e) => setBuildForm({ ...buildForm, sortOrder: Number(e.target.value) })} className={inputClass} />
           </div>
+          <MasterBuildImageUpload
+            buildId={editingBuildId}
+            masterId={buildForm.masterId}
+            imageUrl={buildForm.imageUrl}
+            onImageUrlChange={(url) => setBuildForm({ ...buildForm, imageUrl: url })}
+            onBuildId={(id) => setEditingBuildId(id)}
+          />
           <textarea placeholder={t("buildDescription")} value={buildForm.description} onChange={(e) => setBuildForm({ ...buildForm, description: e.target.value })} className={inputClass} rows={2} />
           <div className="flex gap-2">
             <Button disabled={saving} onClick={() => void saveBuild()}>{t("save")}</Button>

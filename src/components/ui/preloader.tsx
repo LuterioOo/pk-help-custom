@@ -16,7 +16,11 @@ export function Preloader() {
   const [fade, setFade] = useState(false);
 
   useEffect(() => {
-    if (isAdminPath(pathname)) return;
+    if (isAdminPath(pathname)) {
+      setVisible(false);
+      setFade(true);
+      return;
+    }
     if (sessionStorage.getItem(STORAGE_KEY)) return;
 
     setVisible(true);
