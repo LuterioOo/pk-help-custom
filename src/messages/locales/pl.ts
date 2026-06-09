@@ -116,6 +116,7 @@ const pl = {
     tradeInCoupon: "Kupon Trade-In",
     applyCoupon: "Zastosuj kupon do zestawu",
     orderRequest: "Złóż zgłoszenie",
+    selectPrevious: "Najpierw wybierz poprzedni komponent",
     installments: {
       requested: "Raty",
       from: "od {amount} PLN/mies.",

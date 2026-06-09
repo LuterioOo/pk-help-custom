@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslations, useLocale } from "next-intl";
 import type { ComponentCategory } from "@prisma/client";
 import { ComponentImage } from "@/components/ui/component-image";
@@ -14,6 +14,7 @@ import {
   ArrowRight,
   CreditCard,
   Ticket,
+  Lock,
 } from "lucide-react";
 import { useBuild } from "@/store/build-store";
 import type { ComponentSpec } from "@/lib/compatibility";
@@ -24,10 +25,12 @@ import { formatBuilderIssue } from "@/lib/format-builder-issue";
 import { formatPrice, cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { useUiSound } from "@/hooks/use-ui-sound";
-
-const CATEGORIES: ComponentCategory[] = [
-  "CASE", "CPU", "MOTHERBOARD", "GPU", "RAM", "SSD", "HDD", "PSU", "COOLER", "AIO", "FANS",
-];
+import {
+  BUILDER_CATEGORY_ORDER,
+  canAccessCategory,
+  getNextCategory,
+  isCategoryLocked,
+} from "@/lib/builder-flow";
 
 type SortKey = "price-asc" | "price-desc" | "name";
 
@@ -68,7 +71,18 @@ export function PcBuilder() {
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState<SortKey>("price-asc");
   const [brandFilter, setBrandFilter] = useState<string>("all");
+  const categoryNavRef = useRef<HTMLElement>(null);
+  const componentsRef = useRef<HTMLDivElement>(null);
   const { playTone } = useUiSound();
+
+  const scrollCategoryIntoView = useCallback((cat: ComponentCategory) => {
+    const btn = categoryNavRef.current?.querySelector(`[data-category="${cat}"]`);
+    btn?.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
+  }, []);
+
+  const scrollComponentsIntoView = useCallback(() => {
+    componentsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, []);
 
   const fetchComponents = useCallback(async () => {
     setLoading(true);
@@ -114,6 +128,15 @@ export function PcBuilder() {
   const selectedCount = Object.keys(selection).length;
   const displayTotal = useTradeInCoupon && tradeInCoupon > 0 ? totalAfterTradeIn : total;
 
+  const handleCategoryClick = (cat: ComponentCategory) => {
+    if (!canAccessCategory(cat, selection)) {
+      toast.info(t("selectPrevious"));
+      return;
+    }
+    setActiveCategory(cat);
+    scrollCategoryIntoView(cat);
+  };
+
   const handleSelect = (c: ApiComponent) => {
     playTone("click");
     const spec: ComponentSpec = {
@@ -128,8 +151,16 @@ export function PcBuilder() {
     const current = selection[c.category];
     if (current?.id === c.id) {
       selectComponent(c.category, null);
-    } else {
-      selectComponent(c.category, spec);
+      return;
+    }
+    selectComponent(c.category, spec);
+    const next = getNextCategory(c.category);
+    if (next) {
+      window.setTimeout(() => {
+        setActiveCategory(next);
+        scrollCategoryIntoView(next);
+        scrollComponentsIntoView();
+      }, 180);
     }
   };
 
@@ -154,25 +185,35 @@ export function PcBuilder() {
         <div className="grid grid-cols-1 xl:grid-cols-[200px_1fr_320px] gap-3 md:gap-5">
           {/* Categories — horizontal chips on mobile, sidebar on desktop */}
           <ScrollReveal className="xl:sticky xl:top-28 xl:self-start order-1 -mx-1 sm:mx-0">
-            <nav className="rounded-xl xl:rounded-2xl bg-white/[0.02] border border-white/5 p-1.5 xl:p-2 flex xl:flex-col gap-1 overflow-x-auto xl:overflow-x-visible scrollbar-hide sticky top-[calc(2.75rem+env(safe-area-inset-top))] xl:top-28 z-20">
-              {CATEGORIES.map((cat) => {
+            <nav
+              ref={categoryNavRef}
+              className="rounded-xl xl:rounded-2xl bg-white/[0.02] border border-white/5 p-1.5 xl:p-2 flex xl:flex-col gap-1 overflow-x-auto xl:overflow-x-visible scrollbar-hide sticky top-[calc(2.85rem+env(safe-area-inset-top))] xl:top-28 z-20"
+            >
+              {BUILDER_CATEGORY_ORDER.map((cat) => {
                 const selected = selection[cat];
                 const isActive = activeCategory === cat;
+                const locked = isCategoryLocked(cat, selection);
                 return (
                   <button
                     key={cat}
                     type="button"
-                    onClick={() => setActiveCategory(cat)}
-                    onMouseDown={() => playTone("switch")}
+                    data-category={cat}
+                    onClick={() => handleCategoryClick(cat)}
+                    aria-disabled={locked}
                     className={cn(
-                      "flex-shrink-0 xl:w-full text-left px-2.5 py-2 xl:px-3 xl:py-3 rounded-lg xl:rounded-xl text-[11px] sm:text-xs xl:text-sm transition-all flex items-center gap-1.5 xl:justify-between xl:gap-2 whitespace-nowrap xl:whitespace-normal cursor-pointer touch-manipulation min-h-[36px]",
+                      "flex-shrink-0 xl:w-full text-left px-2.5 py-2 xl:px-3 xl:py-3 rounded-lg xl:rounded-xl text-[11px] sm:text-xs xl:text-sm transition-all duration-200 flex items-center gap-1.5 xl:justify-between xl:gap-2 whitespace-nowrap xl:whitespace-normal touch-manipulation min-h-[36px]",
                       isActive
                         ? "bg-yellow-500/25 text-yellow-100 font-medium border border-yellow-500/30"
-                        : "text-zinc-500 hover:text-zinc-200 hover:bg-white/[0.04] border border-transparent"
+                        : locked
+                          ? "text-zinc-600 bg-white/[0.01] border border-transparent cursor-not-allowed opacity-70"
+                          : "text-zinc-500 hover:text-zinc-200 hover:bg-white/[0.04] border border-transparent cursor-pointer",
+                      selected && !isActive && !locked && "border-emerald-500/20"
                     )}
                   >
                     <span className="truncate">{t(`categories.${cat}`)}</span>
-                    {selected ? (
+                    {locked ? (
+                      <Lock className="w-3 h-3 xl:w-3.5 xl:h-3.5 text-zinc-600 flex-shrink-0" />
+                    ) : selected ? (
                       <Check className="w-3 h-3 xl:w-4 xl:h-4 text-emerald-400 flex-shrink-0" />
                     ) : (
                       <span className="w-1 h-1 xl:w-1.5 xl:h-1.5 rounded-full bg-zinc-700 flex-shrink-0" />
@@ -184,7 +225,7 @@ export function PcBuilder() {
           </ScrollReveal>
 
           {/* Components — center */}
-          <div className="space-y-4 order-3 xl:order-2 min-w-0">
+          <div ref={componentsRef} className="space-y-4 order-3 xl:order-2 min-w-0 scroll-mt-28">
             <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-600" />
@@ -235,7 +276,7 @@ export function PcBuilder() {
                       type="button"
                       onClick={() => handleSelect(c)}
                       className={cn(
-                        "text-left p-4 rounded-2xl transition-all touch-manipulation cursor-pointer group",
+                        "tap-scale text-left p-4 rounded-2xl transition-all touch-manipulation cursor-pointer group",
                         "bg-white/[0.02] border hover:border-yellow-500/25 hover:bg-white/[0.04]",
                         isSelected
                           ? "border-yellow-500/50 bg-yellow-500/[0.06] ring-1 ring-yellow-500/30"
@@ -292,7 +333,7 @@ export function PcBuilder() {
               {/* Selected parts list */}
               {selectedCount > 0 ? (
                 <ul className="space-y-2 max-h-40 overflow-y-auto text-sm border-t border-white/5 pt-3">
-                  {CATEGORIES.map((cat) => {
+                  {BUILDER_CATEGORY_ORDER.map((cat) => {
                     const c = selection[cat];
                     if (!c) return null;
                     return (

@@ -114,6 +114,7 @@ const en = {
     tradeInCoupon: "Trade-In coupon",
     applyCoupon: "Apply coupon to build",
     orderRequest: "Submit request",
+    selectPrevious: "Select the previous component first",
     installments: {
       requested: "Request installment plan",
       from: "from {amount} PLN/mo",

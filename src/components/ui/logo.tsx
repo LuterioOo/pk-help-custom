@@ -11,14 +11,14 @@ interface LogoProps {
 }
 
 export function Logo({ className, href = "/", size = "md" }: LogoProps) {
-  const heights = { xs: 22, sm: 36, md: 48, lg: 56 } as const;
+  const heights = { xs: 30, sm: 36, md: 48, lg: 56 } as const;
   const h = heights[size];
   const mobileTight = size === "xs";
 
   const content = (
     <div
       className={cn(
-        "inline-flex items-center group transition-transform hover:scale-[1.02]",
+        "inline-flex items-center group transition-transform hover:scale-[1.02] motion-safe:transition-transform",
         className
       )}
     >
@@ -28,8 +28,8 @@ export function Logo({ className, href = "/", size = "md" }: LogoProps) {
         width={Math.round(h * 3.2)}
         height={h}
         className={cn(
-          "relative w-auto object-contain",
-          mobileTight ? "h-[22px] w-auto max-w-[72px]" : "h-auto"
+          "relative w-auto object-contain object-left",
+          mobileTight ? "h-[30px] w-auto max-w-[104px] min-w-[72px]" : "h-auto"
         )}
         style={mobileTight ? undefined : { height: h }}
         priority={size === "lg"}

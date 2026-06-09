@@ -83,7 +83,7 @@ export function Header() {
       ) : null}
 
       <header className="fixed top-0 left-0 right-0 z-50 px-1.5 sm:px-4 md:px-8 pt-[max(0.25rem,env(safe-area-inset-top))] pb-0 sm:py-2 md:py-3">
-        <div className="max-w-7xl mx-auto flex items-center justify-between gap-1.5 glass-strong rounded-lg sm:rounded-xl md:rounded-2xl px-2 sm:px-3.5 md:px-6 py-0.5 sm:py-2 md:py-2.5 min-h-[36px] sm:min-h-[48px]">
+        <div className="max-w-7xl mx-auto flex items-center justify-between gap-1.5 glass-strong rounded-lg sm:rounded-xl md:rounded-2xl px-2 sm:px-3.5 md:px-6 py-0.5 sm:py-2 md:py-2.5 min-h-[38px] sm:min-h-[48px]">
           <Logo href={base || "/"} size="xs" className="sm:hidden shrink-0" />
           <Logo href={base || "/"} size="sm" className="hidden sm:block xl:hidden" />
           <Logo href={base || "/"} size="lg" className="hidden xl:block" />
@@ -126,7 +126,7 @@ export function Header() {
               className={cn(
                 "inline-flex items-center gap-0.5 rounded-md px-2 py-1 text-[10px] font-bold leading-none",
                 "bg-gradient-to-r from-yellow-300 to-amber-500 text-black",
-                "shadow-[0_2px_10px_rgba(255,215,0,0.28)] active:scale-[0.97] transition-transform touch-manipulation min-h-[32px]"
+                "shadow-[0_2px_10px_rgba(255,215,0,0.28)] tap-scale touch-manipulation min-h-[32px]"
               )}
             >
               {t("builder")}
@@ -153,8 +153,10 @@ export function Header() {
 
         <div
           className={cn(
-            "xl:hidden relative z-50 mt-1 mx-1 sm:mx-4 glass-strong rounded-xl border border-yellow-500/15 shadow-[0_16px_48px_rgba(0,0,0,0.55)] overflow-hidden transition-all duration-200 origin-top",
-            open ? "opacity-100 max-h-[min(72vh,520px)] visible" : "opacity-0 max-h-0 invisible pointer-events-none"
+            "xl:hidden relative z-50 mt-1 mx-1 sm:mx-4 glass-strong rounded-xl border border-yellow-500/15 shadow-[0_16px_48px_rgba(0,0,0,0.55)] overflow-hidden transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] origin-top motion-reduce:transition-none",
+            open
+              ? "opacity-100 max-h-[min(72vh,520px)] visible translate-y-0 scale-100 menu-slide-in"
+              : "opacity-0 max-h-0 invisible pointer-events-none -translate-y-1 scale-[0.98]"
           )}
         >
           <nav className="flex flex-col py-1 max-h-[min(52vh,400px)] overflow-y-auto overscroll-contain">

@@ -258,6 +258,74 @@ section[id] {
   }
 }
 
+@keyframes fade-slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes menu-slide-in {
+  from {
+    opacity: 0;
+    transform: translateY(-6px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.hero-enter {
+  animation: fade-slide-up 0.65s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.hero-enter-delay-1 {
+  animation-delay: 0.08s;
+}
+
+.hero-enter-delay-2 {
+  animation-delay: 0.16s;
+}
+
+.hero-enter-delay-3 {
+  animation-delay: 0.24s;
+}
+
+.menu-slide-in {
+  animation: menu-slide-in 0.28s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.bottom-cta-enter {
+  animation: fade-slide-up 0.5s cubic-bezier(0.22, 1, 0.36, 1) 0.2s both;
+}
+
+.tap-scale {
+  transition: transform 0.15s ease, box-shadow 0.2s ease;
+}
+
+.tap-scale:active {
+  transform: scale(0.97);
+}
+
+.hero-title {
+  font-size: clamp(1.85rem, 5.2vw + 0.65rem, 2.35rem);
+  line-height: 1.14;
+  letter-spacing: -0.025em;
+}
+
+@media (min-width: 640px) {
+  .hero-title {
+    font-size: inherit;
+    line-height: inherit;
+    letter-spacing: inherit;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
@@ -275,7 +343,17 @@ section[id] {
   .animate-pulse-glow,
   .blob-orb-a,
   .blob-orb-b,
-  .blob-orb-c {
+  .blob-orb-c,
+  .hero-enter,
+  .hero-enter-delay-1,
+  .hero-enter-delay-2,
+  .hero-enter-delay-3,
+  .menu-slide-in,
+  .bottom-cta-enter {
     animation: none !important;
+  }
+
+  .tap-scale:active {
+    transform: none;
   }
 }

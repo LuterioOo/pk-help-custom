@@ -117,6 +117,7 @@ const ru = {
     tradeInCoupon: "Trade-In купон",
     applyCoupon: "Применить купон к сборке",
     orderRequest: "Оформить заявку",
+    selectPrevious: "Сначала выберите предыдущий компонент",
     installments: {
       requested: "Оформить рассрочку",
       from: "от {amount} PLN/мес",
