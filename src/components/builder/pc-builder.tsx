@@ -20,6 +20,7 @@ import { useBuild } from "@/store/build-store";
 import type { ComponentSpec } from "@/lib/compatibility";
 import { Button } from "@/components/ui/button";
 import { ScrollReveal } from "@/components/ui/scroll-reveal";
+import { BuildAdvisor } from "@/components/sections/build-advisor";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatBuilderIssue } from "@/lib/format-builder-issue";
 import { formatPrice, cn } from "@/lib/utils";
@@ -261,6 +262,8 @@ export function PcBuilder() {
           <h2 className="text-lg sm:text-3xl md:text-4xl font-bold neon-text">{t("title")}</h2>
           <p className="mt-0.5 sm:mt-2 text-[11px] sm:text-base text-zinc-400 max-w-2xl">{t("subtitle")}</p>
         </div>
+
+        <BuildAdvisor />
 
         {/* Mobile: single compact sticky bar — summary + stepper */}
         <div className="xl:hidden sticky top-[calc(var(--mobile-header-height)+env(safe-area-inset-top))] z-[25] -mx-3 px-3 mb-2 pb-1.5 bg-[var(--theme-bg)]/92 backdrop-blur-md border-b border-white/5">

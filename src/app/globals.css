@@ -253,8 +253,8 @@ body {
 }
 
 .home-fold > section.section-pad {
-  padding-top: 0.875rem;
-  padding-bottom: 0.875rem;
+  padding-top: 1.25rem;
+  padding-bottom: 1.25rem;
 }
 
 @media (min-width: 768px) {
@@ -271,7 +271,7 @@ body {
 
 .home-fold #hero {
   min-height: 0;
-  padding-bottom: 0.5rem;
+  padding-bottom: 0.75rem;
 }
 
 @media (min-width: 768px) {
@@ -389,6 +389,13 @@ section[id] {
     transform: translateY(-2px);
     box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
     border-color: rgba(var(--theme-accent-rgb), 0.18);
+  }
+}
+
+@media (hover: none) {
+  .card-hover-lift:active {
+    transform: scale(0.985);
+    border-color: rgba(var(--theme-accent-rgb), 0.14);
   }
 }
 

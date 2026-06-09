@@ -73,7 +73,7 @@ export function MasterBuilds({ initialMasters }: Props) {
                         key={build.id}
                         className="card-hover-lift rounded-xl bg-white/[0.02] border border-white/5 overflow-hidden flex flex-col"
                       >
-                        <div className="relative aspect-video max-h-[132px] sm:max-h-none bg-black/40">
+                        <div className="relative aspect-video bg-black/40 overflow-hidden">
                           {build.imageUrl ? (
                             <StoredImage src={build.imageUrl} />
                           ) : (
