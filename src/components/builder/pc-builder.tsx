@@ -48,6 +48,7 @@ export function PcBuilder() {
   const locale = useLocale();
   const {
     selection,
+    activeCategory,
     issues,
     total,
     tradeInCoupon,
@@ -56,12 +57,12 @@ export function PcBuilder() {
     installmentMonthly,
     installmentsRequested,
     selectComponent,
+    setActiveCategory,
     clearBuild,
     saveToStorage,
     setUseTradeInCoupon,
     setInstallmentsRequested,
   } = useBuild();
-  const [activeCategory, setActiveCategory] = useState<ComponentCategory>("CPU");
   const [components, setComponents] = useState<ApiComponent[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -143,17 +144,17 @@ export function PcBuilder() {
   };
 
   return (
-    <section id="builder" className="section-pad px-4 md:px-8">
+    <section id="builder" className="section-pad px-3 sm:px-4 md:px-8 pb-24 xl:pb-8">
       <div className="max-w-[1400px] mx-auto">
-        <ScrollReveal className="mb-8 sm:mb-10">
-          <h2 className="text-3xl md:text-4xl font-bold neon-text">{t("title")}</h2>
-          <p className="mt-3 text-zinc-400 max-w-2xl">{t("subtitle")}</p>
+        <ScrollReveal className="mb-5 sm:mb-8">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold neon-text">{t("title")}</h2>
+          <p className="mt-2 sm:mt-3 text-sm sm:text-base text-zinc-400 max-w-2xl">{t("subtitle")}</p>
         </ScrollReveal>
 
-        <div className="grid grid-cols-1 xl:grid-cols-[200px_1fr_320px] gap-4 md:gap-5">
-          {/* Categories — left sidebar */}
-          <ScrollReveal className="xl:sticky xl:top-28 xl:self-start order-1">
-            <nav className="rounded-2xl bg-white/[0.02] border border-white/5 p-2 flex xl:flex-col gap-1 overflow-x-auto xl:overflow-x-visible scrollbar-hide">
+        <div className="grid grid-cols-1 xl:grid-cols-[200px_1fr_320px] gap-3 md:gap-5">
+          {/* Categories — horizontal chips on mobile, sidebar on desktop */}
+          <ScrollReveal className="xl:sticky xl:top-28 xl:self-start order-1 -mx-1 sm:mx-0">
+            <nav className="rounded-xl xl:rounded-2xl bg-white/[0.02] border border-white/5 p-1.5 xl:p-2 flex xl:flex-col gap-1 overflow-x-auto xl:overflow-x-visible scrollbar-hide sticky top-[calc(2.75rem+env(safe-area-inset-top))] xl:top-28 z-20">
               {CATEGORIES.map((cat) => {
                 const selected = selection[cat];
                 const isActive = activeCategory === cat;
@@ -164,7 +165,7 @@ export function PcBuilder() {
                     onClick={() => setActiveCategory(cat)}
                     onMouseDown={() => playTone("switch")}
                     className={cn(
-                      "flex-shrink-0 xl:w-full text-left px-3 py-3 rounded-xl text-xs sm:text-sm transition-all flex items-center justify-between gap-2 whitespace-nowrap xl:whitespace-normal cursor-pointer",
+                      "flex-shrink-0 xl:w-full text-left px-2.5 py-2 xl:px-3 xl:py-3 rounded-lg xl:rounded-xl text-[11px] sm:text-xs xl:text-sm transition-all flex items-center gap-1.5 xl:justify-between xl:gap-2 whitespace-nowrap xl:whitespace-normal cursor-pointer touch-manipulation min-h-[36px]",
                       isActive
                         ? "bg-yellow-500/25 text-yellow-100 font-medium border border-yellow-500/30"
                         : "text-zinc-500 hover:text-zinc-200 hover:bg-white/[0.04] border border-transparent"
@@ -172,9 +173,9 @@ export function PcBuilder() {
                   >
                     <span className="truncate">{t(`categories.${cat}`)}</span>
                     {selected ? (
-                      <Check className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+                      <Check className="w-3 h-3 xl:w-4 xl:h-4 text-emerald-400 flex-shrink-0" />
                     ) : (
-                      <span className="w-1.5 h-1.5 rounded-full bg-zinc-700 flex-shrink-0" />
+                      <span className="w-1 h-1 xl:w-1.5 xl:h-1.5 rounded-full bg-zinc-700 flex-shrink-0" />
                     )}
                   </button>
                 );
@@ -271,8 +272,8 @@ export function PcBuilder() {
             )}
           </div>
 
-          {/* Summary — sticky right */}
-          <ScrollReveal delay={0.1} className="xl:sticky xl:top-28 xl:self-start order-2 xl:order-3">
+          {/* Summary — sticky right on desktop; inline card on mobile (compact bar below) */}
+          <ScrollReveal delay={0.1} className="xl:sticky xl:top-28 xl:self-start order-2 xl:order-3 hidden xl:block">
             <div className="rounded-2xl bg-white/[0.03] border border-yellow-500/15 p-5 sm:p-6 space-y-5">
               <div>
                 <p className="text-xs uppercase tracking-widest text-zinc-500 mb-1">{t("summaryTitle")}</p>
@@ -391,6 +392,34 @@ export function PcBuilder() {
               </div>
             </div>
           </ScrollReveal>
+        </div>
+
+        {/* Mobile sticky summary bar */}
+        <div className="xl:hidden fixed inset-x-0 bottom-0 z-30 px-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-1.5 pointer-events-none">
+          <div className="pointer-events-auto max-w-lg mx-auto glass-strong rounded-xl border border-yellow-500/20 shadow-[0_-8px_32px_rgba(0,0,0,0.5)] p-2 flex items-center gap-2">
+            <div className="flex-1 min-w-0">
+              <p className="text-[9px] uppercase tracking-wider text-zinc-500 leading-none">{t("summaryTitle")}</p>
+              <p className="text-lg font-bold neon-text tabular-nums leading-tight truncate">
+                {formatPrice(displayTotal, locale)}
+              </p>
+              <p className="text-[10px] text-zinc-600 truncate">
+                {t("componentsSelected", { count: selectedCount })}
+              </p>
+            </div>
+            <div className="flex flex-col gap-1 shrink-0">
+              <Button size="sm" onClick={scrollToOrder} className="min-h-[40px] px-4 text-xs">
+                {t("orderRequest")}
+                <ArrowRight className="w-3.5 h-3.5" />
+              </Button>
+              <button
+                type="button"
+                onClick={handleSave}
+                className="text-[10px] text-zinc-500 hover:text-zinc-300 py-0.5"
+              >
+                {t("save")}
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </section>

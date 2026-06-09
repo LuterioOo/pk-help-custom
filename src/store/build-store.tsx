@@ -19,6 +19,7 @@ import {
 import { loadTradeInCoupon } from "@/lib/trade-in-storage";
 
 const STORAGE_KEY = "pkhelp-build";
+export const DEFAULT_BUILDER_CATEGORY: ComponentCategory = "CASE";
 
 function readCouponFromStorage() {
   const saved = loadTradeInCoupon();
@@ -28,6 +29,7 @@ function readCouponFromStorage() {
 
 interface BuildContextValue {
   selection: BuildSelection;
+  activeCategory: ComponentCategory;
   issues: CompatibilityIssue[];
   total: number;
   tradeInCoupon: number;
@@ -36,6 +38,7 @@ interface BuildContextValue {
   installmentMonthly: number;
   installmentsRequested: boolean;
   selectComponent: (category: ComponentCategory, component: ComponentSpec | null) => void;
+  setActiveCategory: (category: ComponentCategory) => void;
   clearBuild: () => void;
   loadFromStorage: () => void;
   saveToStorage: () => void;
@@ -49,6 +52,7 @@ const BuildContext = createContext<BuildContextValue | null>(null);
 
 export function BuildProvider({ children }: { children: React.ReactNode }) {
   const [selection, setSelection] = useState<BuildSelection>({});
+  const [activeCategory, setActiveCategory] = useState<ComponentCategory>(DEFAULT_BUILDER_CATEGORY);
   const initialCoupon = readCouponFromStorage();
   const [tradeInCoupon, setTradeInCouponState] = useState(initialCoupon.amount);
   const [useTradeInCoupon, setUseTradeInCoupon] = useState(initialCoupon.use);
@@ -91,6 +95,7 @@ export function BuildProvider({ children }: { children: React.ReactNode }) {
 
   const clearBuild = useCallback(() => {
     setSelection({});
+    setActiveCategory(DEFAULT_BUILDER_CATEGORY);
     localStorage.removeItem(STORAGE_KEY);
   }, []);
 
@@ -119,6 +124,7 @@ export function BuildProvider({ children }: { children: React.ReactNode }) {
       }
       return next;
     });
+    setActiveCategory(DEFAULT_BUILDER_CATEGORY);
   }, []);
 
   useEffect(() => {
@@ -144,6 +150,7 @@ export function BuildProvider({ children }: { children: React.ReactNode }) {
   const value = useMemo(
     () => ({
       selection,
+      activeCategory,
       issues,
       total,
       tradeInCoupon,
@@ -152,6 +159,7 @@ export function BuildProvider({ children }: { children: React.ReactNode }) {
       installmentMonthly,
       installmentsRequested,
       selectComponent,
+      setActiveCategory,
       clearBuild,
       loadFromStorage,
       saveToStorage,
@@ -162,6 +170,7 @@ export function BuildProvider({ children }: { children: React.ReactNode }) {
     }),
     [
       selection,
+      activeCategory,
       issues,
       total,
       tradeInCoupon,

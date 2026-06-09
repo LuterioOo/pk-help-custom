@@ -11,26 +11,29 @@ interface LogoProps {
 }
 
 export function Logo({ className, href = "/", size = "md" }: LogoProps) {
-  const heights = { xs: 28, sm: 40, md: 56, lg: 64 } as const;
+  const heights = { xs: 22, sm: 36, md: 48, lg: 56 } as const;
   const h = heights[size];
+  const mobileTight = size === "xs";
 
   const content = (
     <div
       className={cn(
-        "inline-flex items-center group transition-transform hover:scale-[1.03]",
+        "inline-flex items-center group transition-transform hover:scale-[1.02]",
         className
       )}
     >
-      <div className="relative px-1.5 py-0.5 sm:px-2 sm:py-1">
-        <Image
-          src="/logo.png"
-          alt="PK HELP"
-          width={Math.round(h * 3.2)}
-          height={h}
-          className="relative w-auto object-contain"
-          priority={size === "lg"}
-        />
-      </div>
+      <Image
+        src="/logo.png"
+        alt="PK HELP"
+        width={Math.round(h * 3.2)}
+        height={h}
+        className={cn(
+          "relative w-auto object-contain",
+          mobileTight ? "h-[22px] w-auto max-w-[72px]" : "h-auto"
+        )}
+        style={mobileTight ? undefined : { height: h }}
+        priority={size === "lg"}
+      />
     </div>
   );
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useLocaleBase } from "@/hooks/use-locale-base";
@@ -34,6 +34,26 @@ export function Header() {
   const isHome = pathname === `${base}` || pathname === `${base}/` || pathname === "/";
   const builderHref = isHome ? `${base}#builder` : `${base || "/"}/#builder`;
 
+  const closeMenu = useCallback(() => setOpen(false), []);
+
+  useEffect(() => {
+    if (!open) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, [open]);
+
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") closeMenu();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [open, closeMenu]);
+
   const links = navIds.map((id) => {
     const rawHref = hrefMap[id];
     let href = rawHref;
@@ -52,103 +72,122 @@ export function Header() {
   });
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 px-1.5 sm:px-4 md:px-8 py-1 sm:py-2 md:py-3">
-      <div className="max-w-7xl mx-auto flex items-center justify-between gap-2 glass-strong rounded-lg sm:rounded-xl md:rounded-2xl px-2 sm:px-3.5 md:px-6 py-1 sm:py-2 md:py-2.5 min-h-[40px] sm:min-h-[48px]">
-        <Logo href={base || "/"} size="xs" className="sm:hidden shrink-0" />
-        <Logo href={base || "/"} size="sm" className="hidden sm:block xl:hidden" />
-        <Logo href={base || "/"} size="lg" className="hidden xl:block" />
+    <>
+      {open ? (
+        <button
+          type="button"
+          aria-label="Close menu"
+          className="xl:hidden fixed inset-0 z-40 bg-black/65 backdrop-blur-[2px]"
+          onClick={closeMenu}
+        />
+      ) : null}
 
-        <nav className="hidden xl:flex items-center gap-0.5">
-          {links.map((link) => (
-            <Link
-              key={link.id}
-              href={link.href}
-              onClick={() => playTone("click")}
-              className="px-3 xl:px-4 py-2 text-[13px] whitespace-nowrap text-zinc-400 hover:text-white transition-colors rounded-lg hover:bg-white/5 border border-transparent hover:border-yellow-500/25"
-            >
-              {link.label}
-            </Link>
-          ))}
-        </nav>
+      <header className="fixed top-0 left-0 right-0 z-50 px-1.5 sm:px-4 md:px-8 pt-[max(0.25rem,env(safe-area-inset-top))] pb-0 sm:py-2 md:py-3">
+        <div className="max-w-7xl mx-auto flex items-center justify-between gap-1.5 glass-strong rounded-lg sm:rounded-xl md:rounded-2xl px-2 sm:px-3.5 md:px-6 py-0.5 sm:py-2 md:py-2.5 min-h-[36px] sm:min-h-[48px]">
+          <Logo href={base || "/"} size="xs" className="sm:hidden shrink-0" />
+          <Logo href={base || "/"} size="sm" className="hidden sm:block xl:hidden" />
+          <Logo href={base || "/"} size="lg" className="hidden xl:block" />
 
-        <div className="hidden xl:flex items-center gap-2 lg:gap-3">
-          <LanguageSwitcher />
-          <button
-            type="button"
-            onClick={() => {
-              toggleMute();
-              playTone("click");
-            }}
-            className="p-2 rounded-lg glass text-zinc-300 cursor-pointer"
-            aria-label={muted ? "Unmute UI sounds" : "Mute UI sounds"}
-          >
-            {muted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
-          </button>
-          <Button asChild size="sm" onClick={() => playTone("click")}>
-            <Link href={builderHref}>{t("builder")}</Link>
-          </Button>
-        </div>
+          <nav className="hidden xl:flex items-center gap-0.5">
+            {links.map((link) => (
+              <Link
+                key={link.id}
+                href={link.href}
+                onClick={() => playTone("click")}
+                className="px-3 xl:px-4 py-2 text-[13px] whitespace-nowrap text-zinc-400 hover:text-white transition-colors rounded-lg hover:bg-white/5 border border-transparent hover:border-yellow-500/25"
+              >
+                {link.label}
+              </Link>
+            ))}
+          </nav>
 
-        <div className="flex items-center gap-1 xl:hidden ml-auto">
-          <Link
-            href={builderHref}
-            onClick={() => playTone("click")}
-            className={cn(
-              "inline-flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-[11px] font-bold",
-              "bg-gradient-to-r from-yellow-300 to-amber-500 text-black",
-              "shadow-[0_2px_12px_rgba(255,215,0,0.3)] active:scale-[0.97] transition-transform touch-manipulation"
-            )}
-          >
-            {t("builder")}
-            <ArrowRight className="w-3 h-3" />
-          </Link>
-          <button
-            type="button"
-            className="p-2 text-zinc-300 touch-manipulation"
-            onClick={() => setOpen(!open)}
-            aria-expanded={open}
-            aria-label="Menu"
-          >
-            {open ? <X size={20} /> : <Menu size={20} />}
-          </button>
-        </div>
-      </div>
-
-      <div
-        className={cn(
-          "xl:hidden mt-1.5 mx-2 sm:mx-4 glass-strong rounded-xl overflow-hidden transition-all duration-200 origin-top",
-          open ? "opacity-100 max-h-[85vh] visible" : "opacity-0 max-h-0 invisible pointer-events-none"
-        )}
-      >
-        <nav className="flex flex-col gap-0.5 p-2.5 max-h-[70vh] overflow-y-auto overscroll-contain">
-          {links.map((link) => (
-            <Link
-              key={link.id}
-              href={link.href}
+          <div className="hidden xl:flex items-center gap-2 lg:gap-3">
+            <LanguageSwitcher />
+            <button
+              type="button"
               onClick={() => {
-                setOpen(false);
+                toggleMute();
                 playTone("click");
               }}
-              className="px-3 py-2.5 text-sm text-zinc-300 hover:text-white rounded-lg hover:bg-white/5 touch-manipulation"
+              className="p-2 rounded-lg glass text-zinc-300 cursor-pointer"
+              aria-label={muted ? "Unmute UI sounds" : "Mute UI sounds"}
             >
-              {link.label}
+              {muted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+            </button>
+            <Button asChild size="sm" onClick={() => playTone("click")}>
+              <Link href={builderHref}>{t("builder")}</Link>
+            </Button>
+          </div>
+
+          <div className="flex items-center gap-1 xl:hidden ml-auto shrink-0">
+            <Link
+              href={builderHref}
+              onClick={() => playTone("click")}
+              className={cn(
+                "inline-flex items-center gap-0.5 rounded-md px-2 py-1 text-[10px] font-bold leading-none",
+                "bg-gradient-to-r from-yellow-300 to-amber-500 text-black",
+                "shadow-[0_2px_10px_rgba(255,215,0,0.28)] active:scale-[0.97] transition-transform touch-manipulation min-h-[32px]"
+              )}
+            >
+              {t("builder")}
+              <ArrowRight className="w-2.5 h-2.5" />
             </Link>
-          ))}
-        </nav>
-        <div className="p-2.5 pt-0 border-t border-white/10 flex flex-col gap-2">
-          <LanguageSwitcher className="w-full justify-center" />
-          <Button
-            asChild
-            className="w-full"
-            onClick={() => {
-              setOpen(false);
-              playTone("click");
-            }}
-          >
-            <Link href={builderHref}>{t("builder")}</Link>
-          </Button>
+            <button
+              type="button"
+              className={cn(
+                "flex items-center justify-center min-w-[44px] min-h-[44px] rounded-lg",
+                "text-yellow-300 bg-white/[0.06] border border-yellow-500/25",
+                "active:scale-[0.96] transition-transform touch-manipulation"
+              )}
+              onClick={() => {
+                setOpen(!open);
+                playTone("click");
+              }}
+              aria-expanded={open}
+              aria-label={open ? "Close menu" : "Open menu"}
+            >
+              {open ? <X size={24} strokeWidth={2.25} /> : <Menu size={24} strokeWidth={2.25} />}
+            </button>
+          </div>
         </div>
-      </div>
-    </header>
+
+        <div
+          className={cn(
+            "xl:hidden relative z-50 mt-1 mx-1 sm:mx-4 glass-strong rounded-xl border border-yellow-500/15 shadow-[0_16px_48px_rgba(0,0,0,0.55)] overflow-hidden transition-all duration-200 origin-top",
+            open ? "opacity-100 max-h-[min(72vh,520px)] visible" : "opacity-0 max-h-0 invisible pointer-events-none"
+          )}
+        >
+          <nav className="flex flex-col py-1 max-h-[min(52vh,400px)] overflow-y-auto overscroll-contain">
+            {links.map((link) => (
+              <Link
+                key={link.id}
+                href={link.href}
+                onClick={() => {
+                  closeMenu();
+                  playTone("click");
+                }}
+                className="px-3 py-2 text-sm text-zinc-300 hover:text-white rounded-lg hover:bg-white/5 touch-manipulation active:bg-white/[0.06]"
+              >
+                {link.label}
+              </Link>
+            ))}
+          </nav>
+          <div className="px-2 py-2 border-t border-white/10 flex flex-col gap-1.5">
+            <LanguageSwitcher className="w-full justify-center !p-0.5" />
+            <Button
+              asChild
+              size="sm"
+              className="w-full min-h-[40px]"
+              onClick={() => {
+                closeMenu();
+                playTone("click");
+              }}
+            >
+              <Link href={builderHref}>{t("builder")}</Link>
+            </Button>
+          </div>
+        </div>
+      </header>
+    </>
   );
 }

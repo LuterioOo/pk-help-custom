@@ -40,14 +40,14 @@ export function LanguageSwitcher({ className }: { className?: string }) {
   };
 
   return (
-    <div className={cn("flex gap-1 p-1 rounded-lg glass", className)}>
+    <div className={cn("flex gap-0.5 p-0.5 rounded-lg glass", className)}>
       {availableLocales.map((l) => (
         <button
           key={l}
           type="button"
           onClick={() => switchLocale(l)}
           className={cn(
-            "px-2.5 py-1 text-xs font-medium rounded-md transition-all touch-manipulation",
+            "px-2 py-0.5 text-[11px] font-medium rounded-md transition-all touch-manipulation min-h-[32px] min-w-[36px]",
             locale === l
               ? "bg-yellow-500/80 text-white"
               : "text-zinc-400 hover:text-white"
