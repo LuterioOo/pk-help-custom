@@ -17,6 +17,7 @@ import {
   type CompatibilityIssue,
 } from "@/lib/compatibility";
 import { loadTradeInCoupon } from "@/lib/trade-in-storage";
+import { getMissingBuildCategories, isBuildComplete } from "@/lib/builder-flow";
 
 const STORAGE_KEY = "pkhelp-build";
 export const DEFAULT_BUILDER_CATEGORY: ComponentCategory = "CASE";
@@ -46,6 +47,8 @@ interface BuildContextValue {
   setUseTradeInCoupon: (enabled: boolean) => void;
   setInstallmentsRequested: (enabled: boolean) => void;
   applyPreset: (components: ComponentSpec[]) => void;
+  isBuildComplete: boolean;
+  missingCategories: ReturnType<typeof getMissingBuildCategories>;
 }
 
 const BuildContext = createContext<BuildContextValue | null>(null);
@@ -147,12 +150,17 @@ export function BuildProvider({ children }: { children: React.ReactNode }) {
     [totalAfterTradeIn]
   );
 
+  const missingCategories = useMemo(() => getMissingBuildCategories(selection), [selection]);
+  const buildComplete = useMemo(() => isBuildComplete(selection), [selection]);
+
   const value = useMemo(
     () => ({
       selection,
       activeCategory,
       issues,
       total,
+      isBuildComplete: buildComplete,
+      missingCategories,
       tradeInCoupon,
       useTradeInCoupon,
       totalAfterTradeIn,
@@ -173,6 +181,8 @@ export function BuildProvider({ children }: { children: React.ReactNode }) {
       activeCategory,
       issues,
       total,
+      buildComplete,
+      missingCategories,
       tradeInCoupon,
       useTradeInCoupon,
       totalAfterTradeIn,

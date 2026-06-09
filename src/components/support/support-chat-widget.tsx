@@ -63,6 +63,12 @@ export function SupportChatWidget() {
   }, [open, lines.length, t]);
 
   useEffect(() => {
+    const openChat = () => setOpen(true);
+    window.addEventListener("pkhelp-open-support", openChat);
+    return () => window.removeEventListener("pkhelp-open-support", openChat);
+  }, []);
+
+  useEffect(() => {
     if (open) {
       const timer = setTimeout(() => inputRef.current?.focus(), 200);
       return () => clearTimeout(timer);

@@ -10,6 +10,7 @@ import { formatOrderMessage, sendTelegramMessage, type TelegramLocale } from "@/
 import { isPolishHost } from "@/lib/site";
 import { selectedComponentSchema, selectionToSelectedComponents } from "@/lib/order-components";
 import type { BuildSelection } from "@/lib/compatibility";
+import { isBuildComplete } from "@/lib/builder-flow";
 
 export const runtime = "nodejs";
 export const maxDuration = 30;
@@ -67,6 +68,15 @@ export async function POST(req: NextRequest) {
 
     const body = await req.json();
     const data = schema.parse(body);
+
+    const isPreliminaryTradeIn =
+      data.status === "estimated_waiting_service" || data.sourceType === "trade_in";
+    if (data.buildJson && !isPreliminaryTradeIn) {
+      if (!isBuildComplete(data.buildJson as BuildSelection)) {
+        return NextResponse.json({ error: "Incomplete build" }, { status: 400 });
+      }
+    }
+
     const host = req.headers.get("host") ?? "";
     const locale: TelegramLocale =
       data.locale ?? (isPolishHost(host) ? "pl" : "ru");

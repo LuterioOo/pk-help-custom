@@ -31,7 +31,6 @@ import {
   getNextCategory,
   isCategoryLocked,
 } from "@/lib/builder-flow";
-
 type SortKey = "price-asc" | "price-desc" | "name";
 
 interface ApiComponent {
@@ -118,6 +117,8 @@ export function PcBuilder() {
     saveToStorage,
     setUseTradeInCoupon,
     setInstallmentsRequested,
+    isBuildComplete,
+    missingCategories,
   } = useBuild();
   const [components, setComponents] = useState<ApiComponent[]>([]);
   const [loading, setLoading] = useState(true);
@@ -207,7 +208,8 @@ export function PcBuilder() {
       return;
     }
     selectComponent(c.category, spec);
-    const next = getNextCategory(c.category);
+    const nextSelection = { ...selection, [c.category]: spec };
+    const next = getNextCategory(c.category, nextSelection);
     if (next) {
       window.setTimeout(() => {
         setActiveCategory(next);
@@ -217,14 +219,23 @@ export function PcBuilder() {
   };
 
   const handleSave = () => {
+    if (!isBuildComplete) {
+      toast.error(t("completeBuildFirst"));
+      return;
+    }
     saveToStorage();
     toast.success(t("save"));
   };
 
   const scrollToOrder = () => {
-    document.getElementById("order")?.scrollIntoView({ behavior: "smooth" });
-    toast.info(t("send"));
+    if (!isBuildComplete) {
+      toast.error(t("completeBuildFirst"));
+      return;
+    }
+    document.getElementById("order")?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
+
+  const orderDisabled = !isBuildComplete || issues.some((i) => i.level === "error");
 
   const renderCategoryChips = (compact: boolean) =>
     BUILDER_CATEGORY_ORDER.map((cat) => (
@@ -262,8 +273,13 @@ export function PcBuilder() {
                 {t("stepOf", { current: stepIndex + 1, total: BUILDER_CATEGORY_ORDER.length })} · {stepLabel}
               </p>
             </div>
-            <Button size="sm" onClick={scrollToOrder} className="min-h-[34px] px-2.5 text-[11px] shrink-0">
-              {t("orderRequest")}
+            <Button
+              size="sm"
+              onClick={scrollToOrder}
+              disabled={orderDisabled}
+              className="min-h-[34px] px-2.5 text-[11px] shrink-0"
+            >
+              {orderDisabled ? t("orderDisabled") : t("orderRequest")}
               <ArrowRight className="w-3 h-3" />
             </Button>
           </div>
@@ -425,6 +441,25 @@ export function PcBuilder() {
                 </ul>
               ) : null}
 
+              {missingCategories.length > 0 && (
+                <div className="space-y-2 border-t border-white/5 pt-3">
+                  <p className="text-[10px] font-medium text-zinc-500 uppercase tracking-wider">
+                    {t("missingParts")}
+                  </p>
+                  <ul className="space-y-1">
+                    {missingCategories.map((cat) => (
+                      <li key={cat} className="text-xs text-amber-300/90 flex items-center gap-1.5">
+                        <AlertCircle className="w-3 h-3 shrink-0" />
+                        {t(`categories.${cat}`)}
+                        {cat === "COOLER" && !selection.COOLER && !selection.AIO ? (
+                          <span className="text-zinc-500">/ {t("categories.AIO")}</span>
+                        ) : null}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
               {issues.length > 0 && (
                 <div className="space-y-2 border-t border-white/5 pt-3">
                   <p className="text-[10px] font-medium text-zinc-500 uppercase tracking-wider">
@@ -490,11 +525,11 @@ export function PcBuilder() {
               </label>
 
               <div className="flex flex-col gap-2.5 pt-1">
-                <Button variant="secondary" onClick={handleSave} className="w-full">
+                <Button variant="secondary" onClick={handleSave} disabled={orderDisabled} className="w-full">
                   {t("save")}
                 </Button>
-                <Button size="lg" onClick={scrollToOrder} className="w-full">
-                  {t("orderRequest")}
+                <Button size="lg" onClick={scrollToOrder} disabled={orderDisabled} className="w-full">
+                  {orderDisabled ? t("orderDisabled") : t("orderRequest")}
                   <ArrowRight className="w-4 h-4" />
                 </Button>
                 {selectedCount > 0 ? (

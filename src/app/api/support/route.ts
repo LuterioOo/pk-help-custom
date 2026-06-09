@@ -4,6 +4,7 @@ import { SupportTopic } from "@prisma/client";
 import { assertDatabaseUrl, isDatabaseError, isSchemaMissingError } from "@/lib/db-config";
 import { prisma } from "@/lib/prisma";
 import { checkRateLimit } from "@/lib/rate-limit";
+import { formatSupportMessage, sendTelegramMessage, type TelegramLocale } from "@/lib/telegram";
 
 export const runtime = "nodejs";
 
@@ -40,6 +41,26 @@ export async function POST(req: NextRequest) {
         currentPage: data.currentPage?.trim() || null,
       },
     });
+
+    const tgLocale = (data.locale ?? "ru") as TelegramLocale;
+    try {
+      const tgText = formatSupportMessage(
+        {
+          name: record.name,
+          phone: record.phone,
+          telegram: record.telegram,
+          message: record.message,
+          topic: record.topic,
+          locale: record.locale,
+          currentPage: record.currentPage,
+          createdAt: record.createdAt,
+        },
+        tgLocale
+      );
+      await sendTelegramMessage(tgText);
+    } catch (tgErr) {
+      console.error("Support Telegram notification failed (message saved):", tgErr);
+    }
 
     return NextResponse.json({ success: true, id: record.id });
   } catch (error) {

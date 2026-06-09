@@ -11,9 +11,9 @@ export function useUiSound() {
   useEffect(() => {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
-      setMuted(raw === "1");
+      setMuted(raw === null ? true : raw === "1");
     } catch {
-      /* ignore */
+      setMuted(true);
     }
   }, []);
 

@@ -117,6 +117,9 @@ const pl = {
     applyCoupon: "Zastosuj kupon do zestawu",
     orderRequest: "Złóż zgłoszenie",
     selectPrevious: "Najpierw wybierz poprzedni komponent",
+    completeBuildFirst: "Najpierw dokończ konfigurację PC",
+    missingParts: "Brakujące części",
+    orderDisabled: "Dokończ konfigurację",
     stepOf: "Krok {current} z {total}",
     categoriesLabel: "Kategorie komponentów",
     installments: {
@@ -178,6 +181,7 @@ const pl = {
     services: "Wybrane usługi",
     comment: "Komentarz",
     attachBuild: "Dołącz zapisaną konfigurację PC",
+    completeBuildFirst: "Najpierw dokończ konfigurację PC",
     submit: "Wyślij zgłoszenie",
     success: "Zgłoszenie wysłane! Skontaktujemy się z Tobą wkrótce.",
     error: "Nie udało się wysłać. Spróbuj ponownie.",

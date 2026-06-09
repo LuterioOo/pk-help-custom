@@ -115,6 +115,9 @@ const uk = {
     applyCoupon: "Застосувати купон до збірки",
     orderRequest: "Оформити заявку",
     selectPrevious: "Спочатку оберіть попередній компонент",
+    completeBuildFirst: "Спочатку завершіть збірку ПК",
+    missingParts: "Не вистачає деталей",
+    orderDisabled: "Завершіть збірку",
     stepOf: "Крок {current} з {total}",
     categoriesLabel: "Категорії компонентів",
     installments: {
@@ -186,6 +189,7 @@ const uk = {
       custom: "Проєкт на замовлення",
     },
     attachBuild: "Прикріпити збірку",
+    completeBuildFirst: "Спочатку завершіть збірку ПК",
     submit: "Надіслати заявку",
     success: "Заявку успішно надіслано!",
     error: "Помилка відправки",

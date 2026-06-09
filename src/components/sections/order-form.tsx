@@ -48,6 +48,7 @@ export function OrderForm() {
     installmentMonthly,
     installmentsRequested,
     setInstallmentsRequested,
+    isBuildComplete,
   } = useBuild();
   const hasBuild = Object.keys(selection).length > 0;
   const [tradeInContactOpen, setTradeInContactOpen] = useState(false);
@@ -68,6 +69,8 @@ export function OrderForm() {
   });
 
   const selectedServices = watch("services") ?? [];
+  const attachBuild = watch("attachBuild");
+  const canAttachBuild = hasBuild && isBuildComplete;
 
   const tradeInEstimate = useMemo(() => {
     const selected = Object.values(selection);
@@ -163,8 +166,18 @@ export function OrderForm() {
     setValue("services", next);
   };
 
+  useEffect(() => {
+    if (attachBuild && !canAttachBuild) {
+      setValue("attachBuild", false);
+    }
+  }, [attachBuild, canAttachBuild, setValue]);
+
   const onSubmit = async (data: FormData) => {
     if (data.website) return;
+    if (data.attachBuild && hasBuild && !isBuildComplete) {
+      toast.error(t("completeBuildFirst"));
+      return;
+    }
     try {
       storeContacts(data.phone, data.messenger);
       const pendingTradeInLead = loadTradeInLead();
@@ -179,10 +192,10 @@ export function OrderForm() {
           messenger: data.messenger,
           services: data.services,
           comment: data.comment,
-          buildJson: data.attachBuild && hasBuild ? selection : undefined,
+          buildJson: data.attachBuild && canAttachBuild ? selection : undefined,
           selectedComponents:
-            data.attachBuild && hasBuild ? selectionToSelectedComponents(selection) : undefined,
-          totalPrice: data.attachBuild && hasBuild ? (useTradeInCoupon ? totalAfterTradeIn : total) : undefined,
+            data.attachBuild && canAttachBuild ? selectionToSelectedComponents(selection) : undefined,
+          totalPrice: data.attachBuild && canAttachBuild ? (useTradeInCoupon ? totalAfterTradeIn : total) : undefined,
           tradeInDiscountPLN: data.attachBuild && hasBuild && useTradeInCoupon ? Math.max(0, total - totalAfterTradeIn) : undefined,
           tradeInEstimate:
             data.attachBuild && hasBuild
@@ -300,16 +313,27 @@ export function OrderForm() {
               <textarea {...register("comment")} rows={4} className={cn(inputClass, "resize-none")} />
             </div>
             {hasBuild && (
-              <label className="flex items-center gap-3 cursor-pointer">
-                <input
-                  type="checkbox"
-                  {...register("attachBuild")}
-                  className="w-4 h-4 rounded accent-yellow-500"
-                />
-                <span className="text-sm text-zinc-400">
-                  {t("attachBuild")} ({total.toLocaleString("pl-PL")} PLN)
-                </span>
-              </label>
+              <div className="space-y-2">
+                <label
+                  className={cn(
+                    "flex items-center gap-3",
+                    canAttachBuild ? "cursor-pointer" : "cursor-not-allowed opacity-70"
+                  )}
+                >
+                  <input
+                    type="checkbox"
+                    {...register("attachBuild")}
+                    disabled={!canAttachBuild}
+                    className="w-4 h-4 rounded accent-yellow-500 disabled:opacity-50"
+                  />
+                  <span className="text-sm text-zinc-400">
+                    {t("attachBuild")} ({total.toLocaleString("pl-PL")} PLN)
+                  </span>
+                </label>
+                {!isBuildComplete && (
+                  <p className="text-xs text-amber-300/80">{t("completeBuildFirst")}</p>
+                )}
+              </div>
             )}
             <label className="flex items-start gap-3 cursor-pointer">
               <input
@@ -412,7 +436,13 @@ export function OrderForm() {
               </div>
             )}
 
-            <Button type="submit" size="lg" className="w-full" isLoading={isSubmitting}>
+            <Button
+              type="submit"
+              size="lg"
+              className="w-full"
+              isLoading={isSubmitting}
+              disabled={Boolean(attachBuild && hasBuild && !isBuildComplete)}
+            >
               {t("submit")}
             </Button>
           </form>

@@ -199,6 +199,64 @@ function escapeHtml(s: string) {
   return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
 
+const SUPPORT_TOPIC_LABELS: Record<string, Record<SupportTopicLocale, string>> = {
+  PC_BUILD: { ru: "Сборка ПК", uk: "Збірка ПК", en: "PC build", pl: "Składanie PC" },
+  TRADE_IN: { ru: "Trade-In", uk: "Trade-In", en: "Trade-In", pl: "Trade-In" },
+  INSTALLMENT: { ru: "Рассрочка", uk: "Розстрочка", en: "Installments", pl: "Raty" },
+  READY_PC: { ru: "Готовый ПК", uk: "Готовий ПК", en: "Ready PC", pl: "Gotowy PC" },
+  SERVICE: { ru: "Сервис", uk: "Сервіс", en: "Service", pl: "Serwis" },
+  OTHER: { ru: "Другое", uk: "Інше", en: "Other", pl: "Inne" },
+};
+
+type SupportTopicLocale = TelegramLocale;
+
+export function formatSupportMessage(
+  msg: {
+    name?: string | null;
+    phone?: string | null;
+    telegram?: string | null;
+    message: string;
+    topic: string;
+    locale: string;
+    currentPage?: string | null;
+    createdAt?: Date | string;
+  },
+  locale: TelegramLocale = "ru"
+) {
+  const tag = locale === "pl" ? "pl-PL" : locale === "uk" ? "uk-UA" : locale === "en" ? "en-GB" : "ru-RU";
+  const topicLabel =
+    SUPPORT_TOPIC_LABELS[msg.topic]?.[locale] ?? msg.topic;
+  const lines = [
+    "💬 <b>PK-HELP — Support chat</b>",
+    "",
+    `🕐 <b>${locale === "pl" ? "Data" : "Дата"}:</b> ${escapeHtml(
+      msg.createdAt
+        ? new Date(msg.createdAt).toLocaleString(tag, {
+            timeZone: "Europe/Warsaw",
+            dateStyle: "short",
+            timeStyle: "short",
+          })
+        : formatOrderDate(locale)
+    )}`,
+    `🏷 <b>${locale === "pl" ? "Temat" : "Тема"}:</b> ${escapeHtml(topicLabel)}`,
+    `🌐 <b>Locale:</b> ${escapeHtml(msg.locale)}`,
+  ];
+
+  if (msg.currentPage?.trim()) {
+    lines.push(`🔗 <b>Page:</b> ${escapeHtml(msg.currentPage.trim())}`);
+  }
+
+  if (msg.name?.trim()) lines.push(`👤 <b>${locale === "pl" ? "Imię" : "Имя"}:</b> ${escapeHtml(msg.name.trim())}`);
+  if (msg.phone?.trim()) lines.push(`📞 <b>${locale === "pl" ? "Telefon" : "Телефон"}:</b> ${escapeHtml(msg.phone.trim())}`);
+  if (msg.telegram?.trim()) {
+    lines.push(`✈️ <b>Telegram:</b> ${escapeHtml(msg.telegram.trim())}`);
+  }
+
+  lines.push("", `📝 <b>${locale === "pl" ? "Wiadomość" : "Сообщение"}:</b>`, escapeHtml(msg.message.trim()));
+
+  return lines.join("\n");
+}
+
 function extractTradeInParts(
   estimateMeta: Record<string, unknown> | null
 ): Array<{ category: string; name: string }> {

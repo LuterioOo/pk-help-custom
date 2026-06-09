@@ -271,10 +271,12 @@ body {
 
 .home-fold #hero {
   padding-bottom: 0.75rem;
+  min-height: calc(100svh - var(--mobile-header-height) - var(--mobile-bottom-cta-height) - env(safe-area-inset-bottom) - 0.5rem);
 }
 
 @media (min-width: 768px) {
   .home-fold #hero {
+    min-height: 0;
     padding-bottom: 0.5rem;
   }
 }

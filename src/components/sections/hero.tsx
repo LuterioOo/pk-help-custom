@@ -85,15 +85,14 @@ export function Hero() {
               </Button>
 
               <Button
-                asChild
+                type="button"
                 size="sm"
                 variant="outline"
                 className="tap-scale w-full sm:flex-1 sm:min-h-[60px] sm:text-base sm:rounded-2xl border-white/15 min-h-[38px] text-sm"
+                onClick={() => window.dispatchEvent(new Event("pkhelp-open-support"))}
               >
-                <Link href={`${base}#contacts`} className="flex items-center justify-center gap-2">
-                  <MessageSquare className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-yellow-400/80" />
-                  {t("ctaContact")}
-                </Link>
+                <MessageSquare className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-yellow-400/80" />
+                {t("ctaContact")}
               </Button>
             </div>
 
@@ -106,8 +105,8 @@ export function Hero() {
             </div>
           </div>
 
-          <ScrollReveal delay={0.1} direction="right" className="relative hidden sm:flex justify-center lg:justify-end">
-            <div className="relative w-full max-w-[min(100%,340px)] sm:max-w-md lg:max-w-none aspect-[4/3] max-h-[min(40vh,220px)] sm:max-h-[280px] lg:max-h-[360px] mx-auto lg:mx-0">
+          <ScrollReveal delay={0.1} direction="right" className="relative flex justify-center lg:justify-end mt-3 sm:mt-0">
+            <div className="relative w-full max-w-[220px] sm:max-w-md lg:max-w-none aspect-[4/3] max-h-[140px] sm:max-h-[280px] lg:max-h-[360px] mx-auto lg:mx-0 overflow-hidden rounded-xl sm:rounded-2xl">
               <HeroVisual />
             </div>
           </ScrollReveal>

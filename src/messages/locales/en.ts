@@ -115,6 +115,9 @@ const en = {
     applyCoupon: "Apply coupon to build",
     orderRequest: "Submit request",
     selectPrevious: "Select the previous component first",
+    completeBuildFirst: "Complete your PC build first",
+    missingParts: "Missing parts",
+    orderDisabled: "Complete build",
     stepOf: "Step {current} of {total}",
     categoriesLabel: "Component categories",
     installments: {
@@ -186,6 +189,7 @@ const en = {
       custom: "Custom project",
     },
     attachBuild: "Attach saved build",
+    completeBuildFirst: "Complete your PC build first",
     submit: "Send request",
     success: "Request sent successfully!",
     error: "Failed to send. Try again.",
