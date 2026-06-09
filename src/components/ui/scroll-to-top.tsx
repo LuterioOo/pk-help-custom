@@ -37,7 +37,7 @@ export function ScrollToTop() {
             "fixed z-30 p-3 rounded-xl glass neon-border text-yellow-300 hover:text-white transition-colors touch-manipulation",
             "right-3 md:right-6",
             onHomeMobile
-              ? "bottom-[calc(4.75rem+env(safe-area-inset-bottom))] md:bottom-6"
+              ? "bottom-[calc(4.5rem+env(safe-area-inset-bottom))] md:bottom-6"
               : "bottom-[max(1.25rem,env(safe-area-inset-bottom))] md:bottom-6"
           )}
           aria-label={t("backTop")}

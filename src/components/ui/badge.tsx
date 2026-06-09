@@ -12,10 +12,10 @@ interface BadgeProps {
 
 const variants: Record<BadgeVariant, string> = {
   default: "bg-white/[0.04] text-zinc-400",
-  accent: "bg-yellow-500/10 text-yellow-400/90",
+  accent: "bg-theme-soft text-theme",
   muted: "bg-zinc-800/60 text-zinc-500",
   success: "bg-emerald-500/10 text-emerald-400/90",
-  price: "bg-black/70 text-yellow-400/95 backdrop-blur-sm",
+  price: "bg-black/70 text-theme backdrop-blur-sm",
 };
 
 /** Non-interactive label — no pointer, no button feel */

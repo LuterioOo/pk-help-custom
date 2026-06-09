@@ -2,10 +2,12 @@
 
 import { Toaster } from "sonner";
 import { BuildProvider } from "@/store/build-store";
+import { SiteThemeProvider } from "@/components/providers/site-theme-provider";
 
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <BuildProvider>
+      <SiteThemeProvider />
       {children}
       <Toaster
         theme="dark"

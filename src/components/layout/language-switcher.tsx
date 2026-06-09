@@ -14,7 +14,15 @@ const labels: Record<Locale, string> = {
   pl: "PL",
 };
 
-export function LanguageSwitcher({ className }: { className?: string }) {
+type Variant = "default" | "floating" | "compact";
+
+export function LanguageSwitcher({
+  className,
+  variant = "default",
+}: {
+  className?: string;
+  variant?: Variant;
+}) {
   const locale = useLocale() as Locale;
   const pathname = usePathname();
   const router = useRouter();
@@ -27,7 +35,6 @@ export function LanguageSwitcher({ className }: { className?: string }) {
     return [...getLocalesForSite(window.location.hostname, pathname)] as Locale[];
   }, [mounted, pathname]);
 
-  // Polish-only site or single locale — no switcher
   if (availableLocales.length <= 1) return null;
 
   const switchLocale = (next: Locale) => {
@@ -40,17 +47,32 @@ export function LanguageSwitcher({ className }: { className?: string }) {
   };
 
   return (
-    <div className={cn("flex gap-0.5 p-0.5 rounded-lg glass", className)}>
+    <div
+      className={cn(
+        "flex gap-0.5 rounded-lg",
+        variant === "floating"
+          ? "p-1 glass-strong border border-[var(--theme-border)]"
+          : variant === "compact"
+            ? "p-0.5 glass"
+            : "p-0.5 glass",
+        className
+      )}
+      role="group"
+      aria-label="Language"
+    >
       {availableLocales.map((l) => (
         <button
           key={l}
           type="button"
           onClick={() => switchLocale(l)}
           className={cn(
-            "px-2 py-0.5 text-[11px] font-medium rounded-md transition-all touch-manipulation min-h-[32px] min-w-[36px]",
+            "font-semibold rounded-md transition-colors touch-manipulation tap-scale",
+            variant === "floating"
+              ? "px-2.5 py-1.5 text-[11px] min-h-[36px] min-w-[38px]"
+              : "px-2 py-0.5 text-[11px] min-h-[30px] min-w-[34px]",
             locale === l
-              ? "bg-yellow-500/80 text-white"
-              : "text-zinc-400 hover:text-white"
+              ? "bg-[var(--theme-accent)] text-[var(--theme-text-on-accent)] shadow-sm"
+              : "text-zinc-400 hover:text-zinc-100"
           )}
         >
           {labels[l]}

@@ -7,7 +7,8 @@ import { adminUrl } from "@/lib/admin-path";
 import { Button } from "@/components/ui/button";
 import { Logo } from "@/components/ui/logo";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Package, MessageSquare, ShoppingCart, LogOut, Pencil, Images, Users } from "lucide-react";
+import { Package, MessageSquare, ShoppingCart, LogOut, Pencil, Images, Users, Settings } from "lucide-react";
+import { ThemeSettingsPanel } from "@/components/admin/theme-settings-panel";
 import { ShowcasePanel } from "@/components/admin/showcase-panel";
 import { MastersPanel } from "@/components/admin/masters-panel";
 import { OrderComponentsTable } from "@/components/admin/order-components-table";
@@ -21,7 +22,7 @@ import { ComponentImage } from "@/components/ui/component-image";
 import { toast } from "sonner";
 import { AnimatePresence, motion } from "framer-motion";
 
-type Tab = "components" | "reviews" | "orders" | "showcase" | "masters";
+type Tab = "components" | "reviews" | "orders" | "showcase" | "masters" | "settings";
 
 const ORDER_STATUSES = ["NOWE", "W_TRAKCIE", "WYCENIONE", "estimated_waiting_service", "ZAKONCZONE", "ANULOWANE"] as const;
 const TRADE_IN_WORKFLOW = [
@@ -474,6 +475,7 @@ export default function AdminDashboard() {
     { id: "showcase", icon: Images, label: t("showcaseTab") },
     { id: "masters", icon: Users, label: t("mastersTab") },
     { id: "reviews", icon: MessageSquare, label: t("reviews") },
+    { id: "settings", icon: Settings, label: t("settings") },
   ];
 
   const filteredComponents = useMemo(() => {
@@ -536,7 +538,7 @@ export default function AdminDashboard() {
               type="button"
               onClick={() => setTab(id)}
               className={`flex items-center gap-2 px-3 sm:px-4 py-2 rounded-xl text-sm transition-all flex-shrink-0 touch-manipulation ${
-                tab === id ? "bg-yellow-500/40 text-white" : "glass text-zinc-400"
+                tab === id ? "bg-theme-soft text-theme border border-theme" : "glass text-zinc-400"
               }`}
             >
               <Icon className="w-4 h-4" />
@@ -548,6 +550,8 @@ export default function AdminDashboard() {
         {tab === "showcase" && <ShowcasePanel />}
 
         {tab === "masters" && <MastersPanel />}
+
+        {tab === "settings" && <ThemeSettingsPanel />}
 
         {loading && (tab === "orders" || tab === "components" || tab === "reviews") ? (
           <div className="space-y-4">

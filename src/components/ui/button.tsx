@@ -14,13 +14,12 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 const variants: Record<Variant, string> = {
-  primary:
-    "cursor-pointer bg-gradient-to-r from-yellow-300 to-amber-500 text-black font-semibold shadow-[0_4px_20px_rgba(255,215,0,0.25)] hover:from-yellow-200 hover:to-amber-400 hover:shadow-[0_8px_32px_rgba(255,215,0,0.35)] active:scale-[0.97] active:shadow-[0_2px_12px_rgba(255,215,0,0.2)]",
+  primary: "cursor-pointer btn-theme-primary font-semibold tap-scale active:scale-[0.97]",
   secondary:
-    "cursor-pointer glass text-zinc-200 border border-white/15 hover:bg-white/10 hover:border-yellow-500/40 active:scale-[0.98]",
-  ghost: "cursor-pointer text-zinc-300 hover:text-white hover:bg-white/5 active:scale-[0.98]",
+    "cursor-pointer glass text-zinc-200 border border-white/15 hover:bg-white/10 hover:border-[var(--theme-border)] tap-scale",
+  ghost: "cursor-pointer text-zinc-300 hover:text-white hover:bg-white/5 tap-scale",
   outline:
-    "cursor-pointer border border-white/20 text-zinc-200 hover:border-yellow-500/50 hover:bg-yellow-500/10 active:scale-[0.98]",
+    "cursor-pointer border border-white/20 text-zinc-200 hover:border-[var(--theme-border)] hover:bg-theme-soft tap-scale",
 };
 
 const sizes = {
@@ -34,7 +33,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant = "primary", size = "md", isLoading, asChild, children, disabled, onClick, ...props }, ref) => {
     const { playTone } = useUiSound();
     const baseClassName = cn(
-      "inline-flex items-center justify-center gap-2 font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:active:scale-100",
+      "inline-flex items-center justify-center gap-2 font-medium transition-[transform,filter,box-shadow] duration-150 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:active:scale-100",
       variants[variant],
       sizes[size],
       className

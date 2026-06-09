@@ -20,7 +20,7 @@ export function Hero() {
   return (
     <section
       id="hero"
-      className="relative pt-[calc(2.9rem+env(safe-area-inset-top))] sm:pt-[5rem] md:pt-[6.25rem] pb-3 sm:pb-10 px-4 sm:px-4 md:px-8 min-h-0 sm:min-h-[min(88vh,820px)] md:min-h-[min(92vh,880px)] flex flex-col justify-start sm:justify-center"
+      className="relative pt-[calc(2.5rem+env(safe-area-inset-top))] sm:pt-[5rem] md:pt-[6.25rem] pb-3 sm:pb-10 px-4 sm:px-4 md:px-8 min-h-0 sm:min-h-[min(88vh,820px)] md:min-h-[min(92vh,880px)] flex flex-col justify-start sm:justify-center"
     >
       <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_78%_28%,rgba(99,102,241,0.12),transparent_45%),radial-gradient(circle_at_15%_12%,rgba(255,215,0,0.14),transparent_38%)]" />
       <div className="max-w-7xl mx-auto w-full relative z-10">

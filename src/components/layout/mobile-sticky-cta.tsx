@@ -47,8 +47,7 @@ export function MobileStickyCta() {
           href={builderHref}
           className={cn(
             "flex items-center justify-center gap-1 rounded-lg px-2 py-2 text-[11px] font-bold min-h-[40px]",
-            "bg-gradient-to-r from-yellow-300 to-amber-500 text-black",
-            "shadow-[0_4px_16px_rgba(255,215,0,0.35)] tap-scale"
+            "btn-theme-primary tap-scale"
           )}
         >
           {buildLocked ? t("ctaBuildLocked") : t("ctaBuild")}

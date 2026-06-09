@@ -26,7 +26,7 @@ export const viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="ru" className="dark" suppressHydrationWarning>
+    <html lang="ru" className="dark" data-site-theme="yellow" suppressHydrationWarning>
       <body className={`${inter.variable} antialiased`}>{children}</body>
     </html>
   );

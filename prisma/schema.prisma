@@ -161,6 +161,7 @@ model SiteSettings {
   heroSubtitleEn String?
   heroSubtitlePl String?
   bannerImageUrl String?
+  colorTheme     String   @default("yellow")
   updatedAt      DateTime @updatedAt
 }
 

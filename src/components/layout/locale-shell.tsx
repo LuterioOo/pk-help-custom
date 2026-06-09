@@ -5,6 +5,7 @@ import { DeferredChrome } from "@/components/layout/deferred-chrome";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import { MobileStickyCta } from "@/components/layout/mobile-sticky-cta";
+import { FloatingLanguageSwitcher } from "@/components/layout/floating-language-switcher";
 
 function isAdminPath(pathname: string) {
   return /\/admin(\/|$)/.test(pathname);
@@ -16,7 +17,7 @@ export function LocaleShell({ children }: { children: React.ReactNode }) {
 
   if (isAdminPath(pathname)) {
     return (
-      <div className="admin-shell min-h-screen bg-[#050508] relative">
+      <div className="admin-shell min-h-screen bg-[var(--theme-bg)] relative">
         <div className="admin-content relative z-10 pointer-events-auto">{children}</div>
       </div>
     );
@@ -26,6 +27,7 @@ export function LocaleShell({ children }: { children: React.ReactNode }) {
     <>
       <DeferredChrome />
       <Header />
+      <FloatingLanguageSwitcher />
       <main className="relative z-10 min-h-screen pb-[calc(4.75rem+env(safe-area-inset-bottom))] md:pb-0">{children}</main>
       <MobileStickyCta />
       <Footer />
