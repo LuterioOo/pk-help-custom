@@ -118,6 +118,8 @@ const ru = {
     applyCoupon: "Применить купон к сборке",
     orderRequest: "Оформить заявку",
     selectPrevious: "Сначала выберите предыдущий компонент",
+    stepOf: "Шаг {current} из {total}",
+    categoriesLabel: "Категории компонентов",
     installments: {
       requested: "Оформить рассрочку",
       from: "от {amount} PLN/мес",

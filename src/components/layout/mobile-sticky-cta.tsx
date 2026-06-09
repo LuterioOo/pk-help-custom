@@ -17,7 +17,7 @@ export function MobileStickyCta() {
   const t = useTranslations("hero");
   const base = useLocaleBase();
   const pathname = usePathname() ?? "";
-  const { locked: buildLocked } = useTradeInReady();
+  const { locked: buildLocked, flowActive } = useTradeInReady();
   const [builderInView, setBuilderInView] = useState(false);
 
   useEffect(() => {
@@ -33,38 +33,39 @@ export function MobileStickyCta() {
 
   if (!isHomePath(pathname, base)) return null;
 
-  const builderHref = buildLocked ? `${base}/trade-in` : `${base}#builder`;
+  const showLockedCta = flowActive && buildLocked;
+  const builderHref = showLockedCta ? `${base}/trade-in` : `${base}#builder`;
 
   if (builderInView) return null;
 
   return (
     <div
-      className="md:hidden fixed bottom-0 inset-x-0 z-40 px-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-1.5 pointer-events-none bottom-cta-enter"
+      className="md:hidden fixed bottom-0 inset-x-0 z-40 px-2 pb-[max(0.375rem,env(safe-area-inset-bottom))] pt-1 pointer-events-none bottom-cta-enter"
       aria-hidden={false}
     >
-      <div className="pointer-events-auto max-w-lg mx-auto glass-strong rounded-xl border border-yellow-500/20 shadow-[0_-8px_32px_rgba(0,0,0,0.5)] p-1 grid grid-cols-[1.4fr_1fr_1fr] gap-1">
+      <div className="pointer-events-auto max-w-lg mx-auto glass-strong rounded-lg border border-yellow-500/15 shadow-[0_-4px_24px_rgba(0,0,0,0.45)] p-0.5 grid grid-cols-[1.35fr_1fr_1fr] gap-0.5">
         <Link
           href={builderHref}
           className={cn(
-            "flex items-center justify-center gap-1 rounded-lg px-2 py-2 text-[11px] font-bold min-h-[40px]",
+            "flex items-center justify-center gap-1 rounded-md px-2 py-1.5 text-[10px] font-bold min-h-[36px]",
             "btn-theme-primary tap-scale"
           )}
         >
-          {buildLocked ? t("ctaBuildLocked") : t("ctaBuild")}
-          <ArrowRight className="w-3.5 h-3.5 shrink-0" />
+          {showLockedCta ? t("ctaBuildLocked") : t("ctaBuild")}
+          <ArrowRight className="w-3 h-3 shrink-0" />
         </Link>
         <Link
           href={`${base}/trade-in`}
-          className="tap-scale flex flex-col items-center justify-center gap-0.5 rounded-lg px-1 py-2 text-[10px] font-medium text-yellow-400/95 bg-white/[0.04] border border-white/10"
+          className="tap-scale flex flex-col items-center justify-center gap-0 rounded-md px-1 py-1.5 text-[9px] font-medium text-yellow-400/95 bg-white/[0.04] border border-white/10 min-h-[36px]"
         >
-          <RefreshCw className="w-3.5 h-3.5" />
+          <RefreshCw className="w-3 h-3" />
           {t("ctaTradeInPage")}
         </Link>
         <Link
           href={`${base}#contacts`}
-          className="tap-scale flex flex-col items-center justify-center gap-0.5 rounded-lg px-1 py-2 text-[10px] font-medium text-zinc-300 bg-white/[0.04] border border-white/10"
+          className="tap-scale flex flex-col items-center justify-center gap-0 rounded-md px-1 py-1.5 text-[9px] font-medium text-zinc-300 bg-white/[0.04] border border-white/10 min-h-[36px]"
         >
-          <MessageSquare className="w-3.5 h-3.5" />
+          <MessageSquare className="w-3 h-3" />
           {t("ctaContact")}
         </Link>
       </div>

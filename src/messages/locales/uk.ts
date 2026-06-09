@@ -115,6 +115,8 @@ const uk = {
     applyCoupon: "Застосувати купон до збірки",
     orderRequest: "Оформити заявку",
     selectPrevious: "Спочатку оберіть попередній компонент",
+    stepOf: "Крок {current} з {total}",
+    categoriesLabel: "Категорії компонентів",
     installments: {
       requested: "Оформити розстрочку",
       from: "від {amount} PLN/міс",

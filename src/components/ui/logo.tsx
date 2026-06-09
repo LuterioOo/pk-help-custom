@@ -11,7 +11,7 @@ interface LogoProps {
 }
 
 export function Logo({ className, href = "/", size = "md" }: LogoProps) {
-  const heights = { xs: 28, sm: 36, md: 48, lg: 56 } as const;
+  const heights = { xs: 32, sm: 36, md: 48, lg: 56 } as const;
   const h = heights[size];
   const mobileTight = size === "xs";
 
@@ -29,7 +29,7 @@ export function Logo({ className, href = "/", size = "md" }: LogoProps) {
         height={h}
         className={cn(
           "relative w-auto object-contain object-left",
-          mobileTight ? "h-[28px] w-auto max-w-[100px] min-w-[68px]" : "h-auto"
+          mobileTight ? "h-[32px] w-auto max-w-[108px] min-w-[72px]" : "h-auto"
         )}
         style={mobileTight ? undefined : { height: h }}
         priority={size === "lg"}

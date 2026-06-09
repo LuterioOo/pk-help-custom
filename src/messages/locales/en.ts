@@ -115,6 +115,8 @@ const en = {
     applyCoupon: "Apply coupon to build",
     orderRequest: "Submit request",
     selectPrevious: "Select the previous component first",
+    stepOf: "Step {current} of {total}",
+    categoriesLabel: "Component categories",
     installments: {
       requested: "Request installment plan",
       from: "from {amount} PLN/mo",

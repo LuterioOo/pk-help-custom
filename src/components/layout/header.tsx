@@ -8,6 +8,7 @@ import Link from "next/link";
 import { Menu, Volume2, VolumeX, X, ArrowRight } from "lucide-react";
 import { Logo } from "@/components/ui/logo";
 import { Button } from "@/components/ui/button";
+import { LanguageSwitcher } from "@/components/layout/language-switcher";
 import { cn } from "@/lib/utils";
 import { useUiSound } from "@/hooks/use-ui-sound";
 
@@ -77,7 +78,7 @@ export function Header() {
 
       <header className="fixed top-0 left-0 right-0 z-50 px-1 sm:px-4 md:px-8 pt-[max(0.125rem,env(safe-area-inset-top))] pb-0 sm:py-2 md:py-3">
         <div className="max-w-7xl mx-auto flex items-center justify-between gap-1 glass-strong rounded-md sm:rounded-xl md:rounded-2xl px-1.5 sm:px-3.5 md:px-6 py-0 sm:py-2 md:py-2.5 min-h-[32px] sm:min-h-[48px]">
-          <Logo href={base || "/"} size="xs" className="sm:hidden shrink-0 -ml-0.5" />
+          <Logo href={base || "/"} size="xs" className="sm:hidden shrink-0 -ml-0.5 brightness-110" />
           <Logo href={base || "/"} size="sm" className="hidden sm:block xl:hidden" />
           <Logo href={base || "/"} size="lg" className="hidden xl:block" />
 
@@ -149,7 +150,7 @@ export function Header() {
               : "opacity-0 max-h-0 invisible pointer-events-none -translate-y-0.5"
           )}
         >
-          <nav className="flex flex-col py-0.5 max-h-[min(50vh,380px)] overflow-y-auto overscroll-contain">
+          <nav className="flex flex-col py-0.5 max-h-[min(45vh,340px)] overflow-y-auto overscroll-contain">
             {links.map((link) => (
               <Link
                 key={link.id}
@@ -158,17 +159,20 @@ export function Header() {
                   closeMenu();
                   playTone("click");
                 }}
-                className="px-3 py-2 text-sm text-zinc-300 hover:text-white rounded-md hover:bg-white/5 touch-manipulation tap-scale"
+                className="px-3 py-1.5 text-[13px] text-zinc-300 hover:text-white rounded-md hover:bg-white/5 touch-manipulation tap-scale"
               >
                 {link.label}
               </Link>
             ))}
           </nav>
-          <div className="px-2 py-1.5 border-t border-white/10">
+          <div className="px-2 py-1.5 border-t border-white/10 space-y-1.5">
+            <div className="flex justify-center">
+              <LanguageSwitcher variant="compact" />
+            </div>
             <Button
               asChild
               size="sm"
-              className="w-full min-h-[36px]"
+              className="w-full min-h-[34px]"
               onClick={() => {
                 closeMenu();
                 playTone("click");

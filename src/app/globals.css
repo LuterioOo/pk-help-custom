@@ -14,6 +14,8 @@
 
 /* Site color themes (admin-controlled) */
 html {
+  --mobile-bottom-cta-height: 3.25rem;
+  --mobile-header-height: 2.5rem;
   --theme-accent: #ffd700;
   --theme-accent-2: #ffc107;
   --theme-accent-rgb: 255, 215, 0;

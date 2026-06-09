@@ -46,6 +46,59 @@ interface ApiComponent {
   specs: Record<string, unknown>;
 }
 
+function CategoryChip({
+  cat,
+  isActive,
+  locked,
+  selected,
+  label,
+  onClick,
+  compact,
+}: {
+  cat: ComponentCategory;
+  isActive: boolean;
+  locked: boolean;
+  selected: boolean;
+  label: string;
+  onClick: () => void;
+  compact?: boolean;
+}) {
+  return (
+    <button
+      type="button"
+      data-category={cat}
+      onClick={onClick}
+      aria-disabled={locked}
+      className={cn(
+        "flex-shrink-0 text-left transition-all duration-200 flex items-center gap-1 touch-manipulation",
+        compact
+          ? "px-2 py-1 rounded-md text-[10px] min-h-[28px] whitespace-nowrap"
+          : "xl:w-full px-3 py-3 rounded-xl text-sm min-h-[40px] xl:justify-between xl:gap-2 xl:whitespace-normal",
+        isActive
+          ? "bg-theme-soft text-theme font-medium border border-theme"
+          : locked
+            ? "text-zinc-600 bg-white/[0.01] border border-transparent cursor-not-allowed opacity-60"
+            : "text-zinc-500 hover:text-zinc-200 hover:bg-white/[0.04] border border-transparent cursor-pointer tap-scale",
+        selected && !isActive && !locked && "border-emerald-500/20"
+      )}
+    >
+      <span className="truncate">{label}</span>
+      {locked ? (
+        <Lock className={cn("text-zinc-600 flex-shrink-0", compact ? "w-2.5 h-2.5" : "w-3.5 h-3.5")} />
+      ) : selected ? (
+        <Check className={cn("text-emerald-400 flex-shrink-0", compact ? "w-2.5 h-2.5" : "w-4 h-4")} />
+      ) : (
+        <span
+          className={cn(
+            "rounded-full bg-zinc-700 flex-shrink-0",
+            compact ? "w-1 h-1" : "w-1.5 h-1.5"
+          )}
+        />
+      )}
+    </button>
+  );
+}
+
 export function PcBuilder() {
   const t = useTranslations("builder");
   const locale = useLocale();
@@ -71,17 +124,15 @@ export function PcBuilder() {
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState<SortKey>("price-asc");
   const [brandFilter, setBrandFilter] = useState<string>("all");
-  const categoryNavRef = useRef<HTMLElement>(null);
+  const mobileCategoryNavRef = useRef<HTMLElement>(null);
+  const desktopCategoryNavRef = useRef<HTMLElement>(null);
   const componentsRef = useRef<HTMLDivElement>(null);
   const { playTone } = useUiSound();
 
   const scrollCategoryIntoView = useCallback((cat: ComponentCategory) => {
-    const btn = categoryNavRef.current?.querySelector(`[data-category="${cat}"]`);
+    const root = mobileCategoryNavRef.current ?? desktopCategoryNavRef.current;
+    const btn = root?.querySelector(`[data-category="${cat}"]`);
     btn?.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
-  }, []);
-
-  const scrollComponentsIntoView = useCallback(() => {
-    componentsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   }, []);
 
   const fetchComponents = useCallback(async () => {
@@ -127,6 +178,8 @@ export function PcBuilder() {
 
   const selectedCount = Object.keys(selection).length;
   const displayTotal = useTradeInCoupon && tradeInCoupon > 0 ? totalAfterTradeIn : total;
+  const stepIndex = BUILDER_CATEGORY_ORDER.indexOf(activeCategory);
+  const stepLabel = t(`categories.${activeCategory}`);
 
   const handleCategoryClick = (cat: ComponentCategory) => {
     if (!canAccessCategory(cat, selection)) {
@@ -159,8 +212,7 @@ export function PcBuilder() {
       window.setTimeout(() => {
         setActiveCategory(next);
         scrollCategoryIntoView(next);
-        scrollComponentsIntoView();
-      }, 180);
+      }, 120);
     }
   };
 
@@ -174,99 +226,83 @@ export function PcBuilder() {
     toast.info(t("send"));
   };
 
-  const mobileSummary = (
-    <div className="xl:hidden glass-strong rounded-xl border border-theme p-2.5 flex items-center gap-2">
-      <div className="flex-1 min-w-0">
-        <p className="text-[9px] uppercase tracking-wider text-zinc-500 leading-none">{t("summaryTitle")}</p>
-        <p className="text-xl font-bold neon-text tabular-nums leading-tight truncate">
-          {formatPrice(displayTotal, locale)}
-        </p>
-        <p className="text-[10px] text-zinc-600 truncate">
-          {t("componentsSelected", { count: selectedCount })}
-        </p>
-      </div>
-      <div className="flex flex-col gap-1 shrink-0">
-        <Button size="sm" onClick={scrollToOrder} className="min-h-[38px] px-3 text-xs">
-          {t("orderRequest")}
-          <ArrowRight className="w-3.5 h-3.5" />
-        </Button>
-        <button type="button" onClick={handleSave} className="text-[10px] text-zinc-500 hover:text-zinc-300 py-0.5">
-          {t("save")}
-        </button>
-      </div>
-    </div>
-  );
+  const renderCategoryChips = (compact: boolean) =>
+    BUILDER_CATEGORY_ORDER.map((cat) => (
+      <CategoryChip
+        key={cat}
+        cat={cat}
+        isActive={activeCategory === cat}
+        locked={isCategoryLocked(cat, selection)}
+        selected={Boolean(selection[cat])}
+        label={t(`categories.${cat}`)}
+        onClick={() => handleCategoryClick(cat)}
+        compact={compact}
+      />
+    ));
 
   return (
-    <section id="builder" className="section-pad !pt-2 sm:!pt-4 px-3 sm:px-4 md:px-8 pb-8 xl:pb-8 scroll-mt-24">
+    <section
+      id="builder"
+      className="section-pad !pt-2 sm:!pt-4 px-3 sm:px-4 md:px-8 pb-[calc(1.5rem+env(safe-area-inset-bottom))] xl:pb-8 scroll-mt-24"
+    >
       <div className="max-w-[1400px] mx-auto">
-        <div className="mb-3 sm:mb-6">
-          <h2 className="text-xl sm:text-3xl md:text-4xl font-bold neon-text">{t("title")}</h2>
-          <p className="mt-1 sm:mt-2 text-xs sm:text-base text-zinc-400 max-w-2xl">{t("subtitle")}</p>
+        <div className="mb-2 sm:mb-6">
+          <h2 className="text-lg sm:text-3xl md:text-4xl font-bold neon-text">{t("title")}</h2>
+          <p className="mt-0.5 sm:mt-2 text-[11px] sm:text-base text-zinc-400 max-w-2xl">{t("subtitle")}</p>
         </div>
 
-        <div className="xl:hidden sticky top-[calc(2.35rem+env(safe-area-inset-top))] z-[25] mb-2 space-y-1.5">
-          {mobileSummary}
+        {/* Mobile: single compact sticky bar — summary + stepper */}
+        <div className="xl:hidden sticky top-[calc(var(--mobile-header-height)+env(safe-area-inset-top))] z-[25] -mx-3 px-3 mb-2 pb-1.5 bg-[var(--theme-bg)]/92 backdrop-blur-md border-b border-white/5">
+          <div className="flex items-center gap-2 py-1">
+            <div className="flex-1 min-w-0">
+              <p className="text-base font-bold neon-text tabular-nums leading-tight truncate">
+                {formatPrice(displayTotal, locale)}
+              </p>
+              <p className="text-[10px] text-zinc-500 truncate">
+                {t("stepOf", { current: stepIndex + 1, total: BUILDER_CATEGORY_ORDER.length })} · {stepLabel}
+              </p>
+            </div>
+            <Button size="sm" onClick={scrollToOrder} className="min-h-[34px] px-2.5 text-[11px] shrink-0">
+              {t("orderRequest")}
+              <ArrowRight className="w-3 h-3" />
+            </Button>
+          </div>
+          <nav
+            ref={mobileCategoryNavRef}
+            className="flex gap-0.5 overflow-x-auto scrollbar-hide py-0.5 -mx-0.5 px-0.5"
+            aria-label={t("categoriesLabel")}
+          >
+            {renderCategoryChips(true)}
+          </nav>
         </div>
 
         <div className="grid grid-cols-1 xl:grid-cols-[200px_1fr_320px] gap-2 md:gap-5">
-          {/* Categories — horizontal chips on mobile, sidebar on desktop */}
-          <ScrollReveal className="xl:sticky xl:top-28 xl:self-start order-2 xl:order-1 -mx-1 sm:mx-0">
+          {/* Categories — desktop sidebar only */}
+          <ScrollReveal className="hidden xl:block xl:sticky xl:top-28 xl:self-start order-1">
             <nav
-              ref={categoryNavRef}
-              className="rounded-xl xl:rounded-2xl bg-white/[0.02] border border-white/5 p-1 xl:p-2 flex xl:flex-col gap-0.5 xl:gap-1 overflow-x-auto xl:overflow-x-visible scrollbar-hide sticky top-[calc(7.5rem+env(safe-area-inset-top))] xl:top-28 z-20"
+              ref={desktopCategoryNavRef}
+              className="rounded-2xl bg-white/[0.02] border border-white/5 p-2 flex flex-col gap-1"
             >
-              {BUILDER_CATEGORY_ORDER.map((cat) => {
-                const selected = selection[cat];
-                const isActive = activeCategory === cat;
-                const locked = isCategoryLocked(cat, selection);
-                return (
-                  <button
-                    key={cat}
-                    type="button"
-                    data-category={cat}
-                    onClick={() => handleCategoryClick(cat)}
-                    aria-disabled={locked}
-                    className={cn(
-                      "flex-shrink-0 xl:w-full text-left px-2.5 py-2 xl:px-3 xl:py-3 rounded-lg xl:rounded-xl text-[11px] sm:text-xs xl:text-sm transition-all duration-200 flex items-center gap-1.5 xl:justify-between xl:gap-2 whitespace-nowrap xl:whitespace-normal touch-manipulation min-h-[36px]",
-                      isActive
-                        ? "bg-theme-soft text-theme font-medium border border-theme"
-                        : locked
-                          ? "text-zinc-600 bg-white/[0.01] border border-transparent cursor-not-allowed opacity-70"
-                          : "text-zinc-500 hover:text-zinc-200 hover:bg-white/[0.04] border border-transparent cursor-pointer tap-scale",
-                      selected && !isActive && !locked && "border-emerald-500/20"
-                    )}
-                  >
-                    <span className="truncate">{t(`categories.${cat}`)}</span>
-                    {locked ? (
-                      <Lock className="w-3 h-3 xl:w-3.5 xl:h-3.5 text-zinc-600 flex-shrink-0" />
-                    ) : selected ? (
-                      <Check className="w-3 h-3 xl:w-4 xl:h-4 text-emerald-400 flex-shrink-0" />
-                    ) : (
-                      <span className="w-1 h-1 xl:w-1.5 xl:h-1.5 rounded-full bg-zinc-700 flex-shrink-0" />
-                    )}
-                  </button>
-                );
-              })}
+              {renderCategoryChips(false)}
             </nav>
           </ScrollReveal>
 
           {/* Components — center */}
-          <div ref={componentsRef} className="space-y-4 order-3 xl:order-2 min-w-0 scroll-mt-28">
-            <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
+          <div ref={componentsRef} className="space-y-2.5 sm:space-y-4 order-2 xl:order-2 min-w-0">
+            <div className="flex flex-col sm:flex-row gap-1.5 sm:gap-3">
               <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-600" />
+                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-zinc-600" />
                 <input
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   placeholder={t("search")}
-                  className="w-full pl-10 pr-4 py-2 rounded-xl bg-white/[0.03] border border-white/8 text-sm focus:outline-none focus:ring-2 ring-theme focus:border-theme"
+                  className="w-full pl-8 pr-3 py-1.5 sm:py-2 rounded-lg sm:rounded-xl bg-white/[0.03] border border-white/8 text-xs sm:text-sm focus:outline-none focus:ring-2 ring-theme focus:border-theme"
                 />
               </div>
               <select
                 value={brandFilter}
                 onChange={(e) => setBrandFilter(e.target.value)}
-                className="px-4 py-2.5 rounded-xl bg-white/[0.03] border border-white/8 text-sm text-zinc-300 cursor-pointer"
+                className="px-3 py-1.5 sm:py-2 rounded-lg sm:rounded-xl bg-white/[0.03] border border-white/8 text-xs sm:text-sm text-zinc-300 cursor-pointer"
               >
                 {brands.map((b) => (
                   <option key={b} value={b}>
@@ -277,7 +313,7 @@ export function PcBuilder() {
               <select
                 value={sort}
                 onChange={(e) => setSort(e.target.value as SortKey)}
-                className="px-4 py-2.5 rounded-xl bg-white/[0.03] border border-white/8 text-sm text-zinc-300 cursor-pointer"
+                className="px-3 py-1.5 sm:py-2 rounded-lg sm:rounded-xl bg-white/[0.03] border border-white/8 text-xs sm:text-sm text-zinc-300 cursor-pointer"
               >
                 <option value="price-asc">{t("sortPriceAsc")}</option>
                 <option value="price-desc">{t("sortPriceDesc")}</option>
@@ -286,15 +322,15 @@ export function PcBuilder() {
             </div>
 
             {loading ? (
-              <div className="grid sm:grid-cols-2 gap-4">
+              <div className="grid sm:grid-cols-2 gap-2 sm:gap-4">
                 {[1, 2, 3, 4].map((i) => (
-                  <Skeleton key={i} className="h-44 rounded-2xl" />
+                  <Skeleton key={i} className="h-24 sm:h-44 rounded-xl sm:rounded-2xl" />
                 ))}
               </div>
             ) : filtered.length === 0 ? (
-              <p className="text-center text-zinc-500 py-16">{t("noResults")}</p>
+              <p className="text-center text-zinc-500 py-12 sm:py-16 text-sm">{t("noResults")}</p>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-4">
                 {filtered.map((c) => {
                   const isSelected = selection[c.category]?.id === c.id;
                   return (
@@ -303,15 +339,16 @@ export function PcBuilder() {
                       type="button"
                       onClick={() => handleSelect(c)}
                       className={cn(
-                        "tap-scale text-left p-4 rounded-2xl transition-all touch-manipulation cursor-pointer group",
+                        "tap-scale text-left transition-all touch-manipulation cursor-pointer group",
+                        "p-2.5 sm:p-4 rounded-xl sm:rounded-2xl",
                         "bg-white/[0.02] border hover:border-theme hover:bg-white/[0.04]",
                         isSelected
                           ? "border-theme bg-theme-soft ring-1 ring-theme"
                           : "border-white/8"
                       )}
                     >
-                      <div className="flex gap-4">
-                        <div className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-xl flex-shrink-0 overflow-hidden bg-black/30">
+                      <div className="flex gap-2.5 sm:gap-4 items-center">
+                        <div className="relative w-14 h-14 sm:w-24 sm:h-24 rounded-lg sm:rounded-xl flex-shrink-0 overflow-hidden bg-black/30">
                           <ComponentImage
                             src={c.imageUrl}
                             alt={c.name}
@@ -320,18 +357,32 @@ export function PcBuilder() {
                           />
                           {isSelected ? (
                             <div className="absolute inset-0 bg-theme-soft flex items-center justify-center">
-                              <Check className="w-6 h-6 text-theme" />
+                              <Check className="w-4 h-4 sm:w-6 sm:h-6 text-theme" />
                             </div>
                           ) : null}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <Badge variant="accent" className="mb-1">{c.brand}</Badge>
-                          <p className="font-medium text-sm sm:text-base text-zinc-100 line-clamp-2">{c.name}</p>
-                          <p className="mt-1.5 text-lg font-bold text-theme">
+                          <Badge variant="accent" className="mb-0.5 text-[9px] sm:text-xs px-1.5 py-0">
+                            {c.brand}
+                          </Badge>
+                          <p className="font-medium text-xs sm:text-base text-zinc-100 line-clamp-2 leading-snug">
+                            {c.name}
+                          </p>
+                          <p className="mt-0.5 sm:mt-1.5 text-sm sm:text-lg font-bold text-theme tabular-nums">
                             {formatPrice(c.price, locale)}
                           </p>
                           <SpecsList specs={c.specs} />
                         </div>
+                        <span
+                          className={cn(
+                            "shrink-0 px-2 py-1 rounded-md text-[10px] sm:text-xs font-medium",
+                            isSelected
+                              ? "bg-theme-soft text-theme border border-theme"
+                              : "bg-white/[0.04] text-zinc-400 border border-white/10 group-hover:border-theme/40"
+                          )}
+                        >
+                          {isSelected ? t("selected") : t("select")}
+                        </span>
                       </div>
                     </button>
                   );
@@ -340,8 +391,8 @@ export function PcBuilder() {
             )}
           </div>
 
-          {/* Summary — sticky right on desktop; inline card on mobile (compact bar below) */}
-          <ScrollReveal delay={0.1} className="xl:sticky xl:top-28 xl:self-start order-2 xl:order-3 hidden xl:block">
+          {/* Summary — desktop sidebar */}
+          <ScrollReveal delay={0.1} className="xl:sticky xl:top-28 xl:self-start order-3 hidden xl:block">
             <div className="rounded-2xl bg-white/[0.03] border border-theme p-5 sm:p-6 space-y-5">
               <div>
                 <p className="text-xs uppercase tracking-widest text-zinc-500 mb-1">{t("summaryTitle")}</p>
@@ -357,7 +408,6 @@ export function PcBuilder() {
                 )}
               </div>
 
-              {/* Selected parts list */}
               {selectedCount > 0 ? (
                 <ul className="space-y-2 max-h-40 overflow-y-auto text-sm border-t border-white/5 pt-3">
                   {BUILDER_CATEGORY_ORDER.map((cat) => {
@@ -461,7 +511,6 @@ export function PcBuilder() {
             </div>
           </ScrollReveal>
         </div>
-
       </div>
     </section>
   );
@@ -471,7 +520,7 @@ function SpecsList({ specs }: { specs: Record<string, unknown> }) {
   const entries = Object.entries(specs).slice(0, 3);
   if (!entries.length) return null;
   return (
-    <ul className="mt-2 space-y-0.5">
+    <ul className="mt-1 space-y-0 hidden sm:block">
       {entries.map(([k, v]) => (
         <li key={k} className="text-[10px] text-zinc-600">
           {k}: {String(v)}

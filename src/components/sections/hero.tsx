@@ -15,7 +15,8 @@ import { cn } from "@/lib/utils";
 export function Hero() {
   const t = useTranslations("hero");
   const base = useLocaleBase();
-  const { locked: buildLocked } = useTradeInReady();
+  const { locked: buildLocked, flowActive } = useTradeInReady();
+  const showLockedCta = flowActive && buildLocked;
 
   return (
     <section
@@ -42,62 +43,62 @@ export function Hero() {
             <p className="hero-enter hero-enter-delay-3 mt-4 sm:mt-6 text-[9px] sm:text-[10px] uppercase tracking-[0.2em] text-zinc-600 font-medium">
               {t("ctaGroupLabel")}
             </p>
-            <div className="hero-enter hero-enter-delay-3 mt-2.5 sm:mt-3 flex flex-col sm:flex-row gap-2 sm:gap-3 w-full">
-              {buildLocked ? (
+            <div className="hero-enter hero-enter-delay-3 mt-2 sm:mt-3 flex flex-col sm:flex-row gap-1.5 sm:gap-3 w-full">
+              {showLockedCta ? (
                 <Button
                   asChild
-                  size="lg"
+                  size="md"
                   variant="secondary"
-                  className="tap-scale w-full sm:flex-[1.5] sm:min-w-0 min-h-[48px] sm:min-h-[64px] text-base sm:text-xl font-bold opacity-90 border-dashed border-yellow-500/30"
+                  className="tap-scale w-full sm:flex-[1.5] sm:min-w-0 min-h-[40px] sm:min-h-[64px] text-sm sm:text-xl font-bold opacity-90 border-dashed border-yellow-500/30"
                 >
                   <Link href={`${base}/trade-in`} className="flex items-center justify-center gap-2 sm:gap-3">
                     {t("ctaBuildLocked")}
-                    <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
+                    <ArrowRight className="w-3.5 h-3.5 sm:w-5 sm:h-5" />
                   </Link>
                 </Button>
               ) : (
                 <Button
                   asChild
-                  size="lg"
+                  size="md"
                   className={cn(
-                    "tap-scale w-full sm:flex-[1.5] sm:min-w-0 min-h-[48px] sm:min-h-[64px] text-base sm:text-xl font-bold",
-                    "shadow-[0_8px_32px_rgba(255,215,0,0.35)] hover:shadow-[0_14px_56px_rgba(255,215,0,0.5)]"
+                    "tap-scale w-full sm:flex-[1.5] sm:min-w-0 min-h-[40px] sm:min-h-[64px] text-sm sm:text-xl font-bold",
+                    "shadow-[0_6px_24px_rgba(255,215,0,0.28)] sm:shadow-[0_8px_32px_rgba(255,215,0,0.35)]"
                   )}
                 >
                   <Link href={`${base}#builder`} className="flex items-center justify-center gap-2 sm:gap-3">
                     {t("ctaBuild")}
-                    <ArrowRight className="w-4 h-4 sm:w-6 sm:h-6" />
+                    <ArrowRight className="w-3.5 h-3.5 sm:w-6 sm:h-6" />
                   </Link>
                 </Button>
               )}
 
               <Button
                 asChild
-                size="md"
+                size="sm"
                 variant="secondary"
-                className="tap-scale w-full sm:flex-1 sm:min-h-[60px] sm:text-base sm:rounded-2xl border-yellow-500/35 hover:border-yellow-500/55 bg-yellow-500/8 min-h-[44px]"
+                className="tap-scale w-full sm:flex-1 sm:min-h-[60px] sm:text-base sm:rounded-2xl border-yellow-500/35 hover:border-yellow-500/55 bg-yellow-500/8 min-h-[38px] text-sm"
               >
                 <Link href={`${base}/trade-in`} className="flex items-center justify-center gap-2">
-                  <RefreshCw className="w-4 h-4 text-yellow-400" />
+                  <RefreshCw className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-yellow-400" />
                   {t("ctaTradeInPage")}
                 </Link>
               </Button>
 
               <Button
                 asChild
-                size="md"
+                size="sm"
                 variant="outline"
-                className="tap-scale w-full sm:flex-1 sm:min-h-[60px] sm:text-base sm:rounded-2xl border-white/15 min-h-[44px]"
+                className="tap-scale w-full sm:flex-1 sm:min-h-[60px] sm:text-base sm:rounded-2xl border-white/15 min-h-[38px] text-sm"
               >
                 <Link href={`${base}#contacts`} className="flex items-center justify-center gap-2">
-                  <MessageSquare className="w-4 h-4 text-yellow-400/80" />
+                  <MessageSquare className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-yellow-400/80" />
                   {t("ctaContact")}
                 </Link>
               </Button>
             </div>
 
-            {buildLocked ? (
-              <p className="mt-2 sm:mt-3 text-[11px] sm:text-xs text-zinc-500 max-w-md">{t("ctaBuildLockedHint")}</p>
+            {showLockedCta ? (
+              <p className="mt-1.5 sm:mt-3 text-[10px] sm:text-xs text-zinc-500 max-w-md">{t("ctaBuildLockedHint")}</p>
             ) : null}
 
             <div className="hidden sm:block mt-6 sm:mt-8">

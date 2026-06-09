@@ -14,8 +14,7 @@ export function FloatingLanguageSwitcher() {
 
   return (
     <div
-      className="fixed z-[46] pointer-events-none
-        left-2 bottom-[calc(5rem+env(safe-area-inset-bottom))]
+      className="hidden md:block fixed z-[46] pointer-events-none
         md:left-auto md:bottom-auto md:top-[calc(2.4rem+env(safe-area-inset-top))] md:right-3"
       aria-label="Language"
     >

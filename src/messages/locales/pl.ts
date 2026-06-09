@@ -117,6 +117,8 @@ const pl = {
     applyCoupon: "Zastosuj kupon do zestawu",
     orderRequest: "Złóż zgłoszenie",
     selectPrevious: "Najpierw wybierz poprzedni komponent",
+    stepOf: "Krok {current} z {total}",
+    categoriesLabel: "Kategorie komponentów",
     installments: {
       requested: "Raty",
       from: "od {amount} PLN/mies.",
