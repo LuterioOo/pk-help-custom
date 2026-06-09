@@ -253,8 +253,8 @@ body {
 }
 
 .home-fold > section.section-pad {
-  padding-top: 1.25rem;
-  padding-bottom: 1.25rem;
+  padding-top: 0.875rem;
+  padding-bottom: 0.875rem;
 }
 
 @media (min-width: 768px) {
@@ -270,8 +270,8 @@ body {
 }
 
 .home-fold #hero {
-  padding-bottom: 0.75rem;
-  min-height: calc(100svh - var(--mobile-header-height) - var(--mobile-bottom-cta-height) - env(safe-area-inset-bottom) - 0.5rem);
+  min-height: 0;
+  padding-bottom: 0.5rem;
 }
 
 @media (min-width: 768px) {

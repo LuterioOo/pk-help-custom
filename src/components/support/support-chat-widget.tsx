@@ -9,7 +9,6 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { getFaqReply, type SupportLocale } from "@/lib/support-faq-bot";
 import type { SupportTopic } from "@prisma/client";
-import { useUiSound } from "@/hooks/use-ui-sound";
 
 type ChatLine = { id: string; role: "user" | "bot"; text: string };
 
@@ -49,7 +48,6 @@ export function SupportChatWidget() {
   const [showContacts, setShowContacts] = useState(false);
   const [sending, setSending] = useState(false);
   const [showForm, setShowForm] = useState(false);
-  const { playTone } = useUiSound();
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -61,6 +59,14 @@ export function SupportChatWidget() {
       setLines([{ id: "welcome", role: "bot", text: t("welcome") }]);
     }
   }, [open, lines.length, t]);
+
+  useEffect(() => {
+    if (open) {
+      window.dispatchEvent(new Event("pkhelp-support-open"));
+    } else {
+      window.dispatchEvent(new Event("pkhelp-support-close"));
+    }
+  }, [open]);
 
   useEffect(() => {
     const openChat = () => setOpen(true);
@@ -86,12 +92,11 @@ export function SupportChatWidget() {
   const handleQuickAsk = useCallback((preset?: string) => {
     const text = (preset ?? input).trim();
     if (!text) return;
-    playTone("select");
     setLines((prev) => [...prev, { id: `user-${Date.now()}`, role: "user", text }]);
     if (!preset) setInput("");
     const reply = getFaqReply(text, locale);
     setTimeout(() => addBot(reply), 400);
-  }, [input, locale, addBot, playTone]);
+  }, [input, locale, addBot]);
 
   const handleSubmit = useCallback(async () => {
     const text = input.trim();
@@ -127,7 +132,6 @@ export function SupportChatWidget() {
 
       setLines((prev) => [...prev, { id: `user-${Date.now()}`, role: "user", text }]);
       setInput("");
-      playTone("notification");
       toast.success(t("sentToast"), {
         description: t("sentToastDesc"),
         duration: 5000,
@@ -142,7 +146,7 @@ export function SupportChatWidget() {
     } finally {
       setSending(false);
     }
-  }, [input, topic, name, phone, telegram, locale, pathname, t, addBot, playTone]);
+  }, [input, topic, name, phone, telegram, locale, pathname, t, addBot]);
 
   const onKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
@@ -153,7 +157,7 @@ export function SupportChatWidget() {
   };
 
   const bottomOffset = hasMobileCta
-    ? "bottom-[calc(var(--mobile-bottom-cta-height)+env(safe-area-inset-bottom)+0.75rem)]"
+    ? "bottom-[calc(var(--mobile-bottom-cta-height)+env(safe-area-inset-bottom)+1.25rem)]"
     : "bottom-[max(0.75rem,env(safe-area-inset-bottom))]";
 
   return (
@@ -196,10 +200,7 @@ export function SupportChatWidget() {
               </div>
               <button
                 type="button"
-                onClick={() => {
-                  playTone("switch");
-                  setOpen(false);
-                }}
+                onClick={() => setOpen(false)}
                 className="p-2 rounded-lg text-zinc-400 hover:text-white hover:bg-white/10 transition-colors tap-scale"
                 aria-label={t("close")}
               >
@@ -298,10 +299,7 @@ export function SupportChatWidget() {
               {!showForm ? (
                 <button
                   type="button"
-                  onClick={() => {
-                    playTone("switch");
-                    setShowForm(true);
-                  }}
+                  onClick={() => setShowForm(true)}
                   className="text-[11px] text-yellow-400/90 hover:text-yellow-300 transition-colors"
                 >
                   {t("leaveRequest")}
@@ -338,10 +336,7 @@ export function SupportChatWidget() {
 
       <motion.button
         type="button"
-        onClick={() => {
-          playTone(open ? "switch" : "notification");
-          setOpen((v) => !v);
-        }}
+        onClick={() => setOpen((v) => !v)}
         aria-label={open ? t("close") : t("open")}
         aria-expanded={open}
         whileTap={{ scale: 0.94 }}
@@ -352,8 +347,9 @@ export function SupportChatWidget() {
           "right-3 md:right-5",
           bottomOffset,
           "md:bottom-5",
-          open ? "px-3 py-3" : "px-4 py-3",
-          open && "max-md:opacity-0 max-md:pointer-events-none"
+          open ? "px-3 py-2.5" : "px-3 py-2.5",
+          open && "max-md:opacity-0 max-md:pointer-events-none",
+          hasMobileCta && !open && "max-md:hidden"
         )}
       >
         {open ? (

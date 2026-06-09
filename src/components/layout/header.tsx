@@ -5,12 +5,11 @@ import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useLocaleBase } from "@/hooks/use-locale-base";
 import Link from "next/link";
-import { Menu, Volume2, VolumeX, X, ArrowRight } from "lucide-react";
+import { Menu, X, ArrowRight } from "lucide-react";
 import { Logo } from "@/components/ui/logo";
 import { Button } from "@/components/ui/button";
 import { LanguageSwitcher } from "@/components/layout/language-switcher";
 import { cn } from "@/lib/utils";
-import { useUiSound } from "@/hooks/use-ui-sound";
 
 const navIds = ["home", "shop", "masters", "tradeIn", "builder", "advantages", "reviews", "contact"] as const;
 const hrefMap: Record<(typeof navIds)[number], string> = {
@@ -29,7 +28,6 @@ export function Header() {
   const base = useLocaleBase();
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
-  const { muted, toggleMute, playTone } = useUiSound();
 
   const isHome = pathname === `${base}` || pathname === `${base}/` || pathname === "/";
   const builderHref = isHome ? `${base}#builder` : `${base || "/"}/#builder`;
@@ -87,7 +85,6 @@ export function Header() {
               <Link
                 key={link.id}
                 href={link.href}
-                onClick={() => playTone("click")}
                 className="px-3 xl:px-4 py-2 text-[13px] whitespace-nowrap text-zinc-400 hover:text-white transition-colors rounded-lg hover:bg-white/5 border border-transparent hover:border-[var(--theme-border)]"
               >
                 {link.label}
@@ -96,18 +93,7 @@ export function Header() {
           </nav>
 
           <div className="hidden xl:flex items-center gap-2 lg:gap-3">
-            <button
-              type="button"
-              onClick={() => {
-                toggleMute();
-                playTone("click");
-              }}
-              className="p-2 rounded-lg glass text-zinc-300 cursor-pointer tap-scale"
-              aria-label={muted ? "Unmute UI sounds" : "Mute UI sounds"}
-            >
-              {muted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
-            </button>
-            <Button asChild size="sm" onClick={() => playTone("click")}>
+            <Button asChild size="sm">
               <Link href={builderHref}>{t("builder")}</Link>
             </Button>
           </div>
@@ -115,7 +101,6 @@ export function Header() {
           <div className="flex items-center gap-0.5 xl:hidden ml-auto shrink-0">
             <Link
               href={builderHref}
-              onClick={() => playTone("click")}
               className={cn(
                 "inline-flex items-center gap-0.5 rounded-md px-1.5 py-0.5 text-[9px] font-bold leading-none btn-theme-primary",
                 "tap-scale touch-manipulation min-h-[28px]"
@@ -130,10 +115,7 @@ export function Header() {
                 "flex items-center justify-center min-w-[38px] min-h-[38px] rounded-md tap-scale touch-manipulation",
                 "text-theme bg-theme-soft border border-theme"
               )}
-              onClick={() => {
-                setOpen(!open);
-                playTone("click");
-              }}
+              onClick={() => setOpen(!open)}
               aria-expanded={open}
               aria-label={open ? "Close menu" : "Open menu"}
             >
@@ -155,10 +137,7 @@ export function Header() {
               <Link
                 key={link.id}
                 href={link.href}
-                onClick={() => {
-                  closeMenu();
-                  playTone("click");
-                }}
+                onClick={closeMenu}
                 className="px-3 py-1.5 text-[13px] text-zinc-300 hover:text-white rounded-md hover:bg-white/5 touch-manipulation tap-scale"
               >
                 {link.label}
@@ -169,15 +148,7 @@ export function Header() {
             <div className="flex justify-center">
               <LanguageSwitcher variant="compact" />
             </div>
-            <Button
-              asChild
-              size="sm"
-              className="w-full min-h-[34px]"
-              onClick={() => {
-                closeMenu();
-                playTone("click");
-              }}
-            >
+            <Button asChild size="sm" className="w-full min-h-[34px]" onClick={closeMenu}>
               <Link href={builderHref}>{t("builder")}</Link>
             </Button>
           </div>

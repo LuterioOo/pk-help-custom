@@ -123,7 +123,7 @@ export function BuildsForSale({ initialItems, featured = false }: Props) {
             return (
               <ScrollReveal key={item.id} delay={Math.min(i * 0.05, 0.2)}>
                 <article className="relative overflow-hidden rounded-xl sm:rounded-2xl bg-white/[0.02] border border-white/8 transition-transform duration-300 hover:-translate-y-1 h-full flex flex-col card-hover-lift">
-                  <div className="relative aspect-[16/10]">
+                  <div className="relative aspect-[16/10] max-h-[148px] sm:max-h-none">
                     <ShowcaseImage
                       src={item.imageUrl}
                       alt={displayTitle ?? "PC"}
@@ -158,14 +158,14 @@ export function BuildsForSale({ initialItems, featured = false }: Props) {
                     <div className="flex flex-col gap-1 sm:gap-2 mt-auto">
                       <Button
                         size="sm"
-                        className="w-full min-h-[36px] sm:min-h-[44px] text-xs sm:text-sm shadow-[0_4px_16px_rgba(255,215,0,0.15)]"
+                        className="w-full min-h-[32px] sm:min-h-[44px] text-[11px] sm:text-sm shadow-[0_4px_16px_rgba(255,215,0,0.15)]"
                         isLoading={loadingId === item.id}
                         onClick={() => void customizeBuild(item)}
                       >
-                        <Settings2 className="w-3.5 h-3.5 mr-1" />
+                        <Settings2 className="w-3 h-3 sm:w-3.5 sm:h-3.5 mr-1" />
                         {t("customize")}
                       </Button>
-                      <Button asChild variant="outline" size="sm" className="w-full min-h-[34px] sm:min-h-[40px] text-xs sm:text-sm">
+                      <Button asChild variant="outline" size="sm" className="w-full min-h-[30px] sm:min-h-[40px] text-[11px] sm:text-sm">
                         <Link href={`${base}#order`} className="flex items-center justify-center gap-1.5">
                           {t("cta")}
                           <ArrowRight className="w-3.5 h-3.5" />

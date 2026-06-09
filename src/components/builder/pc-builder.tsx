@@ -290,6 +290,16 @@ export function PcBuilder() {
           >
             {renderCategoryChips(true)}
           </nav>
+          {missingCategories.length > 0 ? (
+            <div className="mt-1 pt-1 border-t border-white/5">
+              <p className="text-[9px] font-medium text-zinc-500 uppercase tracking-wider mb-0.5">
+                {t("missingParts")}
+              </p>
+              <p className="text-[10px] text-amber-300/90 line-clamp-2">
+                {missingCategories.map((cat) => t(`categories.${cat}`)).join(" · ")}
+              </p>
+            </div>
+          ) : null}
         </div>
 
         <div className="grid grid-cols-1 xl:grid-cols-[200px_1fr_320px] gap-2 md:gap-5">

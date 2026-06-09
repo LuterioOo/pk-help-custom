@@ -2,7 +2,6 @@
 
 import { useTranslations } from "next-intl";
 import { useLocaleBase } from "@/hooks/use-locale-base";
-import { useTradeInReady } from "@/hooks/use-trade-in-ready";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -15,13 +14,11 @@ import { cn } from "@/lib/utils";
 export function Hero() {
   const t = useTranslations("hero");
   const base = useLocaleBase();
-  const { locked: buildLocked, flowActive } = useTradeInReady();
-  const showLockedCta = flowActive && buildLocked;
 
   return (
     <section
       id="hero"
-      className="relative pt-[calc(2.5rem+env(safe-area-inset-top))] sm:pt-[5rem] md:pt-[6.25rem] pb-3 sm:pb-10 px-4 sm:px-4 md:px-8 min-h-0 sm:min-h-[min(88vh,820px)] md:min-h-[min(92vh,880px)] flex flex-col justify-start sm:justify-center"
+      className="relative pt-[calc(2.25rem+env(safe-area-inset-top))] sm:pt-[5rem] md:pt-[6.25rem] pb-2 sm:pb-10 px-4 sm:px-4 md:px-8 min-h-0 sm:min-h-[min(88vh,820px)] md:min-h-[min(92vh,880px)] flex flex-col justify-start sm:justify-center"
     >
       <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_78%_28%,rgba(99,102,241,0.12),transparent_45%),radial-gradient(circle_at_15%_12%,rgba(255,215,0,0.14),transparent_38%)]" />
       <div className="max-w-7xl mx-auto w-full relative z-10">
@@ -44,33 +41,19 @@ export function Hero() {
               {t("ctaGroupLabel")}
             </p>
             <div className="hero-enter hero-enter-delay-3 mt-2 sm:mt-3 flex flex-col sm:flex-row gap-1.5 sm:gap-3 w-full">
-              {showLockedCta ? (
-                <Button
-                  asChild
-                  size="md"
-                  variant="secondary"
-                  className="tap-scale w-full sm:flex-[1.5] sm:min-w-0 min-h-[40px] sm:min-h-[64px] text-sm sm:text-xl font-bold opacity-90 border-dashed border-yellow-500/30"
-                >
-                  <Link href={`${base}/trade-in`} className="flex items-center justify-center gap-2 sm:gap-3">
-                    {t("ctaBuildLocked")}
-                    <ArrowRight className="w-3.5 h-3.5 sm:w-5 sm:h-5" />
-                  </Link>
-                </Button>
-              ) : (
-                <Button
-                  asChild
-                  size="md"
-                  className={cn(
-                    "tap-scale w-full sm:flex-[1.5] sm:min-w-0 min-h-[40px] sm:min-h-[64px] text-sm sm:text-xl font-bold",
-                    "shadow-[0_6px_24px_rgba(255,215,0,0.28)] sm:shadow-[0_8px_32px_rgba(255,215,0,0.35)]"
-                  )}
-                >
-                  <Link href={`${base}#builder`} className="flex items-center justify-center gap-2 sm:gap-3">
-                    {t("ctaBuild")}
-                    <ArrowRight className="w-3.5 h-3.5 sm:w-6 sm:h-6" />
-                  </Link>
-                </Button>
-              )}
+              <Button
+                asChild
+                size="md"
+                className={cn(
+                  "tap-scale w-full sm:flex-[1.5] sm:min-w-0 min-h-[40px] sm:min-h-[64px] text-sm sm:text-xl font-bold",
+                  "shadow-[0_6px_24px_rgba(255,215,0,0.28)] sm:shadow-[0_8px_32px_rgba(255,215,0,0.35)]"
+                )}
+              >
+                <Link href={`${base}#builder`} className="flex items-center justify-center gap-2 sm:gap-3">
+                  {t("ctaBuild")}
+                  <ArrowRight className="w-3.5 h-3.5 sm:w-6 sm:h-6" />
+                </Link>
+              </Button>
 
               <Button
                 asChild
@@ -96,17 +79,13 @@ export function Hero() {
               </Button>
             </div>
 
-            {showLockedCta ? (
-              <p className="mt-1.5 sm:mt-3 text-[10px] sm:text-xs text-zinc-500 max-w-md">{t("ctaBuildLockedHint")}</p>
-            ) : null}
-
-            <div className="mt-4 sm:mt-8">
+            <div className="mt-3 sm:mt-8">
               <HeroAdvantagesStrip />
             </div>
           </div>
 
           <ScrollReveal delay={0.1} direction="right" className="relative flex justify-center lg:justify-end mt-3 sm:mt-0">
-            <div className="relative w-full max-w-[220px] sm:max-w-md lg:max-w-none aspect-[4/3] max-h-[140px] sm:max-h-[280px] lg:max-h-[360px] mx-auto lg:mx-0 overflow-hidden rounded-xl sm:rounded-2xl">
+            <div className="relative w-full max-w-[200px] sm:max-w-md lg:max-w-none aspect-[4/3] max-h-[112px] sm:max-h-[280px] lg:max-h-[360px] mx-auto lg:mx-0 overflow-hidden rounded-xl sm:rounded-2xl">
               <HeroVisual />
             </div>
           </ScrollReveal>

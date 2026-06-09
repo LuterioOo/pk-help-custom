@@ -29,7 +29,7 @@ export function LocaleShell({ children }: { children: React.ReactNode }) {
       <DeferredChrome />
       <Header />
       <FloatingLanguageSwitcher />
-      <main className="relative z-10 min-h-screen pb-[calc(var(--mobile-bottom-cta-height)+env(safe-area-inset-bottom)+1.5rem)] md:pb-0">
+      <main className="relative z-10 min-h-screen pb-[calc(var(--mobile-bottom-cta-height)+env(safe-area-inset-bottom)+24px)] md:pb-0">
         {children}
       </main>
       <MobileStickyCta />
