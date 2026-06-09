@@ -8,92 +8,88 @@ type FaqEntry = {
 const FAQ: FaqEntry[] = [
   {
     keywords: [
-      "собрать", "сборк", "конструктор", "builder", "pc build", "комплектующ",
-      "zbudowa", "konfigurator", "skład", "зібрати", "конструктор",
+      "собрать",
+      "сборк",
+      "конструктор",
+      "комплект",
+      "подобрать",
+      "builder",
+      "pc build",
+      "zbudowa",
+      "konfigurator",
+      "sklad",
+      "skład",
+      "зібрати",
+      "збірк",
     ],
     answer: {
-      ru: "Откройте конструктор на главной — выберите комплектующие, мы проверим совместимость и покажем цену. Затем оставьте заявку.",
-      uk: "Відкрийте конструктор на головній — оберіть комплектуючі, ми перевіримо сумісність і покажемо ціну. Потім залиште заявку.",
-      en: "Open the builder on the homepage — pick parts, we check compatibility and show the price. Then submit your request.",
-      pl: "Otwórz konfigurator na stronie głównej — wybierz podzespoły, sprawdzimy kompatybilność i cenę. Potem złóż zamówienie.",
+      ru: "Лучший путь: нажмите «Собрать ПК», выберите комплектующие в конструкторе, а сайт проверит совместимость и покажет итог. Если не уверены в деталях, напишите бюджет и задачи, я подскажу с чего начать.",
+      uk: "Найкращий шлях: натисніть «Зібрати ПК», оберіть комплектуючі в конструкторі, а сайт перевірить сумісність і покаже підсумок. Якщо не впевнені, напишіть бюджет і задачі.",
+      en: "Best path: open the builder, pick parts, and the site will check compatibility and show the total. If you are unsure, send your budget and tasks and I will guide you.",
+      pl: "Najlepiej: otwórz konfigurator, wybierz podzespoły, a strona sprawdzi kompatybilność i pokaże cenę. Jeśli nie wiesz od czego zacząć, podaj budżet i zastosowanie.",
     },
   },
   {
-    keywords: [
-      "trade-in", "trade in", "трейд", "обмен", "купон", "старое", "б/у",
-      "wymian", "kupon", "обмін",
-    ],
+    keywords: ["trade-in", "trade in", "трейд", "обмен", "купон", "старое", "б/у", "wymian", "kupon", "обмін"],
     answer: {
-      ru: "Trade-In — сдайте старое железо, получите купон на скидку при заказе новой сборки. Оценка за пару минут на странице Trade-In.",
-      uk: "Trade-In — здайте старе залізо, отримайте купон на знижку при замовленні нової збірки. Оцінка за кілька хвилин на сторінці Trade-In.",
-      en: "Trade-In lets you trade old hardware for a discount coupon on a new build. Get an estimate in minutes on the Trade-In page.",
-      pl: "Trade-In — oddaj stare podzespoły, otrzymaj kupon rabatowy na nowy PC. Wycena w kilka minut na stronie Trade-In.",
+      ru: "Trade-In работает так: вы описываете старое железо, получаете предварительный купон, а финальную сумму подтверждаем после диагностики. Купон можно применить к новой сборке.",
+      uk: "Trade-In працює так: ви описуєте старе залізо, отримуєте попередній купон, а фінальну суму підтверджуємо після діагностики. Купон можна застосувати до нової збірки.",
+      en: "Trade-In works like this: describe your old hardware, get a preliminary coupon, then we confirm the final value after diagnostics. The coupon can be used for a new build.",
+      pl: "Trade-In działa tak: opisujesz stary sprzęt, dostajesz wstępny kupon, a finalną kwotę potwierdzamy po diagnostyce. Kupon można użyć przy nowym PC.",
     },
   },
   {
-    keywords: [
-      "рассроч", "installment", "кредит", "платеж", "месяц", "rata", "raty",
-      "розстроч", "splata",
-    ],
+    keywords: ["рассроч", "кредит", "платеж", "месяц", "installment", "rata", "raty", "розстроч", "splata", "spłata"],
     answer: {
-      ru: "Рассрочка доступна на готовые сборки и заказы — до 12 месяцев. Сумма и условия показываются при оформлении.",
-      uk: "Розстрочка доступна на готові збірки та замовлення — до 12 місяців. Сума та умови показуються при оформленні.",
-      en: "Installments are available on ready builds and orders — up to 12 months. Terms are shown at checkout.",
-      pl: "Raty dostępne na gotowe zestawy i zamówienia — do 12 miesięcy. Warunki widoczne przy składaniu zamówienia.",
+      ru: "Рассрочку считаем ориентировочно на 12 месяцев прямо в карточках и конструкторе. Точные условия менеджер подтвердит при оформлении заявки.",
+      uk: "Розстрочку рахуємо орієнтовно на 12 місяців у картках і конструкторі. Точні умови менеджер підтвердить під час оформлення заявки.",
+      en: "Installments are estimated for 12 months in cards and the builder. Exact terms are confirmed by a manager when you submit the request.",
+      pl: "Raty liczymy orientacyjnie na 12 miesięcy w kartach i konfiguratorze. Dokładne warunki potwierdzi menedżer przy zgłoszeniu.",
     },
   },
   {
-    keywords: [
-      "конструктор", "builder", "где собрать", "gdzie", "де конструктор", "where",
-    ],
+    keywords: ["готов", "в продаж", "налич", "shop", "ready", "for sale", "sklep", "gotow", "готовий"],
     answer: {
-      ru: "Конструктор — на главной странице, кнопка «Собрать ПК» или раздел #builder.",
-      uk: "Конструктор — на головній сторінці, кнопка «Зібрати ПК» або розділ #builder.",
-      en: "The builder is on the homepage — «Build PC» button or the #builder section.",
-      pl: "Konfigurator jest na stronie głównej — przycisk «Zbuduj PC» lub sekcja #builder.",
+      ru: "Готовые ПК смотрите в блоке «В продажу». Их можно сразу спросить у менеджера или загрузить как пресет в конструктор и поменять детали под себя.",
+      uk: "Готові ПК дивіться в блоці «В продажу». Їх можна одразу запитати в менеджера або завантажити як пресет у конструктор і змінити деталі.",
+      en: "Ready PCs are in the “For sale” section. You can ask about one directly or load it into the builder and customize parts.",
+      pl: "Gotowe PC są w sekcji “W sprzedaży”. Możesz zapytać o wybrany zestaw albo wczytać go do konfiguratora i zmienić części.",
     },
   },
   {
-    keywords: [
-      "заявк", "оставить", "связ", "контакт", "менеджер", "zamów", "order", "замов",
-      "contact", "kontakt",
-    ],
+    keywords: ["доставка", "европа", "польша", "город", "delivery", "ship", "wysyl", "wysył", "dostaw", "доставка"],
     answer: {
-      ru: "Оставьте заявку в конструкторе или в форме заказа внизу страницы. Укажите имя и телефон — менеджер свяжется с вами.",
-      uk: "Залиште заявку в конструкторі або у формі замовлення внизу сторінки. Вкажіть ім'я та телефон — менеджер зв'яжеться з вами.",
-      en: "Submit a request in the builder or the order form at the bottom. Add your name and phone — a manager will contact you.",
-      pl: "Złóż zamówienie w konfiguratorze lub w formularzu na dole strony. Podaj imię i telefon — skontaktujemy się.",
+      ru: "Доставка доступна по Польше и Европе. Напишите город и желаемую сборку, менеджер уточнит срок, упаковку и стоимость доставки.",
+      uk: "Доставка доступна Польщею та Європою. Напишіть місто й бажану збірку, менеджер уточнить термін, пакування та вартість.",
+      en: "Delivery is available across Poland and Europe. Send your city and desired build, and a manager will confirm timing, packaging, and cost.",
+      pl: "Dostawa dostępna w Polsce i Europie. Podaj miasto oraz wybrany zestaw, a menedżer potwierdzi termin, pakowanie i koszt.",
     },
   },
   {
-    keywords: [
-      "готов", "в продаж", "shop", "sklep", "готовий", "ready", "for sale",
-    ],
+    keywords: ["гарант", "сервис", "ремонт", "service", "warranty", "napraw", "serwis", "сервіс"],
     answer: {
-      ru: "Готовые сборки — в разделе «В продаже» на главной. Можно настроить комплектующие и оформить заказ.",
-      uk: "Готові збірки — у розділі «В продажу» на головній. Можна налаштувати комплектуючі та оформити замовлення.",
-      en: "Ready builds are in the «For sale» section on the homepage. You can customize parts and place an order.",
-      pl: "Gotowe zestawy — w sekcji «W sprzedaży» na stronie głównej. Możesz dostosować podzespoły i zamówić.",
+      ru: "По гарантии и сервису оставьте сообщение с темой «Сервис». Лучше сразу добавить номер заказа, модель ПК и что именно происходит.",
+      uk: "Щодо гарантії та сервісу залиште повідомлення з темою «Сервіс». Краще одразу додати номер замовлення, модель ПК і що саме відбувається.",
+      en: "For warranty or service, leave a message with the “Service” topic. Add the order number, PC model, and what is happening.",
+      pl: "W sprawach gwarancji i serwisu zostaw wiadomość z tematem “Serwis”. Dodaj numer zamówienia, model PC i opis problemu.",
     },
   },
   {
-    keywords: [
-      "сервис", "ремонт", "гарант", "service", "warranty", "napraw", "сервіс",
-    ],
+    keywords: ["заявк", "остав", "контакт", "менеджер", "связ", "order", "contact", "kontakt", "zamow", "zamów", "замов"],
     answer: {
-      ru: "По вопросам сервиса и гарантии оставьте сообщение здесь с темой «Сервис» — мы передадим специалисту.",
-      uk: "З питань сервісу та гарантії залиште повідомлення тут з темою «Сервіс» — ми передамо спеціалісту.",
-      en: "For service and warranty questions, leave a message here with topic «Service» — we'll forward it to our team.",
-      pl: "W sprawach serwisu i gwarancji zostaw wiadomość z tematem «Serwis» — przekażemy specjaliście.",
+      ru: "Чтобы менеджер быстро ответил, оставьте сообщение, имя и телефон или Telegram. Если уже выбрали сборку, укажите бюджет и задачи: игры, работа, монтаж, стриминг.",
+      uk: "Щоб менеджер швидко відповів, залиште повідомлення, ім'я та телефон або Telegram. Якщо вже обрали збірку, вкажіть бюджет і задачі.",
+      en: "For a quick manager reply, leave your message, name, and phone or Telegram. If you already chose a build, add budget and tasks.",
+      pl: "Aby menedżer szybko odpisał, zostaw wiadomość, imię oraz telefon lub Telegram. Jeśli masz wybrany zestaw, dodaj budżet i zastosowanie.",
     },
   },
 ];
 
 const FALLBACK: Record<SupportLocale, string> = {
-  ru: "Оставьте контакты — менеджер свяжется с вами.",
-  uk: "Залиште контакти — менеджер зв'яжеться з вами.",
-  en: "Leave your contacts — a manager will get back to you.",
-  pl: "Zostaw kontakt — menedżer się odezwie.",
+  ru: "Я могу подсказать по сборке, Trade-In, рассрочке, доставке и сервису. Напишите задачу и бюджет, либо оставьте контакты, чтобы менеджер ответил точнее.",
+  uk: "Я можу підказати щодо збірки, Trade-In, розстрочки, доставки й сервісу. Напишіть задачу та бюджет або залиште контакти.",
+  en: "I can help with builds, Trade-In, installments, delivery, and service. Send your task and budget, or leave contacts for a manager.",
+  pl: "Pomogę z konfiguracją, Trade-In, ratami, dostawą i serwisem. Podaj zastosowanie i budżet albo zostaw kontakt do menedżera.",
 };
 
 export function getFaqReply(text: string, locale: SupportLocale): string {

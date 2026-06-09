@@ -81,7 +81,7 @@ export default async function HomePage({ params }: Props) {
   ]);
 
   return (
-    <>
+    <div className="home-fold">
       <Hero />
       <BuildsForSale initialItems={showcase.forSale} />
       <MasterBuilds initialMasters={masters} />
@@ -91,6 +91,6 @@ export default async function HomePage({ params }: Props) {
       <Reviews initialReviews={reviews} />
       <OrderForm />
       <Contacts />
-    </>
+    </div>
   );
 }

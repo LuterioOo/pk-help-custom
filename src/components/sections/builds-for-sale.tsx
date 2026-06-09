@@ -22,6 +22,26 @@ type Props = {
   featured?: boolean;
 };
 
+const genericSaleTitles: Record<string, string> = {
+  ru: "Готовая сборка",
+  uk: "Готова збірка",
+  en: "Ready PC",
+  pl: "Gotowy PC",
+};
+
+const genericSaleCaptions: Record<string, string> = {
+  ru: "ПК готов к заказу",
+  uk: "ПК готовий до замовлення",
+  en: "Ready to order",
+  pl: "Gotowy do zamówienia",
+};
+
+function isGenericAdminTitle(value: string | null) {
+  if (!value) return true;
+  const normalized = value.trim().toLowerCase();
+  return normalized === "pc" || normalized === "gotowy pc" || normalized.includes("sprzeda");
+}
+
 export function BuildsForSale({ initialItems, featured = false }: Props) {
   const t = useTranslations("forSale");
   const locale = useLocale();
@@ -91,6 +111,14 @@ export function BuildsForSale({ initialItems, featured = false }: Props) {
           {items.map((item, i) => {
             const monthly =
               item.pricePLN != null && item.pricePLN > 0 ? Math.max(1, Math.round(item.pricePLN / 12)) : null;
+            const displayTitle = isGenericAdminTitle(item.title)
+              ? `${genericSaleTitles[locale] ?? genericSaleTitles.ru} #${i + 1}`
+              : item.title;
+            const displayCaption = item.showText
+              ? isGenericAdminTitle(item.caption)
+                ? genericSaleCaptions[locale] || genericSaleCaptions.ru
+                : item.caption
+              : null;
 
             return (
               <ScrollReveal key={item.id} delay={Math.min(i * 0.05, 0.2)}>
@@ -98,7 +126,7 @@ export function BuildsForSale({ initialItems, featured = false }: Props) {
                   <div className="relative aspect-[16/10]">
                     <ShowcaseImage
                       src={item.imageUrl}
-                      alt={item.title ?? "PC"}
+                      alt={displayTitle ?? "PC"}
                       sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                     />
                     <Badge variant="accent" className="absolute top-2 left-2 text-[9px] sm:text-xs font-bold uppercase px-1.5 py-0">
@@ -111,11 +139,11 @@ export function BuildsForSale({ initialItems, featured = false }: Props) {
                     ) : null}
                   </div>
                   <div className="p-2.5 sm:p-5 flex flex-col flex-1 gap-1.5 sm:gap-3">
-                    {item.title ? (
-                      <h3 className="font-semibold text-xs sm:text-lg text-zinc-100 line-clamp-1">{item.title}</h3>
+                    {displayTitle ? (
+                      <h3 className="font-semibold text-xs sm:text-lg text-zinc-100 line-clamp-1">{displayTitle}</h3>
                     ) : null}
-                    {item.showText && item.caption ? (
-                      <p className="text-[11px] sm:text-sm text-zinc-500 line-clamp-2 flex-1">{item.caption}</p>
+                    {displayCaption ? (
+                      <p className="text-[11px] sm:text-sm text-zinc-500 line-clamp-2 flex-1">{displayCaption}</p>
                     ) : null}
                     <div className="flex flex-wrap gap-1.5">
                       {monthly != null ? (

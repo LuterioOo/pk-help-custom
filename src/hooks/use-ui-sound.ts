@@ -5,13 +5,13 @@ import { useCallback, useEffect, useState } from "react";
 const STORAGE_KEY = "pkhelp-ui-sound-mute";
 
 export function useUiSound() {
-  const [muted, setMuted] = useState(true);
+  const [muted, setMuted] = useState(false);
   const [unlocked, setUnlocked] = useState(false);
 
   useEffect(() => {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw === "0") setMuted(false);
+      setMuted(raw === "1");
     } catch {
       /* ignore */
     }
@@ -52,46 +52,51 @@ export function useUiSound() {
         const destination = ctx.destination;
 
         if (type === "hover") {
-          // Subtle, quiet high-frequency tick
+          // Subtle glassy hover tick.
           const osc = ctx.createOscillator();
           const gain = ctx.createGain();
           osc.type = "sine";
-          osc.frequency.setValueAtTime(1600, now);
-          osc.frequency.exponentialRampToValueAtTime(1100, now + 0.02);
+          osc.frequency.setValueAtTime(1240, now);
+          osc.frequency.exponentialRampToValueAtTime(980, now + 0.025);
           gain.gain.setValueAtTime(0.0001, now);
-          gain.gain.linearRampToValueAtTime(0.015, now + 0.003);
-          gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.025);
+          gain.gain.linearRampToValueAtTime(0.01, now + 0.004);
+          gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.035);
           osc.connect(gain);
           gain.connect(destination);
           osc.start(now);
-          osc.stop(now + 0.03);
+          osc.stop(now + 0.04);
           setTimeout(() => void ctx.close().catch(() => {}), 100);
         } else if (type === "click") {
-          // Short, solid triangle click
-          const osc = ctx.createOscillator();
-          const gain = ctx.createGain();
-          osc.type = "triangle";
-          osc.frequency.setValueAtTime(580, now);
-          osc.frequency.exponentialRampToValueAtTime(140, now + 0.06);
-          gain.gain.setValueAtTime(0.0001, now);
-          gain.gain.linearRampToValueAtTime(0.12, now + 0.005);
-          gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.07);
-          osc.connect(gain);
-          gain.connect(destination);
-          osc.start(now);
-          osc.stop(now + 0.08);
+          // Soft mechanical click: low tap plus a tiny bright snap.
+          [
+            { freq: 420, to: 170, gain: 0.055, dur: 0.055, type: "triangle" as OscillatorType },
+            { freq: 1320, to: 940, gain: 0.014, dur: 0.022, type: "sine" as OscillatorType },
+          ].forEach((part) => {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = part.type;
+            osc.frequency.setValueAtTime(part.freq, now);
+            osc.frequency.exponentialRampToValueAtTime(part.to, now + part.dur);
+            gain.gain.setValueAtTime(0.0001, now);
+            gain.gain.linearRampToValueAtTime(part.gain, now + 0.004);
+            gain.gain.exponentialRampToValueAtTime(0.0001, now + part.dur);
+            osc.connect(gain);
+            gain.connect(destination);
+            osc.start(now);
+            osc.stop(now + part.dur + 0.01);
+          });
           setTimeout(() => void ctx.close().catch(() => {}), 150);
         } else if (type === "select") {
-          // Satisfying physical ratchet: 3 rapid ticks spaced in time
-          const times = [0, 0.025, 0.05];
-          const freqs = [820, 700, 580];
+          // Three tiny ratchet ticks for choosing parts.
+          const times = [0, 0.022, 0.045];
+          const freqs = [760, 640, 520];
           times.forEach((delay, idx) => {
             const osc = ctx.createOscillator();
             const gain = ctx.createGain();
             osc.type = "sine";
             osc.frequency.setValueAtTime(freqs[idx], now + delay);
             gain.gain.setValueAtTime(0.0001, now + delay);
-            gain.gain.linearRampToValueAtTime(0.05, now + delay + 0.002);
+            gain.gain.linearRampToValueAtTime(0.032, now + delay + 0.002);
             gain.gain.exponentialRampToValueAtTime(0.0001, now + delay + 0.015);
             osc.connect(gain);
             gain.connect(destination);
@@ -100,14 +105,14 @@ export function useUiSound() {
           });
           setTimeout(() => void ctx.close().catch(() => {}), 200);
         } else if (type === "switch") {
-          // Quick sliding transition tone
+          // Quick warm transition tone.
           const osc = ctx.createOscillator();
           const gain = ctx.createGain();
           osc.type = "triangle";
-          osc.frequency.setValueAtTime(360, now);
-          osc.frequency.exponentialRampToValueAtTime(220, now + 0.12);
+          osc.frequency.setValueAtTime(520, now);
+          osc.frequency.exponentialRampToValueAtTime(260, now + 0.11);
           gain.gain.setValueAtTime(0.0001, now);
-          gain.gain.linearRampToValueAtTime(0.08, now + 0.01);
+          gain.gain.linearRampToValueAtTime(0.045, now + 0.01);
           gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.13);
           osc.connect(gain);
           gain.connect(destination);
@@ -115,7 +120,7 @@ export function useUiSound() {
           osc.stop(now + 0.14);
           setTimeout(() => void ctx.close().catch(() => {}), 250);
         } else if (type === "notification") {
-          // Futuristic two-tone rising chime
+          // Calm two-tone success chime.
           const osc1 = ctx.createOscillator();
           const osc2 = ctx.createOscillator();
           const gain1 = ctx.createGain();
@@ -124,7 +129,7 @@ export function useUiSound() {
           osc1.type = "sine";
           osc1.frequency.setValueAtTime(523.25, now); // C5
           gain1.gain.setValueAtTime(0.0001, now);
-          gain1.gain.linearRampToValueAtTime(0.1, now + 0.01);
+          gain1.gain.linearRampToValueAtTime(0.055, now + 0.01);
           gain1.gain.exponentialRampToValueAtTime(0.0001, now + 0.15);
           osc1.connect(gain1);
           gain1.connect(destination);
@@ -132,7 +137,7 @@ export function useUiSound() {
           osc2.type = "sine";
           osc2.frequency.setValueAtTime(783.99, now + 0.08); // G5
           gain2.gain.setValueAtTime(0.0001, now + 0.08);
-          gain2.gain.linearRampToValueAtTime(0.1, now + 0.09);
+          gain2.gain.linearRampToValueAtTime(0.06, now + 0.09);
           gain2.gain.exponentialRampToValueAtTime(0.0001, now + 0.3);
           osc2.connect(gain2);
           gain2.connect(destination);

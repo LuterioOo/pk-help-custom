@@ -2,13 +2,14 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { MessageCircle, X, Send, ChevronDown } from "lucide-react";
+import { MessageCircle, X, Send, ChevronDown, Sparkles } from "lucide-react";
 import { useTranslations, useLocale } from "next-intl";
 import { usePathname } from "next/navigation";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { getFaqReply, type SupportLocale } from "@/lib/support-faq-bot";
 import type { SupportTopic } from "@prisma/client";
+import { useUiSound } from "@/hooks/use-ui-sound";
 
 type ChatLine = { id: string; role: "user" | "bot"; text: string };
 
@@ -20,6 +21,13 @@ const TOPICS: SupportTopic[] = [
   "SERVICE",
   "OTHER",
 ];
+
+const QUICK_PROMPTS: Record<SupportLocale, string[]> = {
+  ru: ["Подобрать ПК", "Как работает Trade-In?", "Рассрочка", "Доставка"],
+  uk: ["Підібрати ПК", "Як працює Trade-In?", "Розстрочка", "Доставка"],
+  en: ["Pick a PC", "How Trade-In works?", "Installments", "Delivery"],
+  pl: ["Dobierz PC", "Jak działa Trade-In?", "Raty", "Dostawa"],
+};
 
 function isHomeWithCta(pathname: string) {
   const base = pathname.replace(/\/$/, "") || "/";
@@ -41,6 +49,7 @@ export function SupportChatWidget() {
   const [showContacts, setShowContacts] = useState(false);
   const [sending, setSending] = useState(false);
   const [showForm, setShowForm] = useState(false);
+  const { playTone } = useUiSound();
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -68,14 +77,15 @@ export function SupportChatWidget() {
     setLines((prev) => [...prev, { id: `bot-${Date.now()}`, role: "bot", text }]);
   }, []);
 
-  const handleQuickAsk = useCallback(() => {
-    const text = input.trim();
+  const handleQuickAsk = useCallback((preset?: string) => {
+    const text = (preset ?? input).trim();
     if (!text) return;
+    playTone("select");
     setLines((prev) => [...prev, { id: `user-${Date.now()}`, role: "user", text }]);
-    setInput("");
+    if (!preset) setInput("");
     const reply = getFaqReply(text, locale);
     setTimeout(() => addBot(reply), 400);
-  }, [input, locale, addBot]);
+  }, [input, locale, addBot, playTone]);
 
   const handleSubmit = useCallback(async () => {
     const text = input.trim();
@@ -111,6 +121,7 @@ export function SupportChatWidget() {
 
       setLines((prev) => [...prev, { id: `user-${Date.now()}`, role: "user", text }]);
       setInput("");
+      playTone("notification");
       toast.success(t("sentToast"), {
         description: t("sentToastDesc"),
         duration: 5000,
@@ -125,7 +136,7 @@ export function SupportChatWidget() {
     } finally {
       setSending(false);
     }
-  }, [input, topic, name, phone, telegram, locale, pathname, t, addBot]);
+  }, [input, topic, name, phone, telegram, locale, pathname, t, addBot, playTone]);
 
   const onKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
@@ -167,7 +178,7 @@ export function SupportChatWidget() {
               "fixed z-[48] flex flex-col overflow-hidden pointer-events-auto",
               "glass-strong border border-yellow-500/20 shadow-[0_8px_40px_rgba(0,0,0,0.55)]",
               "md:right-5 md:w-[min(100vw-2rem,380px)] md:rounded-2xl md:max-h-[min(560px,calc(100vh-6rem))]",
-              "inset-x-0 rounded-t-2xl max-h-[min(72vh,520px)]",
+              "inset-x-2 rounded-2xl max-h-[min(76vh,560px)]",
               bottomOffset,
               "md:bottom-20 md:inset-x-auto"
             )}
@@ -179,7 +190,10 @@ export function SupportChatWidget() {
               </div>
               <button
                 type="button"
-                onClick={() => setOpen(false)}
+                onClick={() => {
+                  playTone("switch");
+                  setOpen(false);
+                }}
                 className="p-2 rounded-lg text-zinc-400 hover:text-white hover:bg-white/10 transition-colors tap-scale"
                 aria-label={t("close")}
               >
@@ -201,6 +215,22 @@ export function SupportChatWidget() {
                   {line.text}
                 </div>
               ))}
+
+              {lines.length <= 1 && !showForm ? (
+                <div className="grid grid-cols-2 gap-1.5 pt-1">
+                  {QUICK_PROMPTS[locale].map((prompt) => (
+                    <button
+                      key={prompt}
+                      type="button"
+                      onClick={() => handleQuickAsk(prompt)}
+                      className="tap-scale flex items-center gap-1.5 rounded-xl border border-yellow-500/15 bg-yellow-500/[0.06] px-2.5 py-2 text-left text-[11px] leading-tight text-yellow-100/90 hover:border-yellow-500/30 hover:bg-yellow-500/[0.1]"
+                    >
+                      <Sparkles className="h-3 w-3 shrink-0 text-yellow-400/80" />
+                      {prompt}
+                    </button>
+                  ))}
+                </div>
+              ) : null}
 
               {showForm && (
                 <div className="space-y-2 pt-1">
@@ -262,7 +292,10 @@ export function SupportChatWidget() {
               {!showForm ? (
                 <button
                   type="button"
-                  onClick={() => setShowForm(true)}
+                  onClick={() => {
+                    playTone("switch");
+                    setShowForm(true);
+                  }}
                   className="text-[11px] text-yellow-400/90 hover:text-yellow-300 transition-colors"
                 >
                   {t("leaveRequest")}
@@ -299,7 +332,10 @@ export function SupportChatWidget() {
 
       <motion.button
         type="button"
-        onClick={() => setOpen((v) => !v)}
+        onClick={() => {
+          playTone(open ? "switch" : "notification");
+          setOpen((v) => !v);
+        }}
         aria-label={open ? t("close") : t("open")}
         aria-expanded={open}
         whileTap={{ scale: 0.94 }}
@@ -307,7 +343,7 @@ export function SupportChatWidget() {
           "fixed z-[48] pointer-events-auto flex items-center gap-2 tap-scale",
           "rounded-full shadow-[0_4px_24px_rgba(0,0,0,0.45)]",
           "btn-theme-primary font-semibold",
-          "right-4 md:right-5",
+          "right-3 md:right-5",
           bottomOffset,
           "md:bottom-5",
           open ? "px-3 py-3" : "px-4 py-3",

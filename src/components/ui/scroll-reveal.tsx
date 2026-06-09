@@ -38,6 +38,13 @@ export function ScrollReveal({
       return;
     }
 
+    const isMobile = window.matchMedia("(max-width: 640px)").matches;
+    const rect = el.getBoundingClientRect();
+    if (isMobile && rect.top < window.innerHeight + 120) {
+      setInView(true);
+      return;
+    }
+
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
@@ -45,7 +52,7 @@ export function ScrollReveal({
           observer.disconnect();
         }
       },
-      { rootMargin: "-48px", threshold: 0.08 }
+      { rootMargin: isMobile ? "0px 0px 96px 0px" : "-48px", threshold: isMobile ? 0.01 : 0.08 }
     );
 
     observer.observe(el);

@@ -252,15 +252,25 @@ body {
   padding-bottom: 0.5rem;
 }
 
+.home-fold > section.section-pad {
+  padding-top: 1.25rem;
+  padding-bottom: 1.25rem;
+}
+
 @media (min-width: 768px) {
   .home-fold > section.section-pad-tight {
     padding-top: 0.75rem;
     padding-bottom: 0.75rem;
   }
+
+  .home-fold > section.section-pad {
+    padding-top: 2rem;
+    padding-bottom: 2rem;
+  }
 }
 
 .home-fold #hero {
-  padding-bottom: 0.25rem;
+  padding-bottom: 0.75rem;
 }
 
 @media (min-width: 768px) {

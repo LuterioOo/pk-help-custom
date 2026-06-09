@@ -44,11 +44,18 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       onClick?.(e);
     };
 
+    const wrappedPointerEnter = () => {
+      if (typeof window !== "undefined" && window.matchMedia("(hover: hover) and (pointer: fine)").matches) {
+        playTone("hover");
+      }
+    };
+
     if (asChild) {
       if (!isValidElement(children)) return null;
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const child = children as ReactElement<any>;
-      const existing = (child.props as { className?: string; onClick?: unknown } | undefined) ?? {};
+      const existing =
+        (child.props as { className?: string; onClick?: unknown; onPointerEnter?: unknown } | undefined) ?? {};
       const mergedOnClick =
         typeof existing.onClick === "function"
           ? (e: unknown) => {
@@ -60,7 +67,13 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       return cloneElement(child, {
         className: cn(baseClassName, existing.className),
         onClick: mergedOnClick,
-        onPointerEnter: (existing as { onPointerEnter?: unknown }).onPointerEnter,
+        onPointerEnter:
+          typeof existing.onPointerEnter === "function"
+            ? (e: unknown) => {
+                wrappedPointerEnter();
+                (existing.onPointerEnter as (ev: unknown) => void)(e);
+              }
+            : wrappedPointerEnter,
         "aria-disabled": disabled || isLoading ? true : undefined,
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } as any);
@@ -72,6 +85,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         className={baseClassName}
         disabled={disabled || isLoading}
         onClick={wrappedOnClick}
+        onPointerEnter={wrappedPointerEnter}
         {...props}
       >
         {isLoading ? (

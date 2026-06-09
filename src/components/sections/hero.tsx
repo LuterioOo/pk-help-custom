@@ -101,7 +101,7 @@ export function Hero() {
               <p className="mt-1.5 sm:mt-3 text-[10px] sm:text-xs text-zinc-500 max-w-md">{t("ctaBuildLockedHint")}</p>
             ) : null}
 
-            <div className="hidden sm:block mt-6 sm:mt-8">
+            <div className="mt-4 sm:mt-8">
               <HeroAdvantagesStrip />
             </div>
           </div>
