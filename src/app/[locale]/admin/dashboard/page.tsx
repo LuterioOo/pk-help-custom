@@ -7,11 +7,12 @@ import { adminUrl } from "@/lib/admin-path";
 import { Button } from "@/components/ui/button";
 import { Logo } from "@/components/ui/logo";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Package, MessageSquare, ShoppingCart, LogOut, Pencil, Images, Users, Settings } from "lucide-react";
+import { Package, MessageSquare, ShoppingCart, LogOut, Pencil, Images, Users, Settings, Headphones } from "lucide-react";
 import { ThemeSettingsPanel } from "@/components/admin/theme-settings-panel";
 import { ShowcasePanel } from "@/components/admin/showcase-panel";
 import { MastersPanel } from "@/components/admin/masters-panel";
 import { OrderComponentsTable } from "@/components/admin/order-components-table";
+import { SupportPanel } from "@/components/admin/support-panel";
 import {
   ComponentImageUpload,
   uploadPendingComponentImage,
@@ -22,7 +23,7 @@ import { ComponentImage } from "@/components/ui/component-image";
 import { toast } from "sonner";
 import { AnimatePresence, motion } from "framer-motion";
 
-type Tab = "components" | "reviews" | "orders" | "showcase" | "masters" | "settings";
+type Tab = "components" | "reviews" | "orders" | "support" | "showcase" | "masters" | "settings";
 
 const ORDER_STATUSES = ["NOWE", "W_TRAKCIE", "WYCENIONE", "estimated_waiting_service", "ZAKONCZONE", "ANULOWANE"] as const;
 const TRADE_IN_WORKFLOW = [
@@ -471,6 +472,7 @@ export default function AdminDashboard() {
 
   const tabs: { id: Tab; icon: typeof Package; label: string }[] = [
     { id: "orders", icon: ShoppingCart, label: t("orders") },
+    { id: "support", icon: Headphones, label: t("supportTab") },
     { id: "components", icon: Package, label: t("components") },
     { id: "showcase", icon: Images, label: t("showcaseTab") },
     { id: "masters", icon: Users, label: t("mastersTab") },
@@ -546,6 +548,8 @@ export default function AdminDashboard() {
             </button>
           ))}
         </div>
+
+        {tab === "support" && <SupportPanel />}
 
         {tab === "showcase" && <ShowcasePanel />}
 

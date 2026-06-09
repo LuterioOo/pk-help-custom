@@ -201,3 +201,33 @@ enum CrmSyncStatus {
   FAILED
   SKIPPED
 }
+
+model SupportMessage {
+  id          String              @id @default(cuid())
+  name        String?
+  phone       String?
+  telegram    String?
+  message     String
+  topic       SupportTopic        @default(OTHER)
+  locale      String              @default("ru")
+  currentPage String?
+  status      SupportMessageStatus @default(NEW)
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+}
+
+enum SupportTopic {
+  PC_BUILD
+  TRADE_IN
+  INSTALLMENT
+  READY_PC
+  SERVICE
+  OTHER
+}
+
+enum SupportMessageStatus {
+  NEW
+  IN_PROGRESS
+  ANSWERED
+  CLOSED
+}

@@ -6,6 +6,7 @@ import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import { MobileStickyCta } from "@/components/layout/mobile-sticky-cta";
 import { FloatingLanguageSwitcher } from "@/components/layout/floating-language-switcher";
+import { SupportChatWidget } from "@/components/support/support-chat-widget";
 
 function isAdminPath(pathname: string) {
   return /\/admin(\/|$)/.test(pathname);
@@ -32,6 +33,7 @@ export function LocaleShell({ children }: { children: React.ReactNode }) {
         {children}
       </main>
       <MobileStickyCta />
+      <SupportChatWidget />
       <Footer />
     </>
   );
