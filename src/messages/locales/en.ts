@@ -297,8 +297,8 @@ const en = {
   contacts: { title: "Contact", phone: "Phone", email: "Email", telegram: "Telegram", instagram: "Instagram", map: "On map" },
   footer: { rights: "All rights reserved", tagline: "Premium custom PC builds" },
   supportChat: {
-    button: "Support",
-    buttonShort: "Chat",
+    button: "Support chat",
+    buttonShort: "Support",
     title: "PK-HELP Support",
     subtitle: "We answer questions and take requests",
     open: "Open chat",

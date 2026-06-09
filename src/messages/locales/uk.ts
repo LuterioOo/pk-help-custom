@@ -297,8 +297,8 @@ const uk = {
   contacts: { title: "Контакти", phone: "Телефон", email: "Email", telegram: "Telegram", instagram: "Instagram", map: "На карті" },
   footer: { rights: "Усі права захищені", tagline: "Premium custom PC builds" },
   supportChat: {
-    button: "Допомога",
-    buttonShort: "Чат",
+    button: "Чат підтримки",
+    buttonShort: "Підтримка",
     title: "Підтримка PK-HELP",
     subtitle: "Відповімо на питання та приймемо заявку",
     open: "Відкрити чат",

@@ -48,6 +48,7 @@ export function SupportChatWidget() {
   const [showContacts, setShowContacts] = useState(false);
   const [sending, setSending] = useState(false);
   const [showForm, setShowForm] = useState(false);
+  const [builderInView, setBuilderInView] = useState(false);
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -73,6 +74,20 @@ export function SupportChatWidget() {
     window.addEventListener("pkhelp-open-support", openChat);
     return () => window.removeEventListener("pkhelp-open-support", openChat);
   }, []);
+
+  useEffect(() => {
+    const el = document.getElementById("builder");
+    if (!el) {
+      setBuilderInView(false);
+      return;
+    }
+    const observer = new IntersectionObserver(
+      ([entry]) => setBuilderInView(entry.isIntersecting && entry.intersectionRatio > 0.12),
+      { threshold: [0, 0.12, 0.35] }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [pathname]);
 
   useEffect(() => {
     if (open) {
@@ -156,8 +171,9 @@ export function SupportChatWidget() {
     }
   };
 
-  const bottomOffset = hasMobileCta
-    ? "bottom-[calc(var(--mobile-bottom-cta-height)+env(safe-area-inset-bottom)+1.25rem)]"
+  const aboveMobileCta = hasMobileCta && !builderInView;
+  const fabBottom = aboveMobileCta
+    ? "bottom-[calc(var(--mobile-bottom-cta-height)+env(safe-area-inset-bottom)+0.75rem)]"
     : "bottom-[max(0.75rem,env(safe-area-inset-bottom))]";
 
   return (
@@ -189,7 +205,7 @@ export function SupportChatWidget() {
               "glass-strong border border-yellow-500/20 shadow-[0_8px_40px_rgba(0,0,0,0.55)]",
               "md:right-5 md:w-[min(100vw-2rem,380px)] md:rounded-2xl md:max-h-[min(560px,calc(100vh-6rem))]",
               "inset-x-2 rounded-2xl max-h-[min(76vh,560px)]",
-              bottomOffset,
+              fabBottom,
               "md:bottom-20 md:inset-x-auto"
             )}
           >
@@ -341,24 +357,21 @@ export function SupportChatWidget() {
         aria-expanded={open}
         whileTap={{ scale: 0.94 }}
         className={cn(
-          "fixed z-[48] pointer-events-auto flex items-center gap-2 tap-scale",
-          "rounded-full shadow-[0_4px_24px_rgba(0,0,0,0.45)]",
+          "fixed z-[49] pointer-events-auto flex items-center gap-2 tap-scale",
+          "rounded-full shadow-[0_4px_24px_rgba(0,0,0,0.5),0_0_20px_rgba(255,215,0,0.15)]",
           "btn-theme-primary font-semibold",
           "right-3 md:right-5",
-          bottomOffset,
+          fabBottom,
           "md:bottom-5",
-          open ? "px-3 py-2.5" : "px-3 py-2.5",
-          open && "max-md:opacity-0 max-md:pointer-events-none",
-          hasMobileCta && !open && "max-md:hidden"
+          open ? "h-11 w-11 p-0 justify-center md:hidden" : "px-3.5 py-3 min-h-[48px]"
         )}
       >
         {open ? (
           <X className="w-5 h-5" />
         ) : (
           <>
-            <MessageCircle className="w-5 h-5" />
-            <span className="text-sm max-md:hidden">{t("button")}</span>
-            <span className="text-sm md:hidden">{t("buttonShort")}</span>
+            <MessageCircle className="w-5 h-5 shrink-0" />
+            <span className="text-sm font-semibold">{t("button")}</span>
           </>
         )}
       </motion.button>

@@ -16,6 +16,7 @@ import type { ComponentCategory } from "@prisma/client";
 import type { ComponentSpec } from "@/lib/compatibility";
 import { toast } from "sonner";
 import { useState } from "react";
+import { scrollToBuilderParts } from "@/lib/scroll-to-builder";
 
 type Props = {
   initialItems: ShowcaseItem[];
@@ -56,7 +57,7 @@ export function BuildsForSale({ initialItems, featured = false }: Props) {
   const customizeBuild = async (item: ShowcaseItem) => {
     const preset = item.presetComponents;
     if (!preset || Object.keys(preset).length === 0) {
-      document.getElementById("builder")?.scrollIntoView({ behavior: "smooth" });
+      scrollToBuilderParts("smooth");
       toast.info(t("customizeNoPreset"));
       return;
     }
@@ -91,7 +92,7 @@ export function BuildsForSale({ initialItems, featured = false }: Props) {
       }));
       applyPreset(specs);
       toast.success(t("customizeLoaded"));
-      document.getElementById("builder")?.scrollIntoView({ behavior: "smooth" });
+      scrollToBuilderParts("smooth");
     } catch {
       toast.error(t("customizeError"));
     } finally {

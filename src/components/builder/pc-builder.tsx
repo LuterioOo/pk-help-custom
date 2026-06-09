@@ -24,6 +24,7 @@ import { BuildAdvisor } from "@/components/sections/build-advisor";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatBuilderIssue } from "@/lib/format-builder-issue";
 import { formatPrice, cn } from "@/lib/utils";
+import { scrollToBuilderParts } from "@/lib/scroll-to-builder";
 import { toast } from "sonner";
 import { useUiSound } from "@/hooks/use-ui-sound";
 import {
@@ -156,6 +157,14 @@ export function PcBuilder() {
     setBrandFilter("all");
   }, [fetchComponents]);
 
+  useEffect(() => {
+    const onPresetLoaded = () => {
+      requestAnimationFrame(() => scrollToBuilderParts("smooth"));
+    };
+    window.addEventListener("pkhelp-builder-preset-loaded", onPresetLoaded);
+    return () => window.removeEventListener("pkhelp-builder-preset-loaded", onPresetLoaded);
+  }, []);
+
   const brands = useMemo(() => {
     const set = new Set(components.map((c) => c.brand));
     return ["all", ...Array.from(set)];
@@ -276,15 +285,26 @@ export function PcBuilder() {
                 {t("stepOf", { current: stepIndex + 1, total: BUILDER_CATEGORY_ORDER.length })} · {stepLabel}
               </p>
             </div>
-            <Button
-              size="sm"
-              onClick={scrollToOrder}
-              disabled={orderDisabled}
-              className="min-h-[34px] px-2.5 text-[11px] shrink-0"
-            >
-              {orderDisabled ? t("orderDisabled") : t("orderRequest")}
-              <ArrowRight className="w-3 h-3" />
-            </Button>
+            <div className="flex items-center gap-1 shrink-0">
+              <Button
+                size="sm"
+                variant="secondary"
+                onClick={handleSave}
+                disabled={selectedCount === 0}
+                className="min-h-[34px] px-2 text-[10px]"
+              >
+                {t("save")}
+              </Button>
+              <Button
+                size="sm"
+                onClick={scrollToOrder}
+                disabled={orderDisabled}
+                className="min-h-[34px] px-2.5 text-[11px]"
+              >
+                {orderDisabled ? t("orderDisabled") : t("send")}
+                <ArrowRight className="w-3 h-3" />
+              </Button>
+            </div>
           </div>
           <nav
             ref={mobileCategoryNavRef}
@@ -305,6 +325,79 @@ export function PcBuilder() {
           ) : null}
         </div>
 
+        {/* Mobile: build summary + quick actions */}
+        <div
+          id="builder-mobile-summary"
+          className="xl:hidden mb-3 rounded-xl border border-white/8 bg-white/[0.03] p-3 space-y-3 scroll-mt-32"
+        >
+          <div className="flex items-center justify-between gap-2">
+            <div className="min-w-0">
+              <p className="text-[10px] uppercase tracking-wider text-zinc-500">{t("summaryTitle")}</p>
+              <p className="text-lg font-bold neon-text tabular-nums">{formatPrice(displayTotal, locale)}</p>
+            </div>
+            <p className="text-[11px] text-zinc-500 text-right shrink-0">
+              {t("componentsSelected", { count: selectedCount })}
+            </p>
+          </div>
+
+          {selectedCount > 0 ? (
+            <ul className="space-y-1 max-h-28 overflow-y-auto text-[11px] border-t border-white/5 pt-2">
+              {BUILDER_CATEGORY_ORDER.map((cat) => {
+                const c = selection[cat];
+                if (!c) return null;
+                return (
+                  <li key={cat} className="flex justify-between gap-2 text-zinc-400">
+                    <button
+                      type="button"
+                      onClick={() => handleCategoryClick(cat)}
+                      className="truncate text-left hover:text-zinc-200 transition-colors"
+                    >
+                      {c.name}
+                    </button>
+                    <span className="text-theme shrink-0 tabular-nums">{formatPrice(c.price, locale)}</span>
+                  </li>
+                );
+              })}
+            </ul>
+          ) : null}
+
+          {tradeInCoupon > 0 ? (
+            <label className="flex items-center gap-2 text-[11px] text-zinc-400 cursor-pointer rounded-lg bg-theme-soft border border-theme/30 px-2.5 py-2">
+              <input
+                type="checkbox"
+                checked={useTradeInCoupon}
+                onChange={(e) => setUseTradeInCoupon(e.target.checked)}
+                className="accent-theme"
+              />
+              <Ticket className="w-3.5 h-3.5 text-theme shrink-0" />
+              <span className="truncate">
+                {t("applyCoupon")} (−{formatPrice(tradeInCoupon, locale)})
+              </span>
+            </label>
+          ) : null}
+
+          <div className="grid grid-cols-2 gap-2">
+            <Button variant="secondary" onClick={handleSave} disabled={selectedCount === 0} className="min-h-[42px] text-sm">
+              {t("save")}
+            </Button>
+            <Button onClick={scrollToOrder} disabled={orderDisabled} className="min-h-[42px] text-sm">
+              {orderDisabled ? t("orderDisabled") : t("send")}
+              <ArrowRight className="w-4 h-4" />
+            </Button>
+          </div>
+
+          {selectedCount > 0 ? (
+            <button
+              type="button"
+              onClick={clearBuild}
+              className="w-full flex items-center justify-center gap-1.5 text-[11px] text-zinc-600 hover:text-zinc-400 py-1 transition-colors"
+            >
+              <X className="w-3.5 h-3.5" />
+              {t("clear")}
+            </button>
+          ) : null}
+        </div>
+
         <div className="grid grid-cols-1 xl:grid-cols-[200px_1fr_320px] gap-2 md:gap-5">
           {/* Categories — desktop sidebar only */}
           <ScrollReveal className="hidden xl:block xl:sticky xl:top-28 xl:self-start order-1">
@@ -317,7 +410,11 @@ export function PcBuilder() {
           </ScrollReveal>
 
           {/* Components — center */}
-          <div ref={componentsRef} className="space-y-2.5 sm:space-y-4 order-2 xl:order-2 min-w-0">
+          <div
+            id="builder-parts"
+            ref={componentsRef}
+            className="space-y-2.5 sm:space-y-4 order-2 xl:order-2 min-w-0 scroll-mt-32"
+          >
             <div className="flex flex-col sm:flex-row gap-1.5 sm:gap-3">
               <div className="relative flex-1">
                 <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-zinc-600" />

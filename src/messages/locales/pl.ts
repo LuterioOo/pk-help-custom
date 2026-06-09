@@ -303,8 +303,8 @@ const pl = {
   },
   footer: { rights: "Wszelkie prawa zastrzeżone", tagline: "Premium custom PC builds" },
   supportChat: {
-    button: "Pomoc",
-    buttonShort: "Czat",
+    button: "Czat wsparcia",
+    buttonShort: "Wsparcie",
     title: "Wsparcie PK-HELP",
     subtitle: "Odpowiemy na pytania i przyjmiemy zgłoszenie",
     open: "Otwórz czat",

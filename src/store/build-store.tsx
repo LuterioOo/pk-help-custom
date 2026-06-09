@@ -17,7 +17,11 @@ import {
   type CompatibilityIssue,
 } from "@/lib/compatibility";
 import { loadTradeInCoupon } from "@/lib/trade-in-storage";
-import { getMissingBuildCategories, isBuildComplete } from "@/lib/builder-flow";
+import {
+  getFirstIncompleteRequired,
+  getMissingBuildCategories,
+  isBuildComplete,
+} from "@/lib/builder-flow";
 
 const STORAGE_KEY = "pkhelp-build";
 export const DEFAULT_BUILDER_CATEGORY: ComponentCategory = "CASE";
@@ -120,14 +124,16 @@ export function BuildProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const applyPreset = useCallback((components: ComponentSpec[]) => {
-    setSelection((prev) => {
-      const next = { ...prev };
-      for (const c of components) {
-        next[c.category] = c;
-      }
-      return next;
+    const next: BuildSelection = {};
+    for (const c of components) {
+      next[c.category] = c;
+    }
+    setSelection(next);
+    const focus = getFirstIncompleteRequired(next) ?? "GPU";
+    setActiveCategory(focus);
+    requestAnimationFrame(() => {
+      window.dispatchEvent(new Event("pkhelp-builder-preset-loaded"));
     });
-    setActiveCategory(DEFAULT_BUILDER_CATEGORY);
   }, []);
 
   useEffect(() => {

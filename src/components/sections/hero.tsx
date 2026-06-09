@@ -101,14 +101,15 @@ export function Hero() {
               </Button>
 
               <Button
-                type="button"
+                asChild
                 size="sm"
                 variant="outline"
                 className="tap-scale w-full sm:flex-1 sm:min-h-[60px] sm:text-base sm:rounded-2xl border-white/15 min-h-[42px] text-sm"
-                onClick={() => window.dispatchEvent(new Event("pkhelp-open-support"))}
               >
-                <MessageSquare className="w-4 h-4 text-yellow-400/80" />
-                {t("ctaContact")}
+                <Link href={`${base}#contacts`} className="flex items-center justify-center gap-2">
+                  <MessageSquare className="w-4 h-4 text-yellow-400/80" />
+                  {t("ctaContact")}
+                </Link>
               </Button>
             </div>
 

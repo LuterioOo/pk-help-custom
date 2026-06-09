@@ -5,8 +5,8 @@ import { useTranslations, useLocale } from "next-intl";
 import type { ComponentCategory } from "@prisma/client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ScrollReveal } from "@/components/ui/scroll-reveal";
 import { formatPrice, cn } from "@/lib/utils";
+import { scrollToBuilderParts } from "@/lib/scroll-to-builder";
 import { useBuild } from "@/store/build-store";
 import {
   groupComponentsByCategory,
@@ -38,7 +38,7 @@ const CORE_CATEGORIES: ComponentCategory[] = [
 export function BuildAdvisor() {
   const t = useTranslations("advisor");
   const locale = useLocale();
-  const { applyPreset, clearBuild } = useBuild();
+  const { applyPreset } = useBuild();
 
   const [useCase, setUseCase] = useState<UseCase>("gaming");
   const [budget, setBudget] = useState(4500);
@@ -96,18 +96,16 @@ export function BuildAdvisor() {
 
   const loadIntoBuilder = useCallback(() => {
     if (!preview) return;
-    clearBuild();
     applyPreset(preview.components);
     toast.success(t("loaded"));
-    document.getElementById("builder")?.scrollIntoView({ behavior: "smooth" });
-  }, [preview, clearBuild, applyPreset, t]);
+    requestAnimationFrame(() => scrollToBuilderParts("smooth"));
+  }, [preview, applyPreset, t]);
 
   const highlightComponents = preview
     ? CORE_CATEGORIES.map((cat) => preview.components.find((c) => c.category === cat)).filter(Boolean)
     : [];
 
   return (
-    <ScrollReveal>
       <div className="mb-4 sm:mb-6 rounded-2xl border border-yellow-500/15 bg-gradient-to-br from-white/[0.04] via-white/[0.02] to-transparent p-4 sm:p-6 relative overflow-hidden">
         <div
           className="absolute inset-0 pointer-events-none opacity-40"
@@ -205,7 +203,7 @@ export function BuildAdvisor() {
           </div>
 
           {preview ? (
-            <div className="mt-4 pt-4 border-t border-white/8 hero-enter">
+            <div className="mt-4 pt-4 border-t border-white/8">
               <div className="flex flex-wrap items-center gap-2 mb-3">
                 <p className="text-sm text-zinc-400">{t("resultLabel")}</p>
                 <span className="text-xl font-bold neon-text tabular-nums">{formatPrice(preview.total, locale)}</span>
@@ -238,6 +236,5 @@ export function BuildAdvisor() {
           ) : null}
         </div>
       </div>
-    </ScrollReveal>
   );
 }
